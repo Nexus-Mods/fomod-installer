@@ -1,5 +1,5 @@
 {
-  "name": "modinstaller",
+  "name": "fomod-installer",
   "version": "0.0.1",
   "description": "Installer for xml and c# fomods",
   "main": "dummy.js",
