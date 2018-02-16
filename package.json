@@ -5,7 +5,8 @@
   "main": "dummy.js",
   "scripts": {
     "buildDev": "node build.js Debug && copyfiles -f Build/bin/Debug/*.dll dist/ && copyfiles -f Build/bin/Debug/*.pdb dist/",
-    "build": "node build.js && copyfiles -f Build/bin/Release/*.dll dist/"
+    "build": "node build.js && copyfiles -f Build/bin/Release/*.dll dist/",
+    "install": "npm run build"
   },
   "author": "Black Tree Gaming Ltd.",
   "license": "GPL-3.0",

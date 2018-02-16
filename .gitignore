@@ -12,3 +12,5 @@ bld/
 [Bb]in/
 [Oo]bj/
 Packages/
+dist  
+node_modules  
