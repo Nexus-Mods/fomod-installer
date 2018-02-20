@@ -175,6 +175,10 @@ namespace FomodInstaller.Scripting.XmlScript
 
             } else
             {
+                if (toPath == "")
+                {
+                    toPath = Path.GetFileName(fromPath);
+                }
                 modInstallInstructions.Add(Instruction.CreateCopy(fromPath, toPath));
             }
 
