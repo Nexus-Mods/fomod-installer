@@ -58,7 +58,12 @@ namespace FomodInstaller.Scripting.XmlScript
             XmlScript xscScript = (XmlScript)scpScript;
 
             if ((xscScript.ModPrerequisites != null) && !xscScript.ModPrerequisites.GetIsFulfilled(m_csmState, m_Delegates))
-                throw new Exception(xscScript.ModPrerequisites.GetMessage(m_csmState, m_Delegates));
+            {
+                Source.SetResult(new List<Instruction>(new Instruction[] {
+                    Instruction.InstallError("Installer Prerequisits not fulfilled: " + xscScript.ModPrerequisites.GetMessage(m_csmState, m_Delegates))
+                }));
+                return await Source.Task;
+            }
 
             IList<InstallStep> lstSteps = xscScript.InstallSteps;
             HeaderInfo hifHeaderInfo = xscScript.HeaderInfo;
