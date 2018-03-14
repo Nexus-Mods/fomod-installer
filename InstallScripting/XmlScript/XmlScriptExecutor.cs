@@ -186,6 +186,17 @@ namespace FomodInstaller.Scripting.XmlScript
                         || (type == OptionType.Recommended)
                         || (group.Type == OptionGroupType.SelectAll))
                     {
+                        // in case there are multiple recommended options in a group that only
+                        // supports one selection, disable all other options, otherwise we would
+                        // create an invalid pre-selection
+                        if ((type == OptionType.Recommended)
+                            && ((group.Type == OptionGroupType.SelectExactlyOne)
+                                || (group.Type == OptionGroupType.SelectAtMostOne))) {
+                            foreach (Option innerOption in group.Options)
+                            {
+                                disableOption(innerOption);
+                            }
+                        }
                         enableOption(option);
                         setFirst = false;
                     }
