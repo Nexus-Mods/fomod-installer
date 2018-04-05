@@ -95,27 +95,26 @@ namespace FomodInstaller.ModInstaller
                 {
                     Instructions = new List<Instruction>();
                     Instructions.Add(Instruction.InstallError("Installer failed (it should have reported an error message)"));
-                } else
-                {
-                    // f***ing ugly hack, but this is in NMM so...
-                    if (pluginPath != null)
-                    {
-                        string pattern = pluginPath + Path.DirectorySeparatorChar;
-                        Instructions = Instructions.Select(instruction =>
-                        {
-                            Instruction output = instruction;
-                            if ((output.type == "copy") && output.destination.StartsWith(pattern, System.StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                output.destination = output.destination.Substring(pattern.Length);
-                            }
-                            return output;
-                        }).ToList();
-                    }
                 }
             }
             else
             {
                 Instructions = await BasicModInstall(modArchiveFileList, stopPatterns, progressDelegate, coreDelegate);
+            }
+ 
+            // f***ing ugly hack, but this is in NMM so...
+            if (pluginPath != null)
+            {
+                string pattern = pluginPath + Path.DirectorySeparatorChar;
+                Instructions = Instructions.Select(instruction =>
+                {
+                    Instruction output = instruction;
+                    if ((output.type == "copy") && output.destination.StartsWith(pattern, System.StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        output.destination = output.destination.Substring(pattern.Length);
+                    }
+                    return output;
+                }).ToList();
             }
 
             progressDelegate(100);
