@@ -150,6 +150,10 @@
     <None Include="CPL\CPLImportParser.g">
     </None>
     <None Include="CPL\CPLImportLexer.g" />
+    <EmbeddedResource Include="Schemas\XmlScript1.0.xsd" />
+    <EmbeddedResource Include="Schemas\XmlScript2.0.xsd" />
+    <EmbeddedResource Include="Schemas\XmlScript3.0.xsd" />
+    <EmbeddedResource Include="Schemas\XmlScript4.0.xsd" />
     <EmbeddedResource Include="Schemas\XmlScript5.0.xsd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
