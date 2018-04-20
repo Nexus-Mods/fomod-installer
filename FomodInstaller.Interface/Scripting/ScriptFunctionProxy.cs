@@ -6,6 +6,7 @@ using System.Security;
 using System.Security.Permissions;
 using System.Threading.Tasks;
 using Utils;
+using System.Windows.Forms;
 
 namespace FomodInstaller.Interface
 {
@@ -165,8 +166,8 @@ namespace FomodInstaller.Interface
                 FromPath = Path.Combine(Mod.Prefix, FromPath);
             string ToPath = TextUtil.NormalizePath(to, false, false, false);
 
-            if (ToPath.EndsWith("" + Path.DirectorySeparatorChar)
-                || ToPath.EndsWith("" + Path.AltDirectorySeparatorChar))
+            if (to.EndsWith("" + Path.DirectorySeparatorChar)
+                || to.EndsWith("" + Path.AltDirectorySeparatorChar))
             {
                 modInstallInstructions.Add(Instruction.CreateMKDir(ToPath));
             }
@@ -289,13 +290,7 @@ namespace FomodInstaller.Interface
         /// <returns>The specified file, or <c>null</c> if the file does not exist.</returns>
         public byte[] GetExistingDataFile(string filePath)
         {
-            byte[] DataFile = null;
-
-            Task.Run(async () => {
-                DataFile = await Core.context.GetExistingDataFile(filePath);
-            }).Wait();
-
-            return DataFile;
+            return Core.context.GetExistingDataFile(filePath).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -328,9 +323,10 @@ namespace FomodInstaller.Interface
         /// Shows a message box with the given message.
         /// </summary>
         /// <param name="p_strMessage">The message to display in the message box.</param>
-        public void MessageBox(string p_strMessage)
+        public virtual DialogResult MessageBox(string p_strMessage)
         {
             // ??? This stuff should be handled by the user interaction delegate
+            return DialogResult.OK;
         }
 
         /// <summary>
@@ -349,10 +345,10 @@ namespace FomodInstaller.Interface
         /// <param name="p_strMessage">The message to display in the message box.</param>
         /// <param name="p_strTitle">The message box's title, display in the title bar.</param>
         /// <param name="p_mbbButtons">The buttons to show in the message box.</param>
-        public int MessageBox(string p_strMessage, string p_strTitle)
+        public virtual DialogResult MessageBox(string p_strMessage, string p_strTitle)
         {
             // ??? This stuff should be handled by the user interaction delegate
-            return 1;
+            return DialogResult.OK;
         }
 
         ///// <summary>
@@ -433,31 +429,31 @@ namespace FomodInstaller.Interface
         /// is not installed.</returns>
         public Version GetGameVersion()
         {
-            string GameVersion = Core.context.GetCurrentGameVersion().Result;
+            string GameVersion = Core.context.GetCurrentGameVersion().GetAwaiter().GetResult();
             return GameVersion != null ? new Version(GameVersion) : new Version("0.0.0.0");
         }
 
         public Version GetSkseVersion()
         {
-            string ExtVersion = Core.context.GetExtenderVersion("skse").Result;
+            string ExtVersion = Core.context.GetExtenderVersion("skse").GetAwaiter().GetResult();
             return ExtVersion != null ? new Version(ExtVersion) : null;
         }
 
         public Version GetFoseVersion()
         {
-            string ExtVersion = Core.context.GetExtenderVersion("fose").Result;
+            string ExtVersion = Core.context.GetExtenderVersion("fose").GetAwaiter().GetResult();
             return ExtVersion != null ? new Version(ExtVersion) : null;
         }
     
         public Version GetNvseVersion()
         {
-            string ExtVersion = Core.context.GetExtenderVersion("nvse").Result;
+            string ExtVersion = Core.context.GetExtenderVersion("nvse").GetAwaiter().GetResult();
             return ExtVersion != null ? new Version(ExtVersion) : null;
         }
 
         public bool ScriptExtenderPresent()
         {
-            return Core.context.IsExtenderPresent().Result;
+            return Core.context.IsExtenderPresent().GetAwaiter().GetResult();
         }
 
         #endregion

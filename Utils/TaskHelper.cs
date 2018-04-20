@@ -16,7 +16,7 @@ namespace Utils
             var res = await Task.WhenAny(task, Task.Delay(timeout));
             if (res == task)
             {
-                return ((Task<object>)res).GetAwaiter().GetResult();
+                return await task;
             }
             else
             {

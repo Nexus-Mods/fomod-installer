@@ -23,7 +23,6 @@ namespace FomodInstaller.ModInstaller
         #region Fields
 
         private static string FomodRoot = "fomod";
-        private static string OmodRoot = "omod";
         private static ISet<string> RequiredExtensions = new HashSet<string> { ".gif", ".ico", ".jpeg", ".jpg", ".png", ".txt", ".xml", ".xsd" };
         #endregion
 

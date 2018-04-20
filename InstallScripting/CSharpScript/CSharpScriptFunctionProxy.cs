@@ -52,9 +52,9 @@ namespace FomodInstaller.Scripting.CSharpScript
         /// Shows a message box with the given message.
         /// </summary>
         /// <param name="p_strMessage">The message to display in the message box.</param>
-        public void MessageBox(string p_strMessage)
+        public override DialogResult MessageBox(string p_strMessage)
         {
-            ShowMessageBox(p_strMessage, string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return ShowMessageBox(p_strMessage, string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         /// <summary>
@@ -62,19 +62,17 @@ namespace FomodInstaller.Scripting.CSharpScript
         /// </summary>
         /// <param name="p_strMessage">The message to display in the message box.</param>
         /// <param name="p_strTitle">The message box's title, display in the title bar.</param>
-        /// <param name="p_mbbButtons">The buttons to show in the message box.</param>
-        public void MessageBox(string p_strMessage, string p_strTitle)
+        public override DialogResult MessageBox(string p_strMessage, string p_strTitle)
         {
-            ShowMessageBox(p_strMessage, p_strTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return ShowMessageBox(p_strMessage, p_strTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        ///// <summary>
-        ///// Shows a message box with the given message, title, buttons, and icon.
-        ///// </summary>
-        ///// <param name="p_strMessage">The message to display in the message box.</param>
-        ///// <param name="p_strTitle">The message box's title, display in the title bar.</param>
-        ///// <param name="p_mbbButtons">The buttons to show in the message box.</param>
-        ///// <param name="p_mdiIcon">The icon to display in the message box.</param>
+        /// <summary>
+        /// Shows a message box with the given message, title, buttons, and icon.
+        /// </summary>
+        /// <param name="p_strMessage">The message to display in the message box.</param>
+        /// <param name="p_strTitle">The message box's title, display in the title bar.</param>
+        /// <param name="p_mbbButtons">The buttons to show in the message box.</param>
         public DialogResult MessageBox(string p_strMessage, string p_strTitle, MessageBoxButtons p_mbbButtons)
         {
             return ShowMessageBox(p_strMessage, p_strTitle, p_mbbButtons, MessageBoxIcon.Information);
@@ -201,7 +199,6 @@ namespace FomodInstaller.Scripting.CSharpScript
 
         private DialogResult ShowMessageBox(string p_strMessage, string p_strCaption, MessageBoxButtons p_mbbButtons, MessageBoxIcon p_mbiIcon)
         {
-            DialogResult drsResult = DialogResult.None;
             try
             {
                 new PermissionSet(PermissionState.Unrestricted).Assert();
@@ -211,7 +208,6 @@ namespace FomodInstaller.Scripting.CSharpScript
             {
                 PermissionSet.RevertAssert();
             }
-            return drsResult;
         }
         #endregion
     }

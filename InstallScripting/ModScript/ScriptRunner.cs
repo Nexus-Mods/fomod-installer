@@ -53,7 +53,7 @@ namespace FomodInstaller.Scripting.ModScript
 					ex = ex.InnerException;
 					stbException.AppendLine().AppendLine().Append(ex.ToString());
 				}
-				string strMessage = "An exception occured in the script.";
+				//string strMessage = "An exception occured in the script.";
 				//m_msfFunctions.ExtendedMessageBox(strMessage, "Error", stbException.ToString(), MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return false;
 			}

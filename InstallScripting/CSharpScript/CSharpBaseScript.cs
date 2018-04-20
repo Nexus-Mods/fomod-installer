@@ -101,6 +101,11 @@ namespace FomodInstaller.Scripting.CSharpScript
             }
             catch (Exception e)
             {
+                // TODO: BS. This error is never reported (same in NMM), meaning that
+                //   this simply suppresses error messages and makes mod authors believe their
+                //   scripts work ok.
+                //   Can't really fix this because it would probably cause tons of installers
+                //   to suddenly "break" (aka actually report their errors)
                 LastError = e.Message;
                 if (e.InnerException != null)
                     LastError += "\n" + e.InnerException.Message;
