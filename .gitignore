@@ -12,5 +12,6 @@ bld/
 [Bb]in/
 [Oo]bj/
 Packages/
-dist  
-node_modules  
+dist
+node_modules
+FomodInstaller.VC.db
