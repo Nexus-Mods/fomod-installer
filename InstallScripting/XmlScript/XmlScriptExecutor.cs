@@ -178,33 +178,37 @@ namespace FomodInstaller.Scripting.XmlScript
         {
             foreach (OptionGroup group in step.OptionGroups)
             {
-                bool setFirst = group.Type == OptionGroupType.SelectExactlyOne;
-                foreach (Option option in group.Options)
+                if (group.Options.FirstOrDefault(opt => m_SelectedOptions.Contains(opt)) == null)
                 {
-                    OptionType type = resolveOptionType(option);
-                    if ((type == OptionType.Required)
-                        || (type == OptionType.Recommended)
-                        || (group.Type == OptionGroupType.SelectAll))
+                    bool setFirst = group.Type == OptionGroupType.SelectExactlyOne;
+                    foreach (Option option in group.Options)
                     {
-                        // in case there are multiple recommended options in a group that only
-                        // supports one selection, disable all other options, otherwise we would
-                        // create an invalid pre-selection
-                        if ((type == OptionType.Recommended)
-                            && ((group.Type == OptionGroupType.SelectExactlyOne)
-                                || (group.Type == OptionGroupType.SelectAtMostOne))) {
-                            foreach (Option innerOption in group.Options)
+                        OptionType type = resolveOptionType(option);
+                        if ((type == OptionType.Required)
+                            || (type == OptionType.Recommended)
+                            || (group.Type == OptionGroupType.SelectAll))
+                        {
+                            // in case there are multiple recommended options in a group that only
+                            // supports one selection, disable all other options, otherwise we would
+                            // create an invalid pre-selection
+                            if ((type == OptionType.Recommended)
+                                && ((group.Type == OptionGroupType.SelectExactlyOne)
+                                    || (group.Type == OptionGroupType.SelectAtMostOne)))
                             {
-                                disableOption(innerOption);
+                                foreach (Option innerOption in group.Options)
+                                {
+                                    disableOption(innerOption);
+                                }
                             }
+                            enableOption(option);
+                            setFirst = false;
                         }
-                        enableOption(option);
-                        setFirst = false;
                     }
-                }
 
-                if (setFirst)
-                {
-                    enableOption(group.Options[0]);
+                    if (setFirst)
+                    {
+                        enableOption(group.Options[0]);
+                    }
                 }
             }
         }
