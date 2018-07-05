@@ -22,7 +22,7 @@ namespace FomodInstaller.Interface
         };
 
         #region Fields
-        private string FomodRoot = "fomod";
+        private string FomodRoot = "fomod" + Path.DirectorySeparatorChar;
         private string FomodScreenshotPath = "fomod/screenshot";
         private IList<string> ModFiles;
         private IList<string> StopPatterns;
