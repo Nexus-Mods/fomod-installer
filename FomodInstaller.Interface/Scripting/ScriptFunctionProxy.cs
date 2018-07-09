@@ -162,7 +162,8 @@ namespace FomodInstaller.Interface
         {
             bool booSuccess = false;
             string FromPath = TextUtil.NormalizePath(from, false, false, false);
-            if (!string.IsNullOrEmpty(Mod.Prefix))
+            if (!string.IsNullOrEmpty(Mod.Prefix)
+                && !FromPath.StartsWith(Mod.Prefix + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
                 FromPath = Path.Combine(Mod.Prefix, FromPath);
             string ToPath = TextUtil.NormalizePath(to, false, false, false);
 
