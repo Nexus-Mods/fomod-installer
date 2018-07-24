@@ -1,6 +1,6 @@
 {
   "name": "fomod-installer",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Installer for xml and c# fomods",
   "main": "dummy.js",
   "scripts": {

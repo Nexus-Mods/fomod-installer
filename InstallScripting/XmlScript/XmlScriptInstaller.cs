@@ -119,8 +119,18 @@ namespace FomodInstaller.Scripting.XmlScript
             else
             {
                 string strSource = Path.Combine(ModArchive.Prefix, installableFile.Source);
-                string strDest = installableFile.Destination;
-                InstallFileFromMod(strSource, strDest);
+                int count = ModArchive.GetFileList(strSource, true).Count;
+                if (count == 1)
+                {
+                    string strDest = installableFile.Destination;
+                    InstallFileFromMod(strSource, strDest);
+                }
+                else
+                {
+                    modInstallInstructions.Add(Instruction.InstallError(count == 0
+                        ? "Source doesn't match any files: \"" + strSource + "\""
+                        : "Source matches a directory, was supposed to be a file: \"" + strSource + "\""));
+                }
             }
 
             return true;
