@@ -78,7 +78,7 @@ namespace FomodInstaller.Scripting.XmlScript
             {
                 foreach (InstallableFile ilfFile in filesToInstall)
                 {
-                    if (!InstallFile(ilfFile)) // ??? , pluginsToActivate.Contains(ilfFile)))
+                    if (!InstallFile(ilfFile))
                         HadIssues = true;
                 }
             }
@@ -121,8 +121,6 @@ namespace FomodInstaller.Scripting.XmlScript
                 string strSource = Path.Combine(ModArchive.Prefix, installableFile.Source);
                 string strDest = installableFile.Destination;
                 InstallFileFromMod(strSource, strDest);
-
-                /// ??? Plugin activation
             }
 
             return true;

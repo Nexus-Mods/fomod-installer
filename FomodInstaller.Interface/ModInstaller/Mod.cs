@@ -198,19 +198,19 @@ namespace FomodInstaller.Interface
 
         public List<string> GetFileList(string targetDirectory, bool isRecursive)
         {
-            List<string> lstFiles = new List<string>();
-            IList<string> RequestedFiles;
+            IList<string> RequestedFiles = string.IsNullOrEmpty(targetDirectory)
+                ? ModFiles
+                : GetFiles(targetDirectory, isRecursive);
 
-            if (!string.IsNullOrEmpty(targetDirectory))
-                RequestedFiles = GetFiles(targetDirectory, isRecursive);
-            else
-                RequestedFiles = ModFiles;
+            Func<string, string> RemovePathPrefix =
+                file => file.StartsWith(PathPrefix + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                ? file.Substring(PathPrefix.Length + 1) : file;
+            Func<string, bool> DropFomod = file => !file.StartsWith(FomodRoot, StringComparison.OrdinalIgnoreCase);
 
-            foreach (string strFile in RequestedFiles)
-                if (!strFile.StartsWith(FomodRoot, StringComparison.OrdinalIgnoreCase))
-                    lstFiles.Add(strFile);
-
-            return lstFiles;
+            return RequestedFiles
+              .Select(RemovePathPrefix)
+              .Where(DropFomod)
+              .ToList();
         }
 
         private List<string> GetFiles(string targetDirectory, bool isRecursive)
