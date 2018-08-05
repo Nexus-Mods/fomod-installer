@@ -224,7 +224,8 @@ namespace FomodInstaller.Interface
             int StopIndex = 0;
             foreach (string file in ModFiles)
             {
-                if (TextUtil.NormalizePath(file, true).StartsWith(PathPrefix))
+                string fileNorm = TextUtil.NormalizePath(file, true);
+                if ((fileNorm != PathPrefix) && (fileNorm.StartsWith(PathPrefix)))
                 {
                     if (!isRecursive)
                     {
