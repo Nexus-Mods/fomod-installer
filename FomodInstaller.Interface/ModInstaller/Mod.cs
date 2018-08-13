@@ -224,8 +224,9 @@ namespace FomodInstaller.Interface
             int StopIndex = 0;
             foreach (string file in ModFiles)
             {
+                bool isDir = file.EndsWith(Path.DirectorySeparatorChar.ToString());
                 string fileNorm = TextUtil.NormalizePath(file, true);
-                if ((fileNorm != PathPrefix) && (fileNorm.StartsWith(PathPrefix)))
+                if ((!isDir || (fileNorm != PathPrefix)) && fileNorm.StartsWith(PathPrefix))
                 {
                     if (!isRecursive)
                     {
@@ -233,7 +234,7 @@ namespace FomodInstaller.Interface
                         if (StopIndex > 0)
                             continue;
                     }
-                    if (file.EndsWith(Path.DirectorySeparatorChar.ToString()) || file.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
+                    if (isDir || file.EndsWith(Path.AltDirectorySeparatorChar.ToString()))
                       Directories.Add(file);
                     else
                       DirectoryFiles.Add(file);
