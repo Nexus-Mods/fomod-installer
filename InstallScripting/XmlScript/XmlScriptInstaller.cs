@@ -158,7 +158,12 @@ namespace FomodInstaller.Scripting.XmlScript
             for (int i = 0; i < lstModFiles.Count; i++)
             {
                 strMODFile = lstModFiles[i];
-                string strNewFileName = strMODFile.Substring(strFrom.Length, strMODFile.Length - strFrom.Length);
+                int intLength = strMODFile.Length - strFrom.Length;
+                if (intLength <= 0)
+                {
+                    throw new Exception("Failed to install \"" + strFrom + "\" as folder");
+                }
+                string strNewFileName = strMODFile.Substring(strFrom.Length, intLength);
                 if (strTo.Length > 0)
                     strNewFileName = Path.Combine(strTo, strNewFileName);
                 InstallFileFromMod(strMODFile, strNewFileName);
