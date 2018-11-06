@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using FomodInstaller.Extensions;
 using FomodInstaller.Scripting;
 using Utils;
-using System.Diagnostics;
 
 namespace FomodInstaller.Interface
 {

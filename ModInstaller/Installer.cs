@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FomodInstaller.Interface;
 using FomodInstaller.Scripting;
-using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace FomodInstaller.ModInstaller
 {
@@ -70,6 +70,7 @@ namespace FomodInstaller.ModInstaller
                                                                        ProgressDelegate progressDelegate,
                                                                        CoreDelegates coreDelegate)
         {
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
             IList<Instruction> Instructions = new List<Instruction>();
             ModFormatManager FormatManager = new ModFormatManager();
             string ScriptFilePath = null;
