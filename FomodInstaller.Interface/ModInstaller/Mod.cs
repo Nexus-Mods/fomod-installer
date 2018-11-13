@@ -203,9 +203,15 @@ namespace FomodInstaller.Interface
                 ? ModFiles.Where(DropFomod).ToList()
                 : GetFiles(targetDirectory, isRecursive);
 
+            string prefix = PathPrefix;
+            if (prefix.Last() != Path.DirectorySeparatorChar)
+            {
+                prefix = prefix + Path.DirectorySeparatorChar;
+            }
+
             Func<string, string> RemovePathPrefix = file =>
-                file.StartsWith(PathPrefix + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                ? file.Substring(PathPrefix.Length + 1)
+                file.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+                ? file.Substring(prefix.Length)
                 : file;
 
             return RequestedFiles
