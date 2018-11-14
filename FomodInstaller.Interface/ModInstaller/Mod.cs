@@ -204,7 +204,7 @@ namespace FomodInstaller.Interface
                 : GetFiles(targetDirectory, isRecursive);
 
             string prefix = PathPrefix;
-            if (prefix.Last() != Path.DirectorySeparatorChar)
+            if ((prefix.Length > 0) && (prefix.Last() != Path.DirectorySeparatorChar))
             {
                 prefix = prefix + Path.DirectorySeparatorChar;
             }
