@@ -7,6 +7,7 @@ using System.Security.Permissions;
 using System.Threading.Tasks;
 using Utils;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace FomodInstaller.Interface
 {
@@ -83,7 +84,7 @@ namespace FomodInstaller.Interface
         /// <c>false</c> otherwise.</returns>
         public bool PerformBasicInstall()
         {
-            return BasicModInstall(Mod.GetFileList(null, true));
+            return BasicModInstall(Mod.GetFileList(null, true, false));
         }
 
         #endregion
@@ -97,7 +98,7 @@ namespace FomodInstaller.Interface
         /// <param name="pluginQueryDelegate">A delegate to query whether a plugin already exists.</param>
         /// <param name="progressDelegate">A delegate to provide progress feedback.</param>
         /// <param name="error_OverwritesDelegate">A delegate to present errors and file overwrite requests.</param>
-        protected bool BasicModInstall(List<string> fileList)
+        protected bool BasicModInstall(IList<string> fileList)
         {
             foreach (string ArchiveFile in fileList)
             {
@@ -201,7 +202,7 @@ namespace FomodInstaller.Interface
         {
             string[] strFiles = null;
 
-            strFiles = Mod.GetFileList(null, true).ToArray();
+            strFiles = Mod.GetFileList(null, true, true).ToArray();
 
             for (int i = strFiles.Length - 1; i >= 0; i--)
                 strFiles[i] = strFiles[i].Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
@@ -217,7 +218,7 @@ namespace FomodInstaller.Interface
         public string[] GetModFileList(string p_strFolder, bool p_booRecurse)
         {
             string[] strFiles = null;
-            strFiles = Mod.GetFileList(p_strFolder, p_booRecurse).ToArray();
+            strFiles = Mod.GetFileList(p_strFolder, p_booRecurse, true).ToArray();
 
             for (int i = strFiles.Length - 1; i >= 0; i--)
                 strFiles[i] = strFiles[i].Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);

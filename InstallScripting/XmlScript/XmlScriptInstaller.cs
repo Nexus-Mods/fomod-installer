@@ -119,7 +119,7 @@ namespace FomodInstaller.Scripting.XmlScript
             else
             {
                 string strSource = Path.Combine(ModArchive.Prefix, installableFile.Source);
-                int count = ModArchive.GetFileList(strSource, true).Count;
+                int count = ModArchive.GetFileList(strSource, true, false).Count;
                 if (count == 1)
                 {
                     string strDest = installableFile.Destination;
@@ -146,7 +146,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <c>true</c> otherwise.</returns>
         protected bool InstallFolderFromMod(InstallableFile installableFile, string strPrefixPath)
         {
-            List<string> lstModFiles = ModArchive.GetFileList(Path.Combine(strPrefixPath, installableFile.Source), true);
+            IList<string> lstModFiles = ModArchive.GetFileList(Path.Combine(strPrefixPath, installableFile.Source), true, false);
 
             string strFrom = Path.Combine(strPrefixPath, installableFile.Source).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             if (!strFrom.EndsWith(Path.DirectorySeparatorChar.ToString()))
