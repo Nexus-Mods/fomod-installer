@@ -336,7 +336,7 @@ namespace FomodInstaller.Scripting.CSharpScript
         /// <param name="p_strDetails">The message box's details, displayed in the details area.</param>
         /// <param name="p_mbbButtons">The buttons to show in the message box.</param>
         /// <param name="p_mdiIcon">The icon to display in the message box.</param>
-        public void ExtendedMessageBox(string p_strMessage, string p_strTitle, string p_strDetails, MessageBoxButtons p_mbbButtons, MessageBoxIcon p_mdiIcon)
+        public static void ExtendedMessageBox(string p_strMessage, string p_strTitle, string p_strDetails, MessageBoxButtons p_mbbButtons, MessageBoxIcon p_mdiIcon)
         {
             ExecuteMethod(() => Functions.ExtendedMessageBox(p_strMessage, p_strTitle, p_strDetails));
         }
