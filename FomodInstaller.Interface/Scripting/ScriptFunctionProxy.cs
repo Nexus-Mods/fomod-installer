@@ -379,7 +379,15 @@ namespace FomodInstaller.Interface
         /// <param name="p_mdiIcon">The icon to display in the message box.</param>
         public void ExtendedMessageBox(string p_strMessage, string p_strTitle, string p_strDetails)
         {
-            Core.ui.ReportError(p_strTitle, p_strMessage, p_strDetails);
+            try
+            {
+                Core.ui.ReportError(p_strTitle, p_strMessage, p_strDetails);
+            } catch (Exception e)
+            {
+                // very rare situation, presumable the installer has already quit and the delegates
+                // garbage collected on the JS side - not much to do then
+                return;
+            }
             // ??? This stuff should be handled by the user interaction delegate
         }
 
