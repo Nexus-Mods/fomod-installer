@@ -6,13 +6,14 @@
   "scripts": {
     "buildDev": "node build.js Debug && copyfiles -f Build/bin/Debug/*.dll dist/ && copyfiles -f Build/bin/Debug/*.pdb dist/",
     "build": "node build.js && copyfiles -f Build/bin/Release/*.dll dist/",
-    "install": "npm run build"
+    "postinstall": "npm run build"
   },
   "author": "Black Tree Gaming Ltd.",
   "license": "GPL-3.0",
   "devDependencies": {},
   "dependencies": {
+    "async": "^2.6.2",
     "copyfiles": "^1.0.0",
-    "msbuild": "^1.0.1"
+    "msbuild": "^1.0.3"
   }
 }
