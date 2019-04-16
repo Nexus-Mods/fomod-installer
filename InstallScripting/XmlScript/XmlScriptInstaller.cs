@@ -123,7 +123,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 if (count == 1)
                 {
                     string strDest = installableFile.Destination;
-                    InstallFileFromMod(strSource, strDest);
+                    InstallFileFromMod(strSource, strDest, installableFile.Priority);
                 }
                 else
                 {
@@ -166,7 +166,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 string strNewFileName = strMODFile.Substring(strFrom.Length, intLength);
                 if (strTo.Length > 0)
                     strNewFileName = Path.Combine(strTo, strNewFileName);
-                InstallFileFromMod(strMODFile, strNewFileName);
+                InstallFileFromMod(strMODFile, strNewFileName, installableFile.Priority);
             }
             return true;
         }
@@ -177,7 +177,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <param name="fromPath">The path of the file in the mod to install.</param>
         /// <param name="toPath">The path on the file system where the file is to be created.</param>
         /// <returns><c>true</c> if the file was written; <c>false</c> otherwise.</returns>
-        protected bool InstallFileFromMod(string fromPath, string toPath)
+        protected bool InstallFileFromMod(string fromPath, string toPath, int priority)
         {
             bool booSuccess = false;
 
@@ -192,7 +192,15 @@ namespace FomodInstaller.Scripting.XmlScript
                 {
                     toPath = Path.GetFileName(fromPath);
                 }
-                modInstallInstructions.Add(Instruction.CreateCopy(fromPath, toPath));
+                int idx = modInstallInstructions.FindIndex(instruction => (instruction.type == "copy")
+                                                                       && (instruction.destination == toPath));
+                if (idx == -1)
+                {
+                  modInstallInstructions.Add(Instruction.CreateCopy(fromPath, toPath, priority));
+                } else if (modInstallInstructions[idx].priority <= priority)
+                {
+                  modInstallInstructions[idx] = Instruction.CreateCopy(fromPath, toPath, priority);
+                } // otherwise leave the file in there
             }
 
             booSuccess = true;

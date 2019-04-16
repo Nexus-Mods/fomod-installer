@@ -66,6 +66,8 @@ namespace FomodInstaller.Scripting.XmlScript
             }
 
             IList<InstallStep> lstSteps = xscScript.InstallSteps;
+            fixSteps(lstSteps);
+
             HeaderInfo hifHeaderInfo = xscScript.HeaderInfo;
             if (string.IsNullOrEmpty(hifHeaderInfo.ImagePath))
                 hifHeaderInfo.ImagePath = string.IsNullOrEmpty(ModArchive.ScreenshotPath) ? null : Path.Combine(ModArchive.Prefix, ModArchive.ScreenshotPath);
@@ -208,6 +210,27 @@ namespace FomodInstaller.Scripting.XmlScript
                     if (setFirst)
                     {
                         enableOption(group.Options[0]);
+                    }
+                }
+            }
+        }
+
+        private void fixSteps(IList<InstallStep> steps)
+        {
+            // fix incompatible step options
+            foreach (InstallStep step in steps)
+            {
+                foreach (OptionGroup group in step.OptionGroups)
+                {
+                    int requiredCount = group.Options.Count(opt => resolveOptionType(opt) == OptionType.Required);
+                    if ((requiredCount > 1) && (group.Type == OptionGroupType.SelectAtMostOne))
+                    {
+                        // multiple required but there should only be 0-1 selected.
+                        group.Type = OptionGroupType.SelectAny;
+                    } else if ((requiredCount > 1) && (group.Type == OptionGroupType.SelectExactlyOne))
+                    {
+                        // multiple required but there should be exactly one selected.
+                        group.Type = OptionGroupType.SelectAtLeastOne;
                     }
                 }
             }

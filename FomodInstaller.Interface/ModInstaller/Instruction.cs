@@ -2,13 +2,14 @@
 {
     public struct Instruction
     {
-        public static Instruction CreateCopy(string source, string destination)
+        public static Instruction CreateCopy(string source, string destination, int priority)
         {
             return new Instruction()
             {
                 type = "copy",
                 source = source,
                 destination = destination,
+                priority = priority,
             };
         }
 
@@ -86,5 +87,6 @@
         public string key;
         public string value;
         public byte[] data;
+        public int priority;
     }
 }

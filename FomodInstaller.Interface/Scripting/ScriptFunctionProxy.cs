@@ -109,7 +109,7 @@ namespace FomodInstaller.Interface
                 }
                 else
                 {
-                    modInstallInstructions.Add(Instruction.CreateCopy(ArchiveFile, ArchiveFile));
+                    modInstallInstructions.Add(Instruction.CreateCopy(ArchiveFile, ArchiveFile, 0));
                 }
                 // Progress should increase.	
             }
@@ -175,7 +175,7 @@ namespace FomodInstaller.Interface
             }
             else
             {
-                modInstallInstructions.Add(Instruction.CreateCopy(FromPath, ToPath));
+                modInstallInstructions.Add(Instruction.CreateCopy(FromPath, ToPath, 0));
             }
 
             booSuccess = true;

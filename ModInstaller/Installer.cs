@@ -192,7 +192,7 @@ namespace FomodInstaller.ModInstaller
                     {
                         destination = ArchiveFile;
                     }
-                    FilesToInstall.Add(Instruction.CreateCopy(ArchiveFile, destination));
+                    FilesToInstall.Add(Instruction.CreateCopy(ArchiveFile, destination, 0));
                     // Progress should increase.	
                 }
             });
