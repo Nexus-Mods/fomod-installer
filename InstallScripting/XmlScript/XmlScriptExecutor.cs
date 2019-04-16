@@ -60,7 +60,7 @@ namespace FomodInstaller.Scripting.XmlScript
             if ((xscScript.ModPrerequisites != null) && !xscScript.ModPrerequisites.GetIsFulfilled(m_csmState, m_Delegates))
             {
                 Source.SetResult(new List<Instruction>(new Instruction[] {
-                    Instruction.InstallError("Installer Prerequisits not fulfilled: " + xscScript.ModPrerequisites.GetMessage(m_csmState, m_Delegates))
+                    Instruction.InstallError("fatal", "Installer Prerequisits not fulfilled: " + xscScript.ModPrerequisites.GetMessage(m_csmState, m_Delegates))
                 }));
                 return await Source.Task;
             }

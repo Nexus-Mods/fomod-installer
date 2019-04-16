@@ -95,7 +95,7 @@ namespace FomodInstaller.ModInstaller
                 if (Instructions == null)
                 {
                     Instructions = new List<Instruction>();
-                    Instructions.Add(Instruction.InstallError("Installer failed (it should have reported an error message)"));
+                    Instructions.Add(Instruction.InstallError("warning" ,"Installer failed (it should have reported an error message)"));
                 }
             }
             else

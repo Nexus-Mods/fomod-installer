@@ -69,12 +69,13 @@
             };
         }
 
-        public static Instruction InstallError(string message)
+        public static Instruction InstallError(string severity, string message)
         {
             return new Instruction()
             {
                 type = "error",
                 source = message,
+                value = severity,
             };
         }
 

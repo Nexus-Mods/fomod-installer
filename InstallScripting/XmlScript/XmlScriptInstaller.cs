@@ -50,7 +50,7 @@ namespace FomodInstaller.Scripting.XmlScript
             }
             catch (Exception ex)
             {
-                modInstallInstructions.Add(Instruction.InstallError(ex.Message));
+                modInstallInstructions.Add(Instruction.InstallError("fatal", ex.Message));
             }
             return modInstallInstructions;
         }
@@ -127,7 +127,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 }
                 else
                 {
-                    modInstallInstructions.Add(Instruction.InstallError(count == 0
+                    modInstallInstructions.Add(Instruction.InstallError("warning", count == 0
                         ? "Source doesn't match any files: \"" + strSource + "\""
                         : "Source matches a directory, was supposed to be a file: \"" + strSource + "\""));
                 }
