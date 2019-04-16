@@ -21,12 +21,12 @@
             };
         }
 
-        public static Instruction GenerateFile(string byteSource, string destination)
+        public static Instruction GenerateFile(byte[] byteSource, string destination)
         {
             return new Instruction()
             {
                 type = "generatefile",
-                source = byteSource,
+                data = byteSource,
                 destination = destination,
             };
         }
@@ -85,5 +85,6 @@
         public string section;
         public string key;
         public string value;
+        public byte[] data;
     }
 }
