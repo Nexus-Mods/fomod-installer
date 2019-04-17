@@ -1,0 +1,3 @@
+Files marked "installIfUsable" should not be installed if the plugin isn't usable
+
+This file should not be installed at all because the plugin is not usable

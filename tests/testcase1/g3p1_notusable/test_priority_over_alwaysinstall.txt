@@ -1,0 +1,3 @@
+Priority takes precedence over alwaysinstall
+
+This file should be overwritten by the one from g1p1 because that one has higher priority, even though this has the "alwaysinstall" flag

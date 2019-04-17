@@ -1,0 +1,3 @@
+files flagged "alwaysInstall" should be installed, even when the corresponding plugin is disabled or unusable.
+
+This file should be overwritten because the corresponding file from g3p1 has higher priority and should be installed even though the plugin is not usable because the file is marked "alwaysInstall".
