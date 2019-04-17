@@ -143,10 +143,29 @@ namespace FomodInstaller.Scripting.XmlScript
                 m_Delegates.ui.EndDialog();
                 XmlScriptInstaller xsiInstaller = new XmlScriptInstaller(ModArchive);
                 IEnumerable<InstallableFile> FilesToInstall = new List<InstallableFile>();
-                foreach (IEnumerable<InstallableFile> files in m_SelectedOptions.Select(option => option.Files))
+                foreach (InstallStep step in lstSteps)
                 {
-                    FilesToInstall = FilesToInstall.Union(files);
+                    foreach (OptionGroup group in step.OptionGroups)
+                    {
+                        foreach (Option option in group.Options)
+                        {
+                            if (m_SelectedOptions.Contains(option))
+                            {
+                                FilesToInstall = FilesToInstall.Union(option.Files);
+                            } else
+                            {
+                                IEnumerable<InstallableFile> installAnyway = option.Files.Where(
+                                  file => file.AlwaysInstall ||
+                                  (file.InstallIfUsable && option.GetOptionType(m_csmState, m_Delegates) != OptionType.NotUsable));
+                                if (installAnyway.Count() > 0)
+                                {
+                                    FilesToInstall = FilesToInstall.Union(installAnyway);
+                                }
+                            }
+                        }
+                    }
                 }
+
                 Source.SetResult(xsiInstaller.Install(xscScript, m_csmState, m_Delegates, FilesToInstall, PluginsToActivate));
             }
             else
