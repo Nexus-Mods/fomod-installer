@@ -85,22 +85,22 @@ namespace FomodInstaller.Scripting.XmlScript
 			OnPropertyChanged(() => Conditions);
 		}
 
-        #endregion
+    #endregion
 
-        #region ICondition Members
+		#region ICondition Members
 
-        /// <summary>
-        /// Gets whether or not the condition is fulfilled.
-        /// </summary>
-        /// <remarks>
-        /// The condition is fulfilled if the specified <see cref="File"/> is in the
-        /// specified <see cref="State"/>.
-        /// </remarks>
-        /// <param name="coreDelegates">The Core delegates component.</param>
-        /// <returns><c>true</c> if the condition is fulfilled;
-        /// <c>false</c> otherwise.</returns>
-        /// <seealso cref="ICondition.GetIsFulfilled(CoreDelegates)"/>
-        public bool GetIsFulfilled(ConditionStateManager csmState, CoreDelegates coreDelegates)
+		/// <summary>
+		/// Gets whether or not the condition is fulfilled.
+		/// </summary>
+		/// <remarks>
+		/// The condition is fulfilled if the specified <see cref="File"/> is in the
+		/// specified <see cref="State"/>.
+		/// </remarks>
+		/// <param name="coreDelegates">The Core delegates component.</param>
+		/// <returns><c>true</c> if the condition is fulfilled;
+		/// <c>false</c> otherwise.</returns>
+		/// <seealso cref="ICondition.GetIsFulfilled(CoreDelegates)"/>
+		public bool GetIsFulfilled(ConditionStateManager csmState, CoreDelegates coreDelegates)
 		{
 			bool booAllFulfilled = (m_dopOperator == ConditionOperator.And) ? true : false;
 			bool booThisFulfilled = true;
@@ -120,17 +120,17 @@ namespace FomodInstaller.Scripting.XmlScript
 			return booAllFulfilled;
 		}
 
-        /// <summary>
-        /// Gets a message describing whether or not the condition is fulfilled.
-        /// </summary>
-        /// <remarks>
-        /// If the condition is fulfilled the message is "Passed." If the condition is not fulfilled the
-        /// message uses the pattern:
-        ///		File '&lt;file>' is not &lt;state>.
-        /// </remarks>
-        /// <param name="coreDelegates">The Core delegates component.</param>
-        /// <returns>A message describing whether or not the condition is fulfilled.</returns>
-        /// <seealso cref="ICondition.GetMessage(CoreDelegates)"/>
+		/// <summary>
+		/// Gets a message describing whether or not the condition is fulfilled.
+		/// </summary>
+		/// <remarks>
+		/// If the condition is fulfilled the message is "Passed." If the condition is not fulfilled the
+		/// message uses the pattern:
+		///		File '&lt;file>' is not &lt;state>.
+		/// </remarks>
+		/// <param name="coreDelegates">The Core delegates component.</param>
+		/// <returns>A message describing whether or not the condition is fulfilled.</returns>
+		/// <seealso cref="ICondition.GetMessage(CoreDelegates)"/>
 		public string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates)
 		{
 			StringBuilder stbMessage = new StringBuilder();

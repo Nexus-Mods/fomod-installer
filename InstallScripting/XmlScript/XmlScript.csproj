@@ -95,6 +95,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SEVersionCondition.cs" />
     <Compile Include="XmlScriptExecutor.cs" />
     <Compile Include="XmlScriptInstaller.cs" />
     <Compile Include="XmlScriptType.cs" />

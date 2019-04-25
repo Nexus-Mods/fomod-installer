@@ -13,7 +13,7 @@ namespace FomodInstaller.Interface
 
     struct Defaults
     {
-        public static int TIMEOUT_MS = 5000;
+        public static int TIMEOUT_MS = 30000;
     }
 
     #region Plugin

@@ -17,16 +17,8 @@ namespace FomodInstaller.ModInstaller
 
         public async Task<object> TestSupported(dynamic input)
         {
-            try
-            {
-                object[] files = (object[])input.files;
-                return await mInstaller.TestSupported(new List<string>(files.Cast<string>()));
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw e;
-            }
+            object[] files = (object[])input.files;
+            return await mInstaller.TestSupported(new List<string>(files.Cast<string>()));
         }
 
         public async Task<object> Install(dynamic input)

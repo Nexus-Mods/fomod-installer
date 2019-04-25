@@ -57,11 +57,35 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 					switch (p_xelCondition.Name.LocalName)
 					{
 						case "gameDependency":
-							Version verMinFalloutVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
-							return new GameVersionCondition(verMinFalloutVersion);
+							{
+								Version verMinFalloutVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+								return new GameVersionCondition(verMinFalloutVersion);
+							}
 						case "fommDependency":
-							Version verMinFommVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
-							return new ModManagerCondition(verMinFommVersion);
+							{
+								Version verMinFommVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+								return new ModManagerCondition(verMinFommVersion);
+							}
+						case "foseDependency":
+							{
+								Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+								return new SEVersionCondition(verMinSEVersion, "fose");
+							}
+						case "nvseDependency":
+							{
+								Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+								return new SEVersionCondition(verMinSEVersion, "nvse");
+							}
+						case "f4seDependency":
+							{
+								Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+								return new SEVersionCondition(verMinSEVersion, "f4se");
+							}
+						case "skseDependency":
+							{
+								Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+								return new SEVersionCondition(verMinSEVersion, "skse");
+							}
 						default:
 							throw new ParserException("Invalid plugin condition node: " + p_xelCondition.Name + ". At this point the config file has been validated against the schema, so there's something wrong with the parser.");
 					}
