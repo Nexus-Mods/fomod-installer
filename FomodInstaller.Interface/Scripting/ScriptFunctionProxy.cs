@@ -382,7 +382,7 @@ namespace FomodInstaller.Interface
             try
             {
                 Core.ui.ReportError(p_strTitle, p_strMessage, p_strDetails);
-            } catch (Exception e)
+            } catch (Exception)
             {
                 // very rare situation, presumable the installer has already quit and the delegates
                 // garbage collected on the JS side - not much to do then

@@ -60,7 +60,7 @@ namespace FomodInstaller.Scripting.XmlScript
             if ((xscScript.ModPrerequisites != null) && !xscScript.ModPrerequisites.GetIsFulfilled(m_csmState, m_Delegates))
             {
                 Source.SetResult(new List<Instruction>(new Instruction[] {
-                    Instruction.InstallError("fatal", "Installer Prerequisits not fulfilled: " + xscScript.ModPrerequisites.GetMessage(m_csmState, m_Delegates))
+                    Instruction.InstallError("fatal", "Installer Prerequisits not fulfilled: " + xscScript.ModPrerequisites.GetMessage(m_csmState, m_Delegates, false))
                 }));
                 return await Source.Task;
             }
@@ -282,9 +282,16 @@ namespace FomodInstaller.Scripting.XmlScript
             Func<IEnumerable<Option>, IEnumerable<Interface.ui.Option>> convertOptions = options =>
             {
                 int idx = 0;
-                return options.Select(option => new Interface.ui.Option(idx++, option.Name, option.Description,
+              return options.Select(option =>
+              {
+                OptionType type = resolveOptionType(option);
+                string conditionMsg = type == OptionType.NotUsable
+                  ? option.GetConditionMessage(m_csmState, m_Delegates)
+                  : null;
+                return new Interface.ui.Option(idx++, option.Name, option.Description,
                     string.IsNullOrEmpty(option.ImagePath) ? null : Path.Combine(strPrefixPath, option.ImagePath),
-                    m_SelectedOptions.Contains(option), resolveOptionType(option).ToString()));
+                    m_SelectedOptions.Contains(option), type.ToString(), conditionMsg);
+              });
             };
 
             Func<IEnumerable<OptionGroup>, IEnumerable<Group>> convertGroups = groups =>

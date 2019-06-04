@@ -43,8 +43,18 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <summary>
         /// Determines the option type based on the given install state.
         /// </summary>
+        /// <param name="csmState">condition state</param>
         /// <param name="coreDelegates">The Core delegates component.</param>
         /// <returns>The option type.</returns>
         OptionType ResolveOptionType(ConditionStateManager csmState, CoreDelegates coreDelegates);
+
+        /// <summary>
+        /// Return a message explaining why the condition resolves to "NotUsable". Will return null
+        /// for all other results
+        /// </summary>
+        /// <param name="csmState">condition state</param>
+        /// <param name="coreDelegates">delegates for communicating with the user interface</param>
+        /// <returns></returns>
+        string ResolveConditionMessage(ConditionStateManager csmState, CoreDelegates coreDelegates);
 	}
 }

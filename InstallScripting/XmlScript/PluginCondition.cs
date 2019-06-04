@@ -119,11 +119,11 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <param name="coreDelegates">The Core delegates component.</param>
         /// <returns>A message describing whether or not the condition is fulfilled.</returns>
         /// <seealso cref="ICondition.GetMessage(CoreDelegates)"/>
-        public string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates)
+        public string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates, bool invert)
         {
-            if (GetIsFulfilled(csmState, coreDelegates))
+            if (GetIsFulfilled(csmState, coreDelegates) && !invert)
                 return "Passed";
-            return string.Format("File '{0}' is not {1}.", PluginPath, State.ToString());
+            return string.Format("File '{0}' is {1}", PluginPath, State.ToString(), invert ? "" : "not ");
         }
 
         #endregion

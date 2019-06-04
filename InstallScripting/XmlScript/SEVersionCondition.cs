@@ -56,7 +56,7 @@ namespace FomodInstaller.Scripting.XmlScript
     /// <param name="p_csmStateManager">The manager that tracks the currect install state.</param>
     /// <returns>A message describing whether or not the condition is fulfilled.</returns>
     /// <seealso cref="ICondition.GetMessage(ConditionStateManager)"/>
-    public override string GetMessage(ConditionStateManager p_csmStateManager, CoreDelegates coreDelegates)
+    public override string GetMessage(ConditionStateManager p_csmStateManager, CoreDelegates coreDelegates, bool invert)
     {
       Version verInstalledVersion = null;
 
@@ -65,7 +65,7 @@ namespace FomodInstaller.Scripting.XmlScript
         verInstalledVersion = new Version(await coreDelegates.context.GetExtenderVersion(m_strExtender));
       }).Wait();
 
-      if (verInstalledVersion == null)
+      if ((verInstalledVersion == null) && !invert)
         return String.Format("This mod requires {0} v{1} or higher. Please download from http://{0}.silverlock.org", m_strExtender, MinimumVersion);
       else if (verInstalledVersion < MinimumVersion)
         return String.Format("This mod requires {0} v{1} or higher. You have {2}. Please update from http://{0}.silverlock.org", m_strExtender, MinimumVersion, verInstalledVersion);

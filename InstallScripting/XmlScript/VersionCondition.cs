@@ -50,7 +50,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <param name="coreDelegates">The Core delegates component.</param>
         /// <returns>A message describing whether or not the condition is fulfilled.</returns>
         /// <seealso cref="ICondition.GetMessage(CoreDelegates)"/>
-        public abstract string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates);
+        public abstract string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates, bool invert);
 
 		#endregion
 	}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
@@ -129,40 +130,33 @@ namespace FomodInstaller.Scripting.XmlScript
 		///		File '&lt;file>' is not &lt;state>.
 		/// </remarks>
 		/// <param name="coreDelegates">The Core delegates component.</param>
+    /// <param name="invert">Invert the logic in the message, explaining why it passed instead of why not</param>
 		/// <returns>A message describing whether or not the condition is fulfilled.</returns>
 		/// <seealso cref="ICondition.GetMessage(CoreDelegates)"/>
-		public string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates)
+		public string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates, bool invert)
 		{
-			StringBuilder stbMessage = new StringBuilder();
-			if (m_dopOperator == ConditionOperator.Or)
-				stbMessage.Append("(");
-
 			bool booAllFulfilled = (m_dopOperator == ConditionOperator.And) ? true : false;
 			bool booThisFulfilled = true;
 			ICondition conCondition = null;
+
+      List<string> lines = new List<string>();
+
 			for (Int32 i = 0; i < m_lstConditions.Count; i++)
 			{
 				conCondition = m_lstConditions[i];
 				booThisFulfilled = conCondition.GetIsFulfilled(csmState, coreDelegates);
 				if (!booThisFulfilled)
-					stbMessage.Append(conCondition.GetMessage(csmState, coreDelegates));
-				switch (m_dopOperator)
-				{
-					case ConditionOperator.And:
-						if (i < m_lstConditions.Count - 1)
-							stbMessage.AppendLine();
-						booAllFulfilled &= booThisFulfilled;
-						break;
-					case ConditionOperator.Or:
-						if (i < m_lstConditions.Count - 1)
-							stbMessage.AppendLine(" OR");
-						booAllFulfilled |= booThisFulfilled;
-						break;
-				}
+          lines.Add(conCondition.GetMessage(csmState, coreDelegates, invert));
+
+        booAllFulfilled = m_dopOperator == ConditionOperator.And
+          ? booAllFulfilled & booThisFulfilled
+          : booAllFulfilled | booThisFulfilled;
 			}
-			if (m_dopOperator == ConditionOperator.Or)
-				stbMessage.Append(")");
-			return booAllFulfilled ? "Passed" : stbMessage.ToString();
+
+      string sep = (m_dopOperator == ConditionOperator.Or) ? " OR\n" : "\n";
+      string message = lines.Aggregate((lhs, rhs) => lhs + sep + rhs);
+
+			return booAllFulfilled && !invert ? "Passed" : message;
 		}
 
 		#endregion

@@ -54,6 +54,13 @@ namespace FomodInstaller.Scripting.XmlScript
 			return m_ptpType;
 		}
 
+    public string ResolveConditionMessage(ConditionStateManager csmState, CoreDelegates coreDelegates)
+    {
+      return m_ptpType == OptionType.NotUsable
+        ? "hardcoded"
+        : null;
+    }
+
 		#endregion
 	}
 }

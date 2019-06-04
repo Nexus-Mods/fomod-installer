@@ -194,8 +194,9 @@ namespace FomodInstaller.Interface
             public string description;
             public string image;
             public string type;
+            public string conditionMsg;
 
-            public Option(int id, string name, string description, string image, bool selected, string type) : this()
+            public Option(int id, string name, string description, string image, bool selected, string type, string conditionMsg) : this()
             {
                 this.id = id;
                 this.name = name;
@@ -203,6 +204,7 @@ namespace FomodInstaller.Interface
                 this.image = image;
                 this.selected = selected;
                 this.type = type;
+                this.conditionMsg = conditionMsg;
             }
         }
 

@@ -60,7 +60,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <param name="coreDelegates">The Core delegates component.</param>
         /// <returns>A message describing whether or not the condition is fulfilled.</returns>
         /// <seealso cref="ICondition.GetMessage(CoreDelegates)"/>
-		public override string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates)
+		public override string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates, bool invert)
 		{
             Version GameVersion = new Version("0.0.0.0");
 
@@ -73,7 +73,7 @@ namespace FomodInstaller.Scripting.XmlScript
                     GameVersion = new Version("0.0.0.0");
             }).Wait();
 
-            if (GameVersion < MinimumVersion)
+            if ((GameVersion < MinimumVersion) && !invert)
 				return string.Format("This mod requires v{0} or higher of the game. You have {1}. Please update your game.", MinimumVersion, GameVersion);
 			return "Passed";
 		}
