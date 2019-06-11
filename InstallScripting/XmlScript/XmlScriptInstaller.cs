@@ -197,7 +197,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 if (idx == -1)
                 {
                   modInstallInstructions.Add(Instruction.CreateCopy(fromPath, toPath, priority));
-                } else if (modInstallInstructions[idx].priority <= priority)
+                } else if (shouldUpdate(modInstallInstructions[idx], fromPath, priority))
                 {
                   modInstallInstructions[idx] = Instruction.CreateCopy(fromPath, toPath, priority);
                 } // otherwise leave the file in there
@@ -206,6 +206,16 @@ namespace FomodInstaller.Scripting.XmlScript
             booSuccess = true;
 
             return booSuccess;
+        }
+
+        private bool shouldUpdate(Instruction oldInstruction, string fromPath, int priority)
+        {
+          if (priority != oldInstruction.priority)
+          {
+            return priority > oldInstruction.priority;
+          }
+
+          return fromPath.CompareTo(oldInstruction.source) > 0;
         }
 
         #endregion

@@ -1,0 +1,1 @@
+Given the same priority, files/folders should be installed in alphabetical order, not the order in which they are listed in the xml file. Even across plugins.

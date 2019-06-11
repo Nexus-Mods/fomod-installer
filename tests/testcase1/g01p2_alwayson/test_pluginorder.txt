@@ -1,0 +1,2 @@
+The order in which plugins are arranged in the xml is irrelevant, all files are ordered by priority, whether they are folders or not and then lexicographically.
+Two files that are the same in lexical order are the same file so it wouldn't matter which one the mod manager picks anyway.

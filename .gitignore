@@ -15,3 +15,6 @@ Packages/
 dist
 node_modules
 FomodInstaller.VC.db
+
+# test cases
+test_cases
