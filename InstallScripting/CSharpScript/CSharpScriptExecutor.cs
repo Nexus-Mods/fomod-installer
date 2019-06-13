@@ -67,7 +67,7 @@ namespace FomodInstaller.Scripting.CSharpScript
 
             byte[] bteScript = Compile(cscScript.Code);
             if (bteScript == null)
-                return null;
+                return Task.FromResult<IList<Instruction>>(null);
 
             IList<Instruction> instructions = new List<Instruction>();
             m_csfFunctions.SetInstructionContainer(instructions);
@@ -85,7 +85,7 @@ namespace FomodInstaller.Scripting.CSharpScript
                 // TODO rethrow because the transition layer to js seems to have trouble serializing the original exception
                 //   of course we want to maintain more of the error message and this shouldn't be here but closer to the
                 //   "edge".
-                throw new Exception("failed to create runner: " + e.GetType().ToString() + "\n" + e.Message + "\n" + e.StackTrace + "\n" + e.Data.ToString());
+                return Task.FromException<IList<Instruction>>(new Exception("failed to create runner: " + e.GetType().ToString() + "\n" + e.Message + "\n" + e.StackTrace + "\n" + e.Data.ToString()));
             }
             finally
             {
