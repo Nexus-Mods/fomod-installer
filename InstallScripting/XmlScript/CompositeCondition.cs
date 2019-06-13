@@ -154,7 +154,7 @@ namespace FomodInstaller.Scripting.XmlScript
 			}
 
       string sep = (m_dopOperator == ConditionOperator.Or) ? " OR\n" : "\n";
-      string message = lines.Aggregate((lhs, rhs) => lhs + sep + rhs);
+      string message = string.Join(sep, lines);
 
 			return booAllFulfilled && !invert ? "Passed" : message;
 		}
