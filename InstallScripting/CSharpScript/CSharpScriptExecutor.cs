@@ -85,7 +85,10 @@ namespace FomodInstaller.Scripting.CSharpScript
                 // TODO rethrow because the transition layer to js seems to have trouble serializing the original exception
                 //   of course we want to maintain more of the error message and this shouldn't be here but closer to the
                 //   "edge".
-                return Task.FromException<IList<Instruction>>(new Exception("failed to create runner: " + e.GetType().ToString() + "\n" + e.Message + "\n" + e.StackTrace + "\n" + e.Data.ToString()));
+                return Task.Run(new Func<IList<Instruction>>(() =>
+                {
+                  throw new Exception("failed to create runner: " + e.GetType().ToString() + "\n" + e.Message + "\n" + e.StackTrace + "\n" + e.Data.ToString());
+                }));
             }
             finally
             {

@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Nexus.Client.ModManagement.Scripting</RootNamespace>
     <AssemblyName>Scripting</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -35,11 +35,11 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\..\Build\bin\Release\</OutputPath>
-	<BaseIntermediateOutputPath>..\..\Build\obj\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>..\..\Build\obj\</BaseIntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-	<DocumentationFile>..\..\Build\bin\Release\Scripting.XML</DocumentationFile>
+    <DocumentationFile>..\..\Build\bin\Release\Scripting.XML</DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
