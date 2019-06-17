@@ -1,6 +1,6 @@
 {
   "name": "fomod-installer",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Installer for xml and c# fomods",
   "main": "dummy.js",
   "scripts": {
@@ -10,10 +10,11 @@
   },
   "author": "Black Tree Gaming Ltd.",
   "license": "GPL-3.0",
-  "devDependencies": {},
-  "dependencies": {
-    "async": "^2.6.2",
+  "devDependencies": {
     "copyfiles": "^1.0.0",
     "msbuild": "^1.0.3"
+  },
+  "dependencies": {
+    "async": "^2.6.2"
   }
 }
