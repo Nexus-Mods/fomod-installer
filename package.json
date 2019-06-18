@@ -10,11 +10,9 @@
   },
   "author": "Black Tree Gaming Ltd.",
   "license": "GPL-3.0",
-  "devDependencies": {
-    "copyfiles": "^1.0.0",
-    "msbuild": "^1.0.3"
-  },
   "dependencies": {
+    "copyfiles": "^1.0.0",
+    "msbuild": "^1.0.3",
     "async": "^2.6.2"
   }
 }
