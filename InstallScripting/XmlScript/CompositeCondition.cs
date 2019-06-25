@@ -36,29 +36,22 @@ namespace FomodInstaller.Scripting.XmlScript
 	public class CompositeCondition : ObservableObject, ICondition
 	{
 		private ThreadSafeObservableList<ICondition> m_lstConditions = new ThreadSafeObservableList<ICondition>();
-		private ConditionOperator m_dopOperator = ConditionOperator.And;
 
-		#region Properties
+    #region Properties
 
-		/// <summary>
-		/// Gets the <see cref="ConditionOperator"/> specifying which of the sub-conditions
-		/// must be fulfilled in order for this condition to be fulfilled.
-		/// </summary>
-		/// <value>The <see cref="ConditionOperator"/> specifying which of the sub-conditions
-		/// must be fulfilled in order for this condition to be fulfilled.</value>
-		public ConditionOperator Operator
-		{
-			get
-			{
-				return m_dopOperator;
-			}
-		}
+    /// <summary>
+    /// Gets the <see cref="ConditionOperator"/> specifying which of the sub-conditions
+    /// must be fulfilled in order for this condition to be fulfilled.
+    /// </summary>
+    /// <value>The <see cref="ConditionOperator"/> specifying which of the sub-conditions
+    /// must be fulfilled in order for this condition to be fulfilled.</value>
+    public ConditionOperator Operator { get; } = ConditionOperator.And;
 
-		/// <summary>
-		/// Gets the sub-conditions.
-		/// </summary>
-		/// <value>The sub-conditions.</value>
-		public IList<ICondition> Conditions
+    /// <summary>
+    /// Gets the sub-conditions.
+    /// </summary>
+    /// <value>The sub-conditions.</value>
+    public IList<ICondition> Conditions
 		{
 			get
 			{
@@ -77,11 +70,11 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// must be fulfilled in order for this dependancy to be fulfilled.</param>
 		public CompositeCondition(ConditionOperator p_dopOperator)
 		{
-			m_dopOperator = p_dopOperator;
-			m_lstConditions.CollectionChanged += new NotifyCollectionChangedEventHandler(m_lstConditions_CollectionChanged);
+			Operator = p_dopOperator;
+			m_lstConditions.CollectionChanged += new NotifyCollectionChangedEventHandler(ListConditions_CollectionChanged);
 		}
 
-		void m_lstConditions_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		void ListConditions_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			OnPropertyChanged(() => Conditions);
 		}
@@ -103,12 +96,12 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <seealso cref="ICondition.GetIsFulfilled(CoreDelegates)"/>
 		public bool GetIsFulfilled(ConditionStateManager csmState, CoreDelegates coreDelegates)
 		{
-			bool booAllFulfilled = (m_dopOperator == ConditionOperator.And) ? true : false;
+			bool booAllFulfilled = (Operator == ConditionOperator.And) ? true : false;
 			bool booThisFulfilled = true;
 			foreach (ICondition conCondition in m_lstConditions)
 			{
 				booThisFulfilled = conCondition.GetIsFulfilled(csmState, coreDelegates);
-				switch (m_dopOperator)
+				switch (Operator)
 				{
 					case ConditionOperator.And:
 						booAllFulfilled &= booThisFulfilled;
@@ -135,7 +128,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <seealso cref="ICondition.GetMessage(CoreDelegates)"/>
 		public string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates, bool invert)
 		{
-			bool booAllFulfilled = (m_dopOperator == ConditionOperator.And) ? true : false;
+			bool booAllFulfilled = (Operator == ConditionOperator.And) ? true : false;
 			bool booThisFulfilled = true;
 			ICondition conCondition = null;
 
@@ -148,12 +141,12 @@ namespace FomodInstaller.Scripting.XmlScript
 				if (!booThisFulfilled)
           lines.Add(conCondition.GetMessage(csmState, coreDelegates, invert));
 
-        booAllFulfilled = m_dopOperator == ConditionOperator.And
+        booAllFulfilled = Operator == ConditionOperator.And
           ? booAllFulfilled & booThisFulfilled
           : booAllFulfilled | booThisFulfilled;
 			}
 
-      string sep = (m_dopOperator == ConditionOperator.Or) ? " OR\n" : "\n";
+      string sep = (Operator == ConditionOperator.Or) ? " OR\n" : "\n";
       string message = string.Join(sep, lines);
 
 			return booAllFulfilled && !invert ? "Passed" : message;

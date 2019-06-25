@@ -68,9 +68,10 @@ namespace FomodInstaller.Scripting.XmlScript
             IList<InstallableFile> lstRequiredFiles = xscScript.RequiredInstallFiles;
             IList<ConditionallyInstalledFileSet> lstConditionallyInstalledFileSets = xscScript.ConditionallyInstalledFileSets;
 
+            int priorityOffset = (int)Math.Pow(10, 9);
             foreach (InstallableFile iflRequiredFile in lstRequiredFiles)
             {
-                if (!InstallFile(iflRequiredFile))
+                if (!InstallFile(iflRequiredFile, priorityOffset * -1))
                     HadIssues = true;
             }
 
@@ -78,7 +79,7 @@ namespace FomodInstaller.Scripting.XmlScript
             {
                 foreach (InstallableFile ilfFile in filesToInstall)
                 {
-                    if (!InstallFile(ilfFile))
+                    if (!InstallFile(ilfFile, 0))
                         HadIssues = true;
                 }
             }
@@ -90,7 +91,7 @@ namespace FomodInstaller.Scripting.XmlScript
                     if (cisFileSet.Condition.GetIsFulfilled(csmState, coreDelegates))
                         foreach (InstallableFile ilfFile in cisFileSet.Files)
                         {
-                            if (!InstallFile(ilfFile))
+                            if (!InstallFile(ilfFile, priorityOffset))
                                 HadIssues = true;
                         }
                 }
@@ -106,10 +107,12 @@ namespace FomodInstaller.Scripting.XmlScript
         /// Installs the given <see cref="InstallableFile"/>, and activates any
         /// plugins it encompasses as requested.
         /// </summary>
-        /// <param name="p_ilfFile">The file to install.</param>
+        /// <param name="installableFile">The file to install.</param>
+        /// <param name="priorityOffset">Offset for the priority. Used to simulate the NMM behaviour of installing files
+        ///   in multiple phases, ignoring the priority between those phases</param>
         /// <returns><c>false</c> if the user cancelled the install;
         /// <c>true</c> otherwise.</returns>
-        protected bool InstallFile(InstallableFile installableFile)
+        protected bool InstallFile(InstallableFile installableFile, int priorityOffset)
         {
             if (installableFile.IsFolder)
             {
@@ -123,7 +126,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 if (count == 1)
                 {
                     string strDest = installableFile.Destination;
-                    InstallFileFromMod(strSource, strDest, installableFile.Priority);
+                    InstallFileFromMod(strSource, strDest, installableFile.Priority + priorityOffset);
                 }
                 else
                 {
@@ -197,7 +200,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 if (idx == -1)
                 {
                   modInstallInstructions.Add(Instruction.CreateCopy(fromPath, toPath, priority));
-                } else if (shouldUpdate(modInstallInstructions[idx], fromPath, priority))
+                } else if (ShouldUpdate(modInstallInstructions[idx], fromPath, priority))
                 {
                   modInstallInstructions[idx] = Instruction.CreateCopy(fromPath, toPath, priority);
                 } // otherwise leave the file in there
@@ -208,7 +211,7 @@ namespace FomodInstaller.Scripting.XmlScript
             return booSuccess;
         }
 
-        private bool shouldUpdate(Instruction oldInstruction, string fromPath, int priority)
+        private bool ShouldUpdate(Instruction oldInstruction, string fromPath, int priority)
         {
           if (priority != oldInstruction.priority)
           {

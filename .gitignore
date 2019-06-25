@@ -11,6 +11,7 @@ build/
 bld/
 [Bb]in/
 [Oo]bj/
+MigrationBackup/
 Packages/
 dist
 node_modules

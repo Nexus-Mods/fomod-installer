@@ -47,7 +47,7 @@ namespace FomodInstaller.Scripting.CSharpScript
 			//s = new Script();
 			if (s == null)
 			{
-                m_csfFunctions.ExtendedMessageBox("C# Script did not contain a 'Script' class in the root namespace.", "Error", null);
+				m_csfFunctions.ExtendedMessageBox("C# Script did not contain a 'Script' class in the root namespace.", "Error", null);
 				return false;
 			}
 
