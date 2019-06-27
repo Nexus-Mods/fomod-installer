@@ -162,7 +162,7 @@ namespace FomodInstaller.Interface
         {
             object[] Params = new object[] { folderPath, searchFilter, isRecursive };
             object res = await TaskHelper.Timeout(mGetExistingDataFileList(Params), Defaults.TIMEOUT_MS);
-            return (string[])res;
+            return ((object[])res).Select(iter => (string)iter).ToArray();
         }
     }
 
