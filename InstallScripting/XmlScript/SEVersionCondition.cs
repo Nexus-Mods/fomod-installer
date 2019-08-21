@@ -42,7 +42,10 @@ namespace FomodInstaller.Scripting.XmlScript
 
       Task.Run(async () =>
       {
-        verInstalledVersion = new Version(await coreDelegates.context.GetExtenderVersion(m_strExtender));
+        string versionString = await coreDelegates.context.GetExtenderVersion(m_strExtender);
+        verInstalledVersion = versionString != null
+          ? new Version(versionString)
+          : null;
       }).Wait();
 
       return ((verInstalledVersion != null) && (verInstalledVersion >= MinimumVersion));
