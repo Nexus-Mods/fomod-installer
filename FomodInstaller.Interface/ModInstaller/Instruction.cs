@@ -1,4 +1,7 @@
-﻿namespace FomodInstaller.Interface
+﻿using System.IO;
+using System.Linq;
+
+namespace FomodInstaller.Interface
 {
     public struct Instruction
     {
@@ -8,7 +11,7 @@
             {
                 type = "copy",
                 source = source,
-                destination = destination,
+                destination = forceRelative(destination),
                 priority = priority,
             };
         }
@@ -18,7 +21,7 @@
             return new Instruction()
             {
                 type = "mkdir",
-                destination = destination,
+                destination = forceRelative(destination),
             };
         }
 
@@ -28,7 +31,7 @@
             {
                 type = "generatefile",
                 data = byteSource,
-                destination = destination,
+                destination = forceRelative(destination),
             };
         }
 
@@ -88,5 +91,23 @@
         public string value;
         public byte[] data;
         public int priority;
+
+        private static int sepspn(string input)
+        {
+          for (var i = 0; i < input.Length; ++i)
+          {
+            char ch = input[i];
+            if (ch != Path.DirectorySeparatorChar && ch != Path.AltDirectorySeparatorChar)
+            {
+              return i;
+            }
+          }
+          return input.Length;
+        }
+
+        private static string forceRelative(string input)
+        {
+            return input.Remove(0, sepspn(input));
+        }
     }
 }
