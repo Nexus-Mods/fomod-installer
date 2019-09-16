@@ -36,7 +36,8 @@ namespace FomodInstaller.ModInstaller
                 new List<string>(stopPatterns.Cast<string>()),
                 (string)pluginPath,
                 destinationPath,
-                (int percent) => progressCB(percent),
+                input.choices,
+                (ProgressDelegate)((int percent) => progressCB(percent)),
                 coreDelegates
             );
         }

@@ -39,12 +39,13 @@ namespace FomodInstaller.Scripting.ModScript
 		/// Executes the script.
 		/// </summary>
 		/// <param name="p_scpScript">The Mod Script to execute.</param>
-    /// <param name="p_strDataPath">path where script data is stored.</param>
+        /// <param name="p_strDataPath">path where script data is stored.</param>
+        /// <param name="p_dynPreset">preset for the installer</param>
 		/// <returns><c>true</c> if the script completes successfully;
 		/// <c>false</c> otherwise.</returns>
 		/// <exception cref="ArgumentException">Thrown if <paramref name="p_scpScript"/> is not a
 		/// <see cref="ModScript"/>.</exception>
-		public override Task<IList<Instruction>> DoExecute(IScript p_scpScript, string p_strDataPath)
+		public override Task<IList<Instruction>> DoExecute(IScript p_scpScript, string p_strDataPath, dynamic p_dynPreset)
 		{
 			if (!(p_scpScript is ModScript))
 				throw new ArgumentException("The given script must be of type ModScript.", "p_scpScript");

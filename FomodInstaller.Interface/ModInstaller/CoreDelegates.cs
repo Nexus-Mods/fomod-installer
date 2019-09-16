@@ -190,19 +190,21 @@ namespace FomodInstaller.Interface
         {
             public int id;
             public bool selected;
+            public bool preset;
             public string name;
             public string description;
             public string image;
             public string type;
             public string conditionMsg;
 
-            public Option(int id, string name, string description, string image, bool selected, string type, string conditionMsg) : this()
+            public Option(int id, string name, string description, string image, bool selected, bool preset, string type, string conditionMsg) : this()
             {
                 this.id = id;
                 this.name = name;
                 this.description = description;
                 this.image = image;
                 this.selected = selected;
+                this.preset = preset;
                 this.type = type;
                 this.conditionMsg = conditionMsg;
             }

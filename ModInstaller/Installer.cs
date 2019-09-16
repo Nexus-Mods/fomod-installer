@@ -67,6 +67,7 @@ namespace FomodInstaller.ModInstaller
                                                                        List<string> stopPatterns,
                                                                        string pluginPath,
                                                                        string scriptPath,
+                                                                       dynamic preset,
                                                                        ProgressDelegate progressDelegate,
                                                                        CoreDelegates coreDelegate)
         {
@@ -91,7 +92,7 @@ namespace FomodInstaller.ModInstaller
 
             if (modToInstall.HasInstallScript)
             {
-                Instructions = await ScriptedModInstall(modToInstall, progressDelegate, coreDelegate);
+                Instructions = await ScriptedModInstall(modToInstall, preset, progressDelegate, coreDelegate);
                 if (Instructions == null)
                 {
                     Instructions = new List<Instruction>();
@@ -207,10 +208,10 @@ namespace FomodInstaller.ModInstaller
         /// <param name="prefixPath">base path for all relative paths</param>
         /// <param name="progressDelegate">A delegate to provide progress feedback.</param>
         /// <param name="coreDelegate">A delegate for all the interactions with the js core.</param>
-        protected async Task<IList<Instruction>> ScriptedModInstall(Mod modArchive, ProgressDelegate progressDelegate, CoreDelegates coreDelegate)
+        protected async Task<IList<Instruction>> ScriptedModInstall(Mod modArchive, dynamic preset, ProgressDelegate progressDelegate, CoreDelegates coreDelegate)
         {
             IScriptExecutor sexScript = modArchive.InstallScript.Type.CreateExecutor(modArchive, coreDelegate);
-            return await sexScript.Execute(modArchive.InstallScript, modArchive.TempPath);
+            return await sexScript.Execute(modArchive.InstallScript, modArchive.TempPath, preset);
         }
 
         #endregion

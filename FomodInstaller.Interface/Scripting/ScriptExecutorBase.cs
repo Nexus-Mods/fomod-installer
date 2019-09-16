@@ -101,12 +101,12 @@ namespace FomodInstaller.Scripting
         /// </summary>
         /// <returns><c>true</c> if the script completed
         /// successfully; <c>false</c> otherwise.</returns>
-        public async Task<IList<Instruction>> Execute(IScript p_scpScript, string p_strDataPath)
+        public async Task<IList<Instruction>> Execute(IScript p_scpScript, string p_strDataPath, dynamic preset)
         {
             
             // ??? OnTaskSetCompleted(booResult, "The script has finished executing.", p_scpScript);
             //return booResult;
-            return await DoExecute(p_scpScript, p_strDataPath);
+            return await DoExecute(p_scpScript, p_strDataPath, preset);
         }
 
         #endregion
@@ -120,7 +120,7 @@ namespace FomodInstaller.Scripting
         /// </remarks>
         /// <returns><c>true</c> if the script completed
         /// successfully; <c>false</c> otherwise.</returns>
-        public abstract Task<IList<Instruction>> DoExecute(IScript p_scpScript, string p_strDataPath);
+        public abstract Task<IList<Instruction>> DoExecute(IScript p_scpScript, string p_strDataPath, dynamic preset);
 
         /// <summary>
         /// Blocks until the task set is completed.

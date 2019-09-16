@@ -29,6 +29,7 @@ namespace FomodInstaller.ModInstaller
                                                  List<string> stopPatterns,
                                                  string pluginPath,
                                                  string destinationPath,
+                                                 dynamic preset,
                                                  ProgressDelegate progressDelegate,
                                                  CoreDelegates coreDelegate);
 
