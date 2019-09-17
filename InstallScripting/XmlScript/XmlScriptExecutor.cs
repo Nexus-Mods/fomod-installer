@@ -328,7 +328,10 @@ namespace FomodInstaller.Scripting.XmlScript
                     OptionType type = resolveOptionType(option);
 
                     bool choicePreset = false;
-                    if (groupPreset.HasValue && (type != OptionType.Required) && !selectAll)
+                    if (groupPreset.HasValue
+                        && (type != OptionType.Required)
+                        && !selectAll
+                        && (groupPreset.Value.choices != null))
                     {
                         choicePreset = groupPreset.Value.choices.Any(preOption => preOption.name == option.Name);
                     }
