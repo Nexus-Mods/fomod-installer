@@ -310,7 +310,7 @@ namespace FomodInstaller.Interface
             bool booSuccess = false;
             string strPath = destinationPath.Trim().Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
 
-            modInstallInstructions.Add(Instruction.GenerateFile(sourceData, destinationPath));
+            modInstallInstructions.Add(Instruction.GenerateFile(sourceData, strPath));
 
             return booSuccess;
         }
