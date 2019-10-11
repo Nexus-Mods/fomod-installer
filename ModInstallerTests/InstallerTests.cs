@@ -27,7 +27,7 @@ namespace FomodInstaller.ModInstaller.Tests
 			Assert.Empty(modArchiveFileList);
 
 			Installer installer = new Installer();
-			var actual = await installer.TestSupported(modArchiveFileList);
+			var actual = await installer.TestSupported(modArchiveFileList, new List<string>{ "BasicType" });
 
 			// Xunit test
 			Assert.Null(actual);

@@ -14,7 +14,8 @@ namespace FomodInstaller.ModInstaller
         /// This will determine whether the program can handle the specific archive.
         /// </summary>
         /// <param name="modArchiveFileList">The list of files inside the mod archive.</param>
-        Task<Dictionary<string, object>> TestSupported(List<string> modArchiveFileList);
+        Task<Dictionary<string, object>> TestSupported(List<string> modArchiveFileList,
+                                                       List<string> allowedTypes);
 
         /// <summary>
         /// This will simulate the mod installation and decide installation choices and files final paths.

@@ -41,7 +41,7 @@ namespace FomodInstaller.ModInstaller
 
         #endregion
 
-        public async Task<IList<string>> GetRequirements(IList<string> modFiles, bool includeAssets)
+        public async Task<IList<string>> GetRequirements(IList<string> modFiles, bool includeAssets, IList<string> allowedTypes)
         {
             CurrentScriptTypeRegistry = await ScriptTypeRegistry.DiscoverScriptTypes(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             // TODO: I don't think there is a good way to determine which image files are referenced by the installer script without
@@ -55,6 +55,11 @@ namespace FomodInstaller.ModInstaller
                 bool HasFoundScriptType = false;
                 foreach (IScriptType scriptType in CurrentScriptTypeRegistry.Types)
                 {
+                    if ((allowedTypes != null) && !allowedTypes.Contains(scriptType.TypeId))
+                    {
+                        continue;
+                    }
+
                     if (scriptType.FileNames != null)
                     {
                         foreach (string scriptFile in scriptType.FileNames)
