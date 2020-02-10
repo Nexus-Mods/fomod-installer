@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller", "ModInstaller\ModInstaller.csproj", "{B7659B4B-F4EF-468A-9D97-3FA2822243D8}"
 EndProject
@@ -19,11 +19,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpScript", "InstallScri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModScript", "InstallScripting\ModScript\ModScript.csproj", "{474F11D4-9510-4C7D-AE19-C668FC0EC961}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstallerTests", "ModInstallerTests\ModInstallerTests.csproj", "{493549E4-5E9A-4F4B-8421-983DF255F02E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModInstallerTests", "ModInstallerTests\ModInstallerTests.csproj", "{493549E4-5E9A-4F4B-8421-983DF255F02E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtilsTests", "UtilsTests\UtilsTests.csproj", "{DECB195F-A137-4545-AFB9-CFF6CCE00F6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UtilsTests", "UtilsTests\UtilsTests.csproj", "{DECB195F-A137-4545-AFB9-CFF6CCE00F6D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AntlrUtil", "AntlrUtil\AntlrUtil.csproj", "{8B2AD10B-4E22-4559-A784-648179225ADC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstallerIPC", "ModInstallerIPC\ModInstallerIPC.csproj", "{9BE95551-D82A-420C-A516-0792CF5577C7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -155,6 +157,18 @@ Global
 		{8B2AD10B-4E22-4559-A784-648179225ADC}.Release|x64.Build.0 = Release|Any CPU
 		{8B2AD10B-4E22-4559-A784-648179225ADC}.Release|x86.ActiveCfg = Release|Any CPU
 		{8B2AD10B-4E22-4559-A784-648179225ADC}.Release|x86.Build.0 = Release|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Debug|x64.Build.0 = Debug|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Debug|x86.Build.0 = Debug|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Release|x64.ActiveCfg = Release|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Release|x64.Build.0 = Release|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Release|x86.ActiveCfg = Release|Any CPU
+		{9BE95551-D82A-420C-A516-0792CF5577C7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -164,5 +178,8 @@ Global
 		{B0F526DB-967B-4A57-9EC9-2E4950E54F26} = {3453ABBE-7DA9-4946-ACC0-D55BD4BDB5D4}
 		{6C3901C6-BFCA-47FC-929B-0CD030325FBD} = {3453ABBE-7DA9-4946-ACC0-D55BD4BDB5D4}
 		{474F11D4-9510-4C7D-AE19-C668FC0EC961} = {3453ABBE-7DA9-4946-ACC0-D55BD4BDB5D4}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {142F46E0-2EF4-422A-9480-E896E3B20F36}
 	EndGlobalSection
 EndGlobal

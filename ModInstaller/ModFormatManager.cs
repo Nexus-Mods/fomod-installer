@@ -59,13 +59,20 @@ namespace FomodInstaller.ModInstaller
                     {
                         foreach (string scriptFile in scriptType.FileNames)
                         {
-                            // ??? Need to check for Fomod/Omod/Whatever before this part
-                            string FileToFind = Path.Combine(FomodRoot, scriptFile);
-                            string Match = modFiles.Where(x => Path.GetFileName(x).Contains(scriptFile, StringComparison.OrdinalIgnoreCase) && Path.GetFileName(Path.GetDirectoryName(x)).Contains(FomodRoot, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                            if (!string.IsNullOrEmpty(Match))
+                            string omodMatch = modFiles.Where(x => x.Equals("script") || x.Equals("script.txt")).FirstOrDefault();
+
+                            if (!string.IsNullOrEmpty(omodMatch) && scriptType.ValidateScript(scriptType.LoadScript(omodMatch)))
                             {
                                 HasFoundScriptType = true;
-                                RequiredFiles.Add(Match);
+                                RequiredFiles.Add(omodMatch);
+                            } else
+                            {
+                                string fomodMatch = modFiles.Where(x => scriptMatch(x, scriptFile)).FirstOrDefault();
+                                if (!string.IsNullOrEmpty(fomodMatch))
+                                {
+                                    HasFoundScriptType = true;
+                                    RequiredFiles.Add(fomodMatch);
+                                }
                             }
                         }
                     }
@@ -83,10 +90,18 @@ namespace FomodInstaller.ModInstaller
             });
         }
 
-        public async Task<IScriptType> GetScriptType(IList<string> modFiles)
+        private bool scriptMatch(string filePath, string scriptFile)
+        {
+            return Path.GetFileName(filePath).Contains(scriptFile, StringComparison.OrdinalIgnoreCase)
+              && Path.GetFileName(Path.GetDirectoryName(filePath)).Contains(FomodRoot, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public async Task<IScriptType> GetScriptType(IList<string> modFiles, string extractedFilePath = null)
         {
             CurrentScriptTypeRegistry = await ScriptTypeRegistry.DiscoverScriptTypes(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             IScriptType FoundScriptType = null;
+
+            string omodMatch = modFiles.Where(x => x.Equals("script") || x.Equals("script.txt")).FirstOrDefault();
 
             await Task.Run(() =>
             {
@@ -97,13 +112,25 @@ namespace FomodInstaller.ModInstaller
                     {
                         foreach (string scriptFile in scriptType.FileNames)
                         {
-                            // ??? Need to check for Fomod/Omod/Whatever before this part
-                            string FileToFind = Path.Combine(FomodRoot, scriptFile);
-                            string Match = modFiles.Where(x => Path.GetFileName(x).Contains(scriptFile, StringComparison.OrdinalIgnoreCase) && Path.GetFileName(Path.GetDirectoryName(x)).Contains(FomodRoot, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
-                            if (!string.IsNullOrEmpty(Match))
+                            string scriptDataString = "";
+                            if (!string.IsNullOrEmpty(omodMatch))
+                            {
+                                byte[] scriptData = File.ReadAllBytes(Path.Combine(extractedFilePath, omodMatch));
+                                scriptDataString = System.Text.Encoding.Default.GetString(scriptData);
+                            }
+
+                            if (!string.IsNullOrEmpty(omodMatch) && scriptType.ValidateScript(scriptType.LoadScript(scriptDataString)))
                             {
                                 HasFoundScriptType = true;
                                 FoundScriptType = scriptType;
+                            } else
+                            {
+                                string fomodMatch = modFiles.Where(x => scriptMatch(x, scriptFile)).FirstOrDefault();
+                                if (!string.IsNullOrEmpty(fomodMatch))
+                                {
+                                    HasFoundScriptType = true;
+                                    FoundScriptType = scriptType;
+                                }
                             }
                         }
                     }

@@ -36,6 +36,8 @@ namespace FomodInstaller.Interface
         /// <value>The Core delegates component.</value>
         protected CoreDelegates Core { get; private set; }
 
+        protected ICollection<Instruction> Instructions { get { return modInstallInstructions; } }
+
         #endregion
 
         #region Constructors

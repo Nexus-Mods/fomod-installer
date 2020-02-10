@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FomodInstaller.Interface;
 using FomodInstaller.Scripting;
 using System.Globalization;
+using System;
 
 namespace FomodInstaller.ModInstaller
 {
@@ -83,7 +84,7 @@ namespace FomodInstaller.ModInstaller
             {
                 // not an error, this can handle mods without an installer script (see BasicModInstall)
             }
-            IScriptType ScriptType = await GetScriptType(modArchiveFileList);
+            IScriptType ScriptType = await GetScriptType(modArchiveFileList, scriptPath);
             Mod modToInstall = new Mod(modArchiveFileList, stopPatterns, ScriptFilePath, scriptPath, ScriptType);
             await modToInstall.Initialize();
 
@@ -149,11 +150,11 @@ namespace FomodInstaller.ModInstaller
         /// This function will return the list of files requirements to complete this mod's installation.
         /// <param name="modFiles">The list of files inside the mod archive.</param>
         /// </summary>
-        protected async Task<IScriptType> GetScriptType(IList<string> modFiles)
+        protected async Task<IScriptType> GetScriptType(IList<string> modFiles, string extractedFilePath = null)
         {
             ModFormatManager FormatManager = new ModFormatManager();
 
-            return await FormatManager.GetScriptType(modFiles);
+            return await FormatManager.GetScriptType(modFiles, extractedFilePath);
         }
 
         #endregion
