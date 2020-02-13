@@ -343,7 +343,8 @@ namespace ModInstallerIPC
             FunctionSerializer funcSer = new FunctionSerializer();
             string serialized = JsonConvert.SerializeObject(new { resp.id, resp.callback, resp.data, resp.error }, funcSer);
             mCallbacks[resp.id] = funcSer.callbacks;
-            msg.InitGC(Encoding.UTF8.GetBytes(serialized), serialized.Length);
+            byte[] encoded = Encoding.UTF8.GetBytes(serialized);
+            msg.InitGC(encoded, encoded.Length);
             server.Send(ref msg, false);
         }
 
@@ -448,7 +449,7 @@ namespace ModInstallerIPC
                 }
                 catch (Exception e)
                 {
-                    return new OutMessage { id = id, error = new { message = e.Message, stack = e.StackTrace } };
+                    return new OutMessage { id = id, error = new { name = e.GetType().FullName, message = e.Message, stack = e.StackTrace } };
                 }
             });
         }
