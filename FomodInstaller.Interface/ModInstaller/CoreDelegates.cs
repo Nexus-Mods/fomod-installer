@@ -8,7 +8,7 @@ using Utils;
 namespace FomodInstaller.Interface
 {
     using SelectCB = Action<int, int, int[]>;
-    using ContinueCB = Action<bool>;
+    using ContinueCB = Action<bool, int>;
     using CancelCB = Action;
 
     struct Defaults
@@ -265,11 +265,14 @@ namespace FomodInstaller.Interface
                     return await Task.FromResult<object>(null);
                 };
 
-                this.cont = async (dynamic direction) =>
+                this.cont = async (dynamic continuePar) =>
                 {
-                    cont(((string)direction == "forward"));
+                    string direction = continuePar.direction;
+                    int currentStep = continuePar.currentStepId;
+                    cont(direction == "forward", currentStep);
                     return await Task.FromResult<object>(null);
                 };
+
                 this.cancel = async (dynamic dummy) =>
                 {
                     cancel();

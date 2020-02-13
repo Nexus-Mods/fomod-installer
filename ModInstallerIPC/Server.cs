@@ -1,5 +1,6 @@
 ﻿using FomodInstaller.Interface;
 using FomodInstaller.ModInstaller;
+using Microsoft.CSharp.RuntimeBinder;
 using NetMQ;
 using NetMQ.Sockets;
 using Newtonsoft.Json;
@@ -14,9 +15,15 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Utils;
 
 namespace ModInstallerIPC
 {
+    struct Defaults
+    {
+        public static int TIMEOUT_MS = 5000;
+    }
+
     struct OutMessage
     {
         public string id;
@@ -33,6 +40,11 @@ namespace ModInstallerIPC
          */
         public static object ValueNormalize(object input)
         {
+            if (input == null)
+            {
+                return null;
+            }
+
             if (input.GetType() == typeof(JValue))
             {
                 input = ((JValue)input).Value;
@@ -198,10 +210,10 @@ namespace ModInstallerIPC
 
             public DeferContext(string id, Func<string, string, string, object[], Task<object>> ContextIPC)
             {
-                plugin = new Context((string name, object[] args) => ContextIPC(id, "plugin", name, args));
-                ini = new Context((string name, object[] args) => ContextIPC(id, "ini", name, args));
-                context = new Context((string name, object[] args) => ContextIPC(id, "context", name, args));
-                ui = new Context((string name, object[] args) => ContextIPC(id, "ui", name, args));
+                plugin = new Context(async (string name, object[] args) => await ContextIPC(id, "plugin", name, args));
+                ini = new Context(async (string name, object[] args) => await ContextIPC(id, "ini", name, args));
+                context = new Context(async (string name, object[] args) => await ContextIPC(id, "context", name, args));
+                ui = new Context(async (string name, object[] args) => await ContextIPC(id, "ui", name, args));
             }
         }
 
@@ -274,7 +286,7 @@ namespace ModInstallerIPC
         public void HandleMessages()
         {
             using (var server = new PairSocket())
-            using (var queue = new NetMQQueue<OutMessage>())
+            using (mMessageQueue = new NetMQQueue<OutMessage>())
             using (mPoller = new NetMQPoller { server })
             {
                 if (mListen)
@@ -285,16 +297,15 @@ namespace ModInstallerIPC
                 {
                     server.Connect("tcp://localhost:" + this.mPort);
                 }
-                mPoller.Add(queue);
+                mPoller.Add(mMessageQueue);
 
-                mMessageQueue = queue;
-                queue.ReceiveReady += (object sender, NetMQQueueEventArgs<OutMessage> args) =>
+                mMessageQueue.ReceiveReady += (object sender, NetMQQueueEventArgs<OutMessage> args) =>
                 {
-                    SendResponse(server, queue.Dequeue());
+                    SendResponse(server, mMessageQueue.Dequeue());
                 };
                 server.ReceiveReady += async (object sender, NetMQSocketEventArgs args) =>
                 {
-                    queue.Enqueue(await OnReceived(args));
+                    mMessageQueue.Enqueue(await OnReceived(args));
                 };
 
                 mPoller.Run();
@@ -321,9 +332,9 @@ namespace ModInstallerIPC
 
         private async Task<object> AwaitReply(string id)
         {
-            var res = new TaskCompletionSource<object>();
-            mAwaitedReplies.Add(id, res);
-            return await res.Task;
+            var repliesCompletion = new TaskCompletionSource<object>();
+            mAwaitedReplies.Add(id, repliesCompletion);
+            return await repliesCompletion.Task;
         }
 
         private void SendResponse(PairSocket server, OutMessage resp)
@@ -364,6 +375,10 @@ namespace ModInstallerIPC
             string callbackId = data["callbackId"].ToString();
             var argsList = data["args"].ToList();
             dynamic[] args = data["args"].ToList().Select(input => Helpers.ValueNormalize(input)).ToArray();
+            if (args.Length == 0)
+            {
+                args = new object[] { null };
+            }
             object res = mCallbacks[requestId][callbackId].DynamicInvoke(args);
             return await (Task<object>)res;
         }
@@ -371,13 +386,24 @@ namespace ModInstallerIPC
         private void DispatchReply(dynamic data)
         {
             string id = data.request.id;
+            if (!mAwaitedReplies.ContainsKey(id))
+            {
+                // not waiting for this (any more)? Might have been a timeout
+                return;
+            }
             if (data.error != null)
             {
-                mAwaitedReplies[id].SetException(new Exception(data["error"]["message"].ToString()));
+                mAwaitedReplies[id].SetException(new Exception(data.error.message.ToString()));
             }
             else
             {
-                mAwaitedReplies[id].SetResult(data["response"]);
+                try
+                {
+                    mAwaitedReplies[id].SetResult(Helpers.ValueNormalize(data.data));
+                } catch (RuntimeBinderException)
+                {
+                    mAwaitedReplies[id].SetException(new Exception(String.Format("No data and no error field in {0}", data.ToString())));
+                }
             }
         }
 
@@ -414,13 +440,17 @@ namespace ModInstallerIPC
             evt.Socket.Receive(ref msg);
             JObject invocation = JObject.Parse(Encoding.UTF8.GetString(msg.Data));
             string id = invocation["id"].ToString();
-            try
+            return await Task.Run(async () =>
             {
-                return new OutMessage { id = id, data = await Dispatch(id, (JObject)invocation["payload"]) };
-            } catch (Exception e)
-            {
-                return new OutMessage { id = id, error = new { message = e.Message, stack = e.StackTrace } };
-            }
+                try
+                {
+                    return new OutMessage { id = id, data = await Dispatch(id, (JObject)invocation["payload"]) };
+                }
+                catch (Exception e)
+                {
+                    return new OutMessage { id = id, error = new { message = e.Message, stack = e.StackTrace } };
+                }
+            });
         }
     }
 }
