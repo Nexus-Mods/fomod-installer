@@ -353,7 +353,10 @@ namespace ModInstallerIPC
             var files = new List<string>(data["files"].Children().ToList()
                 .Select(input => input.ToString()));
 
-            Dictionary<string, object> result = await mInstaller.TestSupported(files);
+            var allowedTypes = new List<string>(data["allowedTypes"].Children().ToList()
+                .Select(input => input.ToString()));
+
+            Dictionary<string, object> result = await mInstaller.TestSupported(files, allowedTypes);
             return result;
         }
 
@@ -364,10 +367,19 @@ namespace ModInstallerIPC
             var pluginPath = data["pluginPath"].ToString();
             var scriptPath = data["scriptPath"].ToString();
 
+            dynamic choices;
+            try
+            {
+                choices = data["choices"];
+            }
+            catch (RuntimeBinderException) {
+                choices = null;
+            }
+
             DeferContext context = new DeferContext(id, (targetId, targetType, name, args) => ContextIPC(targetId, targetType, name, args));
             CoreDelegates coreDelegates = new CoreDelegates(ToExpando(context));
 
-            return await mInstaller.Install(files, stopPatterns, pluginPath, scriptPath, (int progress) => { }, coreDelegates);
+            return await mInstaller.Install(files, stopPatterns, pluginPath, scriptPath, choices, (ProgressDelegate)((int progress) => { }), coreDelegates);
         }
 
         private async Task<object> DispatchInvoke(JObject data)
