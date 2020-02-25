@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Security;
+using System.Security.Permissions;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using FomodInstaller.Interface;
@@ -620,6 +622,11 @@ namespace FomodInstaller.Scripting.ModScript
 			ReplaceTextInFile(p_strPath, p_strOldValue, p_strNewValue);
 		}
 
+        public void EditINI(string section, string key, string value)
+        {
+            Instructions.Add(Instruction.CreateIniEdit("", section, key, value));
+        }
+
 		#endregion
 
 		#region Path Manipulation
@@ -717,6 +724,7 @@ namespace FomodInstaller.Scripting.ModScript
 		{
             // ??? This stuff should be handled by the user interaction delegate
             //UIManager.ShowMessageBox(p_strMessage, p_strTitle);
+            ShowMessageBox(p_strMessage, p_strTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
 		#endregion
@@ -1131,6 +1139,20 @@ namespace FomodInstaller.Scripting.ModScript
             //return expExpression.Evaluate().ToString();
             return null;
 		}
+
+
+        private DialogResult ShowMessageBox(string p_strMessage, string p_strCaption, MessageBoxButtons p_mbbButtons, MessageBoxIcon p_mbiIcon)
+        {
+            try
+            {
+                new PermissionSet(PermissionState.Unrestricted).Assert();
+                return System.Windows.Forms.MessageBox.Show(p_strMessage, p_strCaption, p_mbbButtons, p_mbiIcon, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
+            }
+            finally
+            {
+                PermissionSet.RevertAssert();
+            }
+        }
 
 		#endregion
 	}

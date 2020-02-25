@@ -126,10 +126,14 @@ namespace FomodInstaller.Scripting.XmlScript
                 });
             };
 
-            Action<bool> cont = (bool forward) => {
+            Action<bool, int> cont = (bool forward, int currentStep) => {
                 // this needs to happen asynchronously, see above
                 Task.Run(() =>
                 {
+                    if (stepIdx != currentStep)
+                    {
+                        return;
+                    }
                     if (forward)
                     {
                         stepIdx = findNextIdx(lstSteps, stepIdx);
