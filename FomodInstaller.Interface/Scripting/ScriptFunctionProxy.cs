@@ -694,13 +694,9 @@ namespace FomodInstaller.Interface
         /// <returns>The specified value as an integer.</returns>
         public int GetIniInt(string settingsFileName, string section, string key)
         {
-            int IniValue = -1;
-
-            Task.Run(async () => {
-                IniValue = await Core.ini.GetIniInt(settingsFileName, section, key);
-            }).Wait();
-
-            return IniValue;
+            return Task.Run(async () => {
+                return await Core.ini.GetIniInt(settingsFileName, section, key);
+            }).Result;
         }
 
         #endregion

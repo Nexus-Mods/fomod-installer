@@ -33,12 +33,11 @@ namespace FomodInstaller.Interface
 
         public async Task<string[]> GetAll(bool activeOnly)
         {
-            object res = await TaskHelper.Timeout(mGetAll(activeOnly), Defaults.TIMEOUT_MS);
+            dynamic res = await TaskHelper.Timeout(mGetAll(activeOnly), Defaults.TIMEOUT_MS);
             if (res != null)
             {
-                return ((IEnumerable)res).Cast<object>()
-                                                    .Select(x => x.ToString())
-                                                    .ToArray();
+                IEnumerable enu = res;
+                return enu.Cast<object>().Select(x => x.ToString()).ToArray();
             }
             else
                 return new string[0];

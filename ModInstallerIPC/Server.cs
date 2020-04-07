@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -210,10 +211,10 @@ namespace ModInstallerIPC
 
             public DeferContext(string id, Func<string, string, string, object[], Task<object>> ContextIPC)
             {
-                plugin = new Context(async (string name, object[] args) => await ContextIPC(id, "plugin", name, args));
-                ini = new Context(async (string name, object[] args) => await ContextIPC(id, "ini", name, args));
-                context = new Context(async (string name, object[] args) => await ContextIPC(id, "context", name, args));
-                ui = new Context(async (string name, object[] args) => await ContextIPC(id, "ui", name, args));
+                plugin = new Context((string name, object[] args) => ContextIPC(id, "plugin", name, args));
+                ini = new Context((string name, object[] args) => ContextIPC(id, "ini", name, args));
+                context = new Context((string name, object[] args) => ContextIPC(id, "context", name, args));
+                ui = new Context((string name, object[] args) => ContextIPC(id, "ui", name, args));
             }
         }
 
@@ -318,23 +319,40 @@ namespace ModInstallerIPC
             return Guid.NewGuid().ToString("N");
         }
 
-        private async Task<object> ContextIPC(string targetId, string targetType, string name, object[] args)
+        private Task<object> ContextIPC(string targetId, string targetType, string name, object[] args)
         {
             string id = GenerateId();
-            mMessageQueue.Enqueue(new OutMessage {
-                id = id,
-                callback = new { id = targetId, type = targetType },
-                data = new { name, args }
-            });
 
-            return await AwaitReply(id);
+            Task<object> result = AwaitReply(id);
+
+            try
+            {
+                // wow, ok, so, umm, this code is run in the context of the main/default appdomain but because
+                // it's run "on behalf of" the sandbox appdomain we have to raise our permissions again.
+                // Probably totally obvious to an experienced .net developer but I find this security system and
+                // this api - surprising.
+                // I didn't even know NetMQ was going to run unmanaged code or that it was my job to assert the
+                // necessary right...
+                new SecurityPermission(SecurityPermissionFlag.UnmanagedCode).Assert();
+                mMessageQueue.Enqueue(new OutMessage
+                {
+                    id = id,
+                    callback = new { id = targetId, type = targetType },
+                    data = new { name, args }
+                });
+            } catch (Exception e)
+            {
+                Console.WriteLine("Failed to enqueue message: {0}", e.Message);
+            }
+
+            return result;
         }
 
-        private async Task<object> AwaitReply(string id)
+        private Task<object> AwaitReply(string id)
         {
             var repliesCompletion = new TaskCompletionSource<object>();
             mAwaitedReplies.Add(id, repliesCompletion);
-            return await repliesCompletion.Task;
+            return repliesCompletion.Task;
         }
 
         private void SendResponse(PairSocket server, OutMessage resp)
