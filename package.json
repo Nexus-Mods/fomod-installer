@@ -1,6 +1,6 @@
 {
   "name": "fomod-installer",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Installer for xml and c# fomods",
   "scripts": {
     "buildDev": "node build.js Debug && copyfiles -f Build/bin/Debug/*.dll dist/ && copyfiles -f Build/bin/Debug/*.pdb dist/ && copyfiles -f Build/bin/Release/*.exe dist/",
@@ -11,7 +11,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "async": "^2.6.2",
-    "copyfiles": "^1.0.0",
+    "copyfiles": "*",
     "msbuild": "^1.0.3"
   }
 }
