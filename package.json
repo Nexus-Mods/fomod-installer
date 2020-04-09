@@ -9,12 +9,9 @@
   },
   "author": "Black Tree Gaming Ltd.",
   "license": "GPL-3.0",
-  "resolutions": {
-    "**/mkdirp/minimist": "1.2.2"
-  },
   "dependencies": {
     "async": "^2.6.2",
-    "copyfiles": "^1.0.0",
+    "copyfiles": "^2.0.0",
     "msbuild": "^1.0.3"
   }
 }
