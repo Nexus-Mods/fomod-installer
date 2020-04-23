@@ -57,7 +57,15 @@ namespace ModInstallerIPC
             }
             else if (input.GetType() == typeof(JObject))
             {
-                return new DictWrap(((JObject)input).ToObject<IDictionary<string, object>>());
+                IDictionary<string, object> res = ((JObject)input).ToObject<IDictionary<string, object>>();
+                if (res.ContainsKey("type") && ((string)res["type"] == "Buffer"))
+                {
+                    JArray numArray = (JArray)res["data"];
+                    IEnumerable<byte> result = numArray.Select(tok => tok.Value<byte>());
+                    return result.ToArray();
+                } else {
+                    return new DictWrap(res);
+                }
             }
             else if (input.GetType() == typeof(long))
             {
