@@ -1,4 +1,5 @@
 var cp = require('child_process');
+var fs = require('fs');
 var msbuildLib = require('msbuild');
 var path = require('path');
 

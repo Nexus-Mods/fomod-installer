@@ -196,7 +196,7 @@ mkdirp@^0.5.1:
   dependencies:
     minimist "^1.2.5"
 
-msbuild@^1.0.3:
+msbuild@1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/msbuild/-/msbuild-1.1.2.tgz#c6bf66aabc70d81b7a2590ed85ed5e7cd6eaee53"
   integrity sha512-uokwgHTir5KkZjfNSgJEJu3tBKgqBCCKQVwOzA/7TSSUhzC/p1vvSxwunLY0d0lzo2rb9fuIR0o5wU0IVypBnQ==
