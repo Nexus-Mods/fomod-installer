@@ -9,10 +9,16 @@ function sign() {
 }
 
 function build(cb) {
-  var msbuild = new msbuildLib(cb);
+  var buildType = process.argv[2] || 'Release';
+  var msbuild = new msbuildLib(() => {
+    if (process.platform !== 'win32') {
+      fs.chmodSync(path.join(__dirname, 'Build', 'bin', buildType, 'ModInstallerIPC.exe'), 0o774);
+    }
+    cb();
+  });
   msbuild.sourcePath = path.join(__dirname, 'FomodInstaller.sln');
 
-  msbuild.configuration = process.argv[2] || 'Release';
+  msbuild.configuration = buildType;
   msbuild.configuration += ';TargetFrameworkVersion=v4.5';
   msbuild.overrideParams.push('/m'); // parallel build
   msbuild.overrideParams.push('/clp:ErrorsOnly');
