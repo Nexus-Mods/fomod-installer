@@ -60,9 +60,7 @@ namespace ModInstallerIPC
                 IDictionary<string, object> res = ((JObject)input).ToObject<IDictionary<string, object>>();
                 if (res.ContainsKey("type") && ((string)res["type"] == "Buffer"))
                 {
-                    JArray numArray = (JArray)res["data"];
-                    IEnumerable<byte> result = numArray.Select(tok => tok.Value<byte>());
-                    return result.ToArray();
+                    return Convert.FromBase64String((string)res["data"]);
                 } else {
                     return new DictWrap(res);
                 }
@@ -271,6 +269,36 @@ namespace ModInstallerIPC
             }
         }
 
+        private class BufferSerializer : JsonConverter
+        {
+            public BufferSerializer() { }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                JToken res = JToken.FromObject(new
+                {
+                    type = "Buffer",
+                    data = Convert.ToBase64String((byte[])value),
+                });
+                res.WriteTo(writer);
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                throw new NotImplementedException("Unnecessary because CanRead is false. The type will skip the converter.");
+            }
+
+            public override bool CanRead
+            {
+                get { return false; }
+            }
+
+            public override bool CanConvert(Type objectType)
+            {
+                return objectType.IsArray && objectType.GetElementType() == typeof(byte);
+            }
+        }
+
         private readonly int mPort;
         private readonly bool mListen;
         private Installer mInstaller;
@@ -367,7 +395,8 @@ namespace ModInstallerIPC
         {
             Msg msg = new Msg();
             FunctionSerializer funcSer = new FunctionSerializer();
-            string serialized = JsonConvert.SerializeObject(new { resp.id, resp.callback, resp.data, resp.error }, funcSer);
+            BufferSerializer buffSer = new BufferSerializer();
+            string serialized = JsonConvert.SerializeObject(new { resp.id, resp.callback, resp.data, resp.error }, funcSer, buffSer);
             mCallbacks[resp.id] = funcSer.callbacks;
             byte[] encoded = Encoding.UTF8.GetBytes(serialized);
             msg.InitGC(encoded, encoded.Length);
