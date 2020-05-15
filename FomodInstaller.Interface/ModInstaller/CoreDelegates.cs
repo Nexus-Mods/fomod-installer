@@ -33,12 +33,11 @@ namespace FomodInstaller.Interface
 
         public async Task<string[]> GetAll(bool activeOnly)
         {
-            object res = await TaskHelper.Timeout(mGetAll(activeOnly), Defaults.TIMEOUT_MS);
+            dynamic res = await TaskHelper.Timeout(mGetAll(activeOnly), Defaults.TIMEOUT_MS);
             if (res != null)
             {
-                return ((IEnumerable)res).Cast<object>()
-                                                    .Select(x => x.ToString())
-                                                    .ToArray();
+                IEnumerable enu = res;
+                return enu.Cast<object>().Select(x => x.ToString()).ToArray();
             }
             else
                 return new string[0];
@@ -190,19 +189,21 @@ namespace FomodInstaller.Interface
         {
             public int id;
             public bool selected;
+            public bool preset;
             public string name;
             public string description;
             public string image;
             public string type;
             public string conditionMsg;
 
-            public Option(int id, string name, string description, string image, bool selected, string type, string conditionMsg) : this()
+            public Option(int id, string name, string description, string image, bool selected, bool preset, string type, string conditionMsg) : this()
             {
                 this.id = id;
                 this.name = name;
                 this.description = description;
                 this.image = image;
                 this.selected = selected;
+                this.preset = preset;
                 this.type = type;
                 this.conditionMsg = conditionMsg;
             }

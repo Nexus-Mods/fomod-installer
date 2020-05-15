@@ -8,6 +8,29 @@ using System.IO;
 
 namespace FomodInstaller.Scripting.XmlScript
 {
+    public struct OptionsPresetChoice
+    {
+        public string name;
+        public int idx;
+    }
+
+    public struct OptionsPresetGroup
+    {
+        public string name;
+        public OptionsPresetChoice[] choices;
+    }
+
+    public struct OptionsPresetStep
+    {
+        public string name;
+        public OptionsPresetGroup[] groups;
+    }
+
+    public struct OptionsPreset
+    {
+        public OptionsPresetStep[] steps;
+    }
+
     /// <summary>
     /// Executes an XML script.
     /// </summary>
@@ -17,6 +40,7 @@ namespace FomodInstaller.Scripting.XmlScript
         private CoreDelegates m_Delegates;
         private ConditionStateManager m_csmState;
         private ISet<Option> m_SelectedOptions;
+        private OptionsPreset? m_Preset;
 
         #region Constructors
 
@@ -41,16 +65,19 @@ namespace FomodInstaller.Scripting.XmlScript
         /// </summary>
         /// <param name="scpScript">The XML Script to execute.</param>
         /// <param name="dataPath">path where data files for the script are stored</param>
+        /// <param name="preset">preset for the installer</param>
         /// <returns><c>true</c> if the script completes successfully;
         /// <c>false</c> otherwise.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="scpScript"/> is not an
         /// <see cref="XmlScript"/>.</exception>
-        public async override Task<IList<Instruction>> DoExecute(IScript scpScript, string dataPath)
+        public async override Task<IList<Instruction>> DoExecute(IScript scpScript, string dataPath, dynamic preset)
         {
             TaskCompletionSource<IList<Instruction>> Source = new TaskCompletionSource<IList<Instruction>>(); 
             List<InstallableFile> PluginsToActivate = new List<InstallableFile>();
 
             m_csmState = new ConditionStateManager();
+
+            m_Preset = convertPreset(preset);
             
             if (!(scpScript is XmlScript))
                 throw new ArgumentException("The given script must be of type XmlScript.", scpScript.Type.TypeName);
@@ -145,6 +172,7 @@ namespace FomodInstaller.Scripting.XmlScript
             if (stepIdx == -1)
             {
                 m_Delegates.ui.EndDialog();
+
                 XmlScriptInstaller xsiInstaller = new XmlScriptInstaller(ModArchive);
                 IEnumerable<InstallableFile> FilesToInstall = new List<InstallableFile>();
                 foreach (InstallStep step in lstSteps)
@@ -199,10 +227,22 @@ namespace FomodInstaller.Scripting.XmlScript
             return opt.GetOptionType(m_csmState, m_Delegates);
         }
 
+
         private void preselectOptions(InstallStep step)
         {
+            OptionsPresetStep? stepPreset = null;
+            if (m_Preset.HasValue)
+            {
+                stepPreset = m_Preset.Value.steps.FirstOrDefault(preStep => preStep.name == step.Name);
+            }
+
             foreach (OptionGroup group in step.OptionGroups)
             {
+                OptionsPresetGroup? groupPreset = null;
+                if ((stepPreset != null) && stepPreset.HasValue) {
+                    groupPreset = stepPreset.Value.groups.FirstOrDefault(preGroup => preGroup.name == group.Name);
+                }
+
                 if (group.Options.FirstOrDefault(opt => m_SelectedOptions.Contains(opt)) == null)
                 {
                     bool setFirst = group.Type == OptionGroupType.SelectExactlyOne;
@@ -211,7 +251,8 @@ namespace FomodInstaller.Scripting.XmlScript
                         OptionType type = resolveOptionType(option);
                         if ((type == OptionType.Required)
                             || (type == OptionType.Recommended)
-                            || (group.Type == OptionGroupType.SelectAll))
+                            || (group.Type == OptionGroupType.SelectAll)
+                            || ((groupPreset != null) && groupPreset.HasValue && groupPreset.Value.choices.Any(preChoice => preChoice.name == option.Name)))
                         {
                             // in case there are multiple recommended options in a group that only
                             // supports one selection, disable all other options, otherwise we would
@@ -283,36 +324,66 @@ namespace FomodInstaller.Scripting.XmlScript
                     step.VisibilityCondition == null || step.VisibilityCondition.GetIsFulfilled(m_csmState, m_Delegates)));
             };
 
-            Func<IEnumerable<Option>, IEnumerable<Interface.ui.Option>> convertOptions = options =>
+            Func<IEnumerable<Option>, OptionsPresetGroup?, bool, IEnumerable<Interface.ui.Option>> convertOptions = (options, groupPreset, selectAll) =>
             {
                 int idx = 0;
-              return options.Select(option =>
-              {
-                OptionType type = resolveOptionType(option);
-                string conditionMsg = type == OptionType.NotUsable
-                  ? option.GetConditionMessage(m_csmState, m_Delegates)
-                  : null;
-                return new Interface.ui.Option(idx++, option.Name, option.Description,
-                    string.IsNullOrEmpty(option.ImagePath) ? null : Path.Combine(strPrefixPath, option.ImagePath),
-                    m_SelectedOptions.Contains(option), type.ToString(), conditionMsg);
-              });
+                return options.Select(option =>
+                {
+                    OptionType type = resolveOptionType(option);
+
+                    bool choicePreset = false;
+                    if (groupPreset.HasValue
+                        && (type != OptionType.Required)
+                        && !selectAll
+                        && (groupPreset.Value.choices != null))
+                    {
+                        choicePreset = groupPreset.Value.choices.Any(preOption => preOption.name == option.Name);
+                    }
+
+                    string conditionMsg = type == OptionType.NotUsable
+                    ? option.GetConditionMessage(m_csmState, m_Delegates)
+                    : null;
+                    return new Interface.ui.Option(idx++, option.Name, option.Description,
+                      string.IsNullOrEmpty(option.ImagePath) ? null : Path.Combine(strPrefixPath, option.ImagePath),
+                      m_SelectedOptions.Contains(option), choicePreset, type.ToString(), conditionMsg);
+                });
             };
 
-            Func<IEnumerable<OptionGroup>, IEnumerable<Group>> convertGroups = groups =>
+            Func<IEnumerable<OptionGroup>, OptionsPresetStep?, IEnumerable<Group>> convertGroups = (groups, stepPreset) =>
             {
                 int idx = 0;
-                return groups.Select(group => new Group(idx++, group.Name, group.Type.ToString(), convertOptions(group.Options).ToArray()));
+                return groups.Select(group =>
+                {
+                    OptionsPresetGroup? groupPreset = null;
+                    if (stepPreset.HasValue) {
+                        groupPreset = stepPreset.Value.groups.FirstOrDefault(preGroup => preGroup.name == group.Name);
+                    }
+
+                    return new Group(idx++, group.Name, group.Type.ToString(),
+                                     convertOptions(group.Options, groupPreset, group.Type == OptionGroupType.SelectAll).ToArray());
+                });
             };
 
             Action<InstallerStep[], int> insertGroups = (InstallerStep[] steps, int idx) =>
             {
                 InstallStep inStep = lstSteps[idx];
+                OptionsPresetStep? stepPreset = null;
+                if (m_Preset.HasValue)
+                {
+                    stepPreset = m_Preset.Value.steps.FirstOrDefault(preStep => preStep.name == inStep.Name);
+                }
+
                 steps[idx].optionalFileGroups.order = inStep.GroupSortOrder.ToString();
-                steps[idx].optionalFileGroups.group = convertGroups(inStep.OptionGroups).ToArray();
+                steps[idx].optionalFileGroups.group = convertGroups(inStep.OptionGroups, stepPreset).ToArray();
             };
 
             InstallerStep[] uiSteps = convertSteps(lstSteps).ToArray();
-            insertGroups(uiSteps, stepIdx);
+            // previously we only sent the groups for the current step but sending all makes it easier to track and save all
+            // installer choices made
+            for (int i = 0; i < lstSteps.Count; ++i)
+            {
+              insertGroups(uiSteps, i);
+            }
             m_Delegates.ui.UpdateState(uiSteps, stepIdx);
         }
 
@@ -338,6 +409,31 @@ namespace FomodInstaller.Scripting.XmlScript
                 }
             }
             return 0;
+        }
+
+        private OptionsPreset? convertPreset(dynamic[] input)
+        {
+            if (input == null)
+            {
+                return null;
+            }
+
+            Func<IEnumerable<dynamic>, IEnumerable<OptionsPresetChoice>> convertChoices = choiceIn =>
+            {
+                return choiceIn.Select(choice => new OptionsPresetChoice() { name = choice.name, idx = choice.idx });
+            };
+
+            Func<IEnumerable<dynamic>, IEnumerable<OptionsPresetGroup>> convertGroups = groupsIn =>
+            {
+                return groupsIn.Select(group => new OptionsPresetGroup() { name = group.name, choices = convertChoices((dynamic[])group.choices).ToArray() });
+            };
+
+            Func<IEnumerable<dynamic>, IEnumerable<OptionsPresetStep>> convertSteps = stepsIn =>
+            {
+                return stepsIn.Select(step => new OptionsPresetStep() { name = step.name, groups = convertGroups((dynamic[])step.groups).ToArray() });
+            };
+
+            return new OptionsPreset() { steps = convertSteps(input).ToArray() };
         }
 
         #endregion

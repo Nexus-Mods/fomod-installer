@@ -54,11 +54,12 @@ namespace FomodInstaller.Scripting.CSharpScript
         /// </summary>
         /// <param name="p_scpScript">The C# Script to execute.</param>
         /// <param name="p_strDataPath">Path where data for this script (i.e. screenshots) is stored.</param>
+        /// <param name="p_dynPreset">install preset (not supported in this executor)</param>
         /// <returns><c>true</c> if the script completes successfully;
         /// <c>false</c> otherwise.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="p_scpScript"/> is not a
         /// <see cref="CSharpScript"/>.</exception>
-        public override Task<IList<Instruction>> DoExecute(IScript p_scpScript, string p_strDataPath)
+        public override Task<IList<Instruction>> DoExecute(IScript p_scpScript, string p_strDataPath, dynamic p_dynPreset)
         {
             if (!(p_scpScript is CSharpScript))
                 throw new ArgumentException("The given script must be of type CSharpScript.", "p_scpScript");

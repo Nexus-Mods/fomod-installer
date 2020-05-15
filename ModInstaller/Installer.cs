@@ -28,23 +28,31 @@ namespace FomodInstaller.ModInstaller
         /// This will determine whether the program can handle the specific archive.
         /// </summary>
         /// <param name="modArchiveFileList">The list of files inside the mod archive.</param>
-        public async override Task<Dictionary<string, object>> TestSupported(List<string> modArchiveFileList)
+        public async override Task<Dictionary<string, object>> TestSupported(List<string> modArchiveFileList,
+                                                                             List<string> allowedTypes)
         {
             Dictionary<string, object> Results = new Dictionary<string, object>();
             bool test = true;
             IList<string> RequiredFiles = new List<string>();
 
             if ((modArchiveFileList == null) || (modArchiveFileList.Count == 0))
+            {
                 test = false;
+            }
             else
             {
                 try
                 {
-                    RequiredFiles = await GetRequirements(modArchiveFileList, true);
-                } catch (UnsupportedException)
+                    RequiredFiles = await GetRequirements(modArchiveFileList, true, allowedTypes);
+                }
+                catch (UnsupportedException)
                 {
                     RequiredFiles = new List<string>();
                     // files without an installer script are still supported by this
+                    if (!allowedTypes.Contains("Basic"))
+                    {
+                        test = false;
+                    }
                 }
 
             }
@@ -62,12 +70,14 @@ namespace FomodInstaller.ModInstaller
         /// <param name="modArchiveFileList">The list of files inside the mod archive.</param>
         /// <param name="stopPatterns">patterns matching files or directories that should be at the top of the directory structure.</param>
         /// <param name="scriptPath">The path to the uncompressed install script file, if any.</param>
+        /// <param name="preset">preset of options to suggest or activate automatically. The structure of this object depends on the installer format</param>
         /// <param name="progressDelegate">A delegate to provide progress feedback.</param>
         /// <param name="coreDelegate">A delegate for all the interactions with the js core.</param>
         public async override Task<Dictionary<string, object>> Install(List<string> modArchiveFileList,
                                                                        List<string> stopPatterns,
                                                                        string pluginPath,
                                                                        string scriptPath,
+                                                                       dynamic preset,
                                                                        ProgressDelegate progressDelegate,
                                                                        CoreDelegates coreDelegate)
         {
@@ -78,7 +88,7 @@ namespace FomodInstaller.ModInstaller
 
             try
             {
-                ScriptFilePath = new List<string>(await GetRequirements(modArchiveFileList, false)).FirstOrDefault();
+                ScriptFilePath = new List<string>(await GetRequirements(modArchiveFileList, false, null)).FirstOrDefault();
             }
             catch (UnsupportedException)
             {
@@ -92,7 +102,7 @@ namespace FomodInstaller.ModInstaller
 
             if (modToInstall.HasInstallScript)
             {
-                Instructions = await ScriptedModInstall(modToInstall, progressDelegate, coreDelegate);
+                Instructions = await ScriptedModInstall(modToInstall, preset, progressDelegate, coreDelegate);
                 if (Instructions == null)
                 {
                     Instructions = new List<Instruction>();
@@ -139,11 +149,11 @@ namespace FomodInstaller.ModInstaller
         ///   installer (i.e. screenshots). Otherwise the result should only be one file which is the
         ///   installer script</param>
         /// </summary>
-        protected async Task<IList<string>> GetRequirements(IList<string> modFiles, bool includeAssets)
+        protected async Task<IList<string>> GetRequirements(IList<string> modFiles, bool includeAssets, IList<string> allowedTypes)
         {
             ModFormatManager FormatManager = new ModFormatManager();
 
-            return await FormatManager.GetRequirements(modFiles, includeAssets);
+            return await FormatManager.GetRequirements(modFiles, includeAssets, allowedTypes);
         }
 
         /// <summary>
@@ -208,10 +218,10 @@ namespace FomodInstaller.ModInstaller
         /// <param name="prefixPath">base path for all relative paths</param>
         /// <param name="progressDelegate">A delegate to provide progress feedback.</param>
         /// <param name="coreDelegate">A delegate for all the interactions with the js core.</param>
-        protected async Task<IList<Instruction>> ScriptedModInstall(Mod modArchive, ProgressDelegate progressDelegate, CoreDelegates coreDelegate)
+        protected async Task<IList<Instruction>> ScriptedModInstall(Mod modArchive, dynamic preset, ProgressDelegate progressDelegate, CoreDelegates coreDelegate)
         {
             IScriptExecutor sexScript = modArchive.InstallScript.Type.CreateExecutor(modArchive, coreDelegate);
-            return await sexScript.Execute(modArchive.InstallScript, modArchive.TempPath);
+            return await sexScript.Execute(modArchive.InstallScript, modArchive.TempPath, preset);
         }
 
         #endregion

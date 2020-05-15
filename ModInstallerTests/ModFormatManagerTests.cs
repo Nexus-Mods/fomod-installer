@@ -23,7 +23,7 @@ namespace FomodInstaller.ModInstaller.Tests
 		Assert.Empty(modFiles);
 
 		ModFormatManager installer = new ModFormatManager();
-			var actual = await installer.GetRequirements(modFiles, false);
+			var actual = await installer.GetRequirements(modFiles, false, null);
 
 			// Xunit test
 			// Assert.Null(actual);

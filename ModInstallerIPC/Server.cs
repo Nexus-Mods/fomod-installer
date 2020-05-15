@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Permissions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +57,13 @@ namespace ModInstallerIPC
             }
             else if (input.GetType() == typeof(JObject))
             {
-                return new DictWrap(((JObject)input).ToObject<IDictionary<string, object>>());
+                IDictionary<string, object> res = ((JObject)input).ToObject<IDictionary<string, object>>();
+                if (res.ContainsKey("type") && ((string)res["type"] == "Buffer"))
+                {
+                    return Convert.FromBase64String((string)res["data"]);
+                } else {
+                    return new DictWrap(res);
+                }
             }
             else if (input.GetType() == typeof(long))
             {
@@ -210,10 +217,10 @@ namespace ModInstallerIPC
 
             public DeferContext(string id, Func<string, string, string, object[], Task<object>> ContextIPC)
             {
-                plugin = new Context(async (string name, object[] args) => await ContextIPC(id, "plugin", name, args));
-                ini = new Context(async (string name, object[] args) => await ContextIPC(id, "ini", name, args));
-                context = new Context(async (string name, object[] args) => await ContextIPC(id, "context", name, args));
-                ui = new Context(async (string name, object[] args) => await ContextIPC(id, "ui", name, args));
+                plugin = new Context((string name, object[] args) => ContextIPC(id, "plugin", name, args));
+                ini = new Context((string name, object[] args) => ContextIPC(id, "ini", name, args));
+                context = new Context((string name, object[] args) => ContextIPC(id, "context", name, args));
+                ui = new Context((string name, object[] args) => ContextIPC(id, "ui", name, args));
             }
         }
 
@@ -259,6 +266,36 @@ namespace ModInstallerIPC
             {
                 var methods = objectType.GetMethods();
                 return objectType.GetMethod("DynamicInvoke") != null;
+            }
+        }
+
+        private class BufferSerializer : JsonConverter
+        {
+            public BufferSerializer() { }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                JToken res = JToken.FromObject(new
+                {
+                    type = "Buffer",
+                    data = Convert.ToBase64String((byte[])value),
+                });
+                res.WriteTo(writer);
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                throw new NotImplementedException("Unnecessary because CanRead is false. The type will skip the converter.");
+            }
+
+            public override bool CanRead
+            {
+                get { return false; }
+            }
+
+            public override bool CanConvert(Type objectType)
+            {
+                return objectType.IsArray && objectType.GetElementType() == typeof(byte);
             }
         }
 
@@ -318,30 +355,48 @@ namespace ModInstallerIPC
             return Guid.NewGuid().ToString("N");
         }
 
-        private async Task<object> ContextIPC(string targetId, string targetType, string name, object[] args)
+        private Task<object> ContextIPC(string targetId, string targetType, string name, object[] args)
         {
             string id = GenerateId();
-            mMessageQueue.Enqueue(new OutMessage {
-                id = id,
-                callback = new { id = targetId, type = targetType },
-                data = new { name, args }
-            });
 
-            return await AwaitReply(id);
+            Task<object> result = AwaitReply(id);
+
+            try
+            {
+                // wow, ok, so, umm, this code is run in the context of the main/default appdomain but because
+                // it's run "on behalf of" the sandbox appdomain we have to raise our permissions again.
+                // Probably totally obvious to an experienced .net developer but I find this security system and
+                // this api - surprising.
+                // I didn't even know NetMQ was going to run unmanaged code or that it was my job to assert the
+                // necessary right...
+                new SecurityPermission(SecurityPermissionFlag.UnmanagedCode).Assert();
+                mMessageQueue.Enqueue(new OutMessage
+                {
+                    id = id,
+                    callback = new { id = targetId, type = targetType },
+                    data = new { name, args }
+                });
+            } catch (Exception e)
+            {
+                Console.WriteLine("Failed to enqueue message: {0}", e.Message);
+            }
+
+            return result;
         }
 
-        private async Task<object> AwaitReply(string id)
+        private Task<object> AwaitReply(string id)
         {
             var repliesCompletion = new TaskCompletionSource<object>();
             mAwaitedReplies.Add(id, repliesCompletion);
-            return await repliesCompletion.Task;
+            return repliesCompletion.Task;
         }
 
         private void SendResponse(PairSocket server, OutMessage resp)
         {
             Msg msg = new Msg();
             FunctionSerializer funcSer = new FunctionSerializer();
-            string serialized = JsonConvert.SerializeObject(new { resp.id, resp.callback, resp.data, resp.error }, funcSer);
+            BufferSerializer buffSer = new BufferSerializer();
+            string serialized = JsonConvert.SerializeObject(new { resp.id, resp.callback, resp.data, resp.error }, funcSer, buffSer);
             mCallbacks[resp.id] = funcSer.callbacks;
             byte[] encoded = Encoding.UTF8.GetBytes(serialized);
             msg.InitGC(encoded, encoded.Length);
@@ -353,7 +408,10 @@ namespace ModInstallerIPC
             var files = new List<string>(data["files"].Children().ToList()
                 .Select(input => input.ToString()));
 
-            Dictionary<string, object> result = await mInstaller.TestSupported(files);
+            var allowedTypes = new List<string>(data["allowedTypes"].Children().ToList()
+                .Select(input => input.ToString()));
+
+            Dictionary<string, object> result = await mInstaller.TestSupported(files, allowedTypes);
             return result;
         }
 
@@ -364,10 +422,19 @@ namespace ModInstallerIPC
             var pluginPath = data["pluginPath"].ToString();
             var scriptPath = data["scriptPath"].ToString();
 
+            dynamic choices;
+            try
+            {
+                choices = data["choices"];
+            }
+            catch (RuntimeBinderException) {
+                choices = null;
+            }
+
             DeferContext context = new DeferContext(id, (targetId, targetType, name, args) => ContextIPC(targetId, targetType, name, args));
             CoreDelegates coreDelegates = new CoreDelegates(ToExpando(context));
 
-            return await mInstaller.Install(files, stopPatterns, pluginPath, scriptPath, (int progress) => { }, coreDelegates);
+            return await mInstaller.Install(files, stopPatterns, pluginPath, scriptPath, choices, (ProgressDelegate)((int progress) => { }), coreDelegates);
         }
 
         private async Task<object> DispatchInvoke(JObject data)
