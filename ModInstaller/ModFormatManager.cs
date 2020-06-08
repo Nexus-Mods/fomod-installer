@@ -65,8 +65,15 @@ namespace FomodInstaller.ModInstaller
                         foreach (string scriptFile in scriptType.FileNames)
                         {
                             string omodMatch = modFiles.Where(x => x.Equals("script") || x.Equals("script.txt")).FirstOrDefault();
+                            bool isOmod = false;
+                            try
+                            {
+                                isOmod = (!string.IsNullOrEmpty(omodMatch) && scriptType.ValidateScript(scriptType.LoadScript(omodMatch)));
+                            } catch (Exception) {
+                                // don't care
+                            }
 
-                            if (!string.IsNullOrEmpty(omodMatch) && scriptType.ValidateScript(scriptType.LoadScript(omodMatch)))
+                            if (isOmod)
                             {
                                 HasFoundScriptType = true;
                                 RequiredFiles.Add(omodMatch);

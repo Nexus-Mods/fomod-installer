@@ -102,11 +102,20 @@ namespace FomodInstaller.ModInstaller
 
             if (modToInstall.HasInstallScript)
             {
-                Instructions = await ScriptedModInstall(modToInstall, preset, progressDelegate, coreDelegate);
+                if (ScriptType.TypeId == "ModScript")
+                {
+                    Instructions = new List<Instruction> {
+                        Instruction.InstallError("fatal", "OMOD Installers not supported"),
+                    };
+                }
+                else
+                {
+                    Instructions = await ScriptedModInstall(modToInstall, preset, progressDelegate, coreDelegate);
+                }
                 if (Instructions == null)
                 {
                     Instructions = new List<Instruction>();
-                    Instructions.Add(Instruction.InstallError("warning" ,"Installer failed (it should have reported an error message)"));
+                    Instructions.Add(Instruction.InstallError("warning", "Installer failed (it should have reported an error message)"));
                 }
             }
             else
