@@ -10,6 +10,12 @@ async function createIPC(port) {
     proc.on('error', err => {
       reject(err);
     });
+    proc.on('exit', code => {
+      if (code === 0x80131700) {
+        reject(new Error('No compatible .Net Framework, you need .Net framework 4.6 or newer'));
+      }
+      reject(new Error(`Failed to run fomod installer. Errorcode ${code.toString(16)}`));
+    });
     proc.stdout.on('data', (dat) => {
       if (resolve !== undefined) {
         // the process should log to the console once to signal it started
