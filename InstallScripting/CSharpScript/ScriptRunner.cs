@@ -27,39 +27,62 @@ namespace FomodInstaller.Scripting.CSharpScript
 			m_csfFunctions = p_csfFunctions;
 		}
 
-		#endregion
+        #endregion
 
-		/// <summary>
-		/// Executes the given script.
-		/// </summary>
-		/// <param name="p_bteScript">The bytes of the assembly containing the script to execute.</param>
-		/// <returns><c>true</c> if the script completes successfully;
-		/// <c>false</c> otherwise.</returns>
-		public bool Execute(byte[] p_bteScript)
-		{
-			Application.EnableVisualStyles();
-			Application.SetCompatibleTextRenderingDefault(false);
-			Control.CheckForIllegalCrossThreadCalls = false;
-						
-			Assembly asmScript = Assembly.Load(p_bteScript);
+        /// <summary>
+        /// Executes the given script.
+        /// </summary>
+        /// <param name="p_bteScript">The bytes of the assembly containing the script to execute.</param>
+        /// <returns><c>true</c> if the script completes successfully;
+        /// <c>false</c> otherwise.</returns>
+        public bool Execute(byte[] p_bteScript)
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Control.CheckForIllegalCrossThreadCalls = false;
 
-			object s = asmScript.CreateInstance("Script");
-			//s = new Script();
-			if (s == null)
-			{
-				m_csfFunctions.ExtendedMessageBox("C# Script did not contain a 'Script' class in the root namespace.", "Error", null);
-				return false;
-			}
+            Assembly asmScript = Assembly.Load(p_bteScript);
 
-			try
-			{
-				MethodInfo mifMethod = null;
-				for (Type tpeScriptType = s.GetType(); mifMethod == null; tpeScriptType = tpeScriptType.BaseType)
-					mifMethod = tpeScriptType.GetMethod("Setup", new Type[] { typeof(CSharpScriptFunctionProxy) });
-				mifMethod.Invoke(s, new object[] { m_csfFunctions });
-				return (bool)s.GetType().GetMethod("OnActivate").Invoke(s, null);
-			}
-			catch (Exception ex)
+            object s = asmScript.CreateInstance("Script");
+            //s = new Script();
+            if (s == null)
+            {
+                m_csfFunctions.ExtendedMessageBox("C# Script did not contain a 'Script' class in the root namespace.", "Error", null);
+                return false;
+            }
+
+            try
+            {
+                MethodInfo mifMethod = null;
+                try
+                {
+                    for (Type tpeScriptType = s.GetType(); mifMethod == null; tpeScriptType = tpeScriptType.BaseType)
+                        mifMethod = tpeScriptType.GetMethod("Setup", new Type[] { typeof(CSharpScriptFunctionProxy) });
+                    mifMethod.Invoke(s, new object[] { m_csfFunctions });
+                    return (bool)s.GetType().GetMethod("OnActivate").Invoke(s, null);
+                } catch (System.Reflection.TargetInvocationException ex)
+                {
+                    throw ex.InnerException;
+                }
+            }
+            catch (System.Security.SecurityException ex)
+            {
+                string strMessage = "Mod installer incompatible.";
+                StringBuilder stbException = new StringBuilder();
+                stbException
+                    .Append("The mod installer attempted to access a location outside the mod directory.")
+                    .AppendLine()
+                    .Append("While this is likely to be harmless, due to technical and security reasons we cannot ensure " +
+                            "compatibility with this type of installer.")
+                    .AppendLine()
+                    .Append("We ask you to instead install the mod manually and apologize for the inconvenience.")
+                    .AppendLine()
+                    .AppendLine()
+                    .Append(ex.ToString());
+                m_csfFunctions.ExtendedMessageBox(strMessage, "Error", stbException.ToString());
+                return false;
+            }
+            catch (Exception ex)
 			{
 				StringBuilder stbException = new StringBuilder(ex.ToString());
 				while (ex.InnerException != null)
@@ -67,7 +90,7 @@ namespace FomodInstaller.Scripting.CSharpScript
 					ex = ex.InnerException;
 					stbException.AppendLine().AppendLine().Append(ex.ToString());
 				}
-				string strMessage = "An exception occured in the script.";
+				string strMessage = "An exception occurred in the script.";
                 m_csfFunctions.ExtendedMessageBox(strMessage, "Error", stbException.ToString());
 				return false;
 			}

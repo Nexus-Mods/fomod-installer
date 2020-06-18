@@ -53,7 +53,8 @@ namespace ModInstallerIPC
 
             if (input.GetType() == typeof(JArray))
             {
-                return new ArrayBinder((JArray)input);
+                dynamic binder = new ArrayBinder((JArray)input);
+                return (object[])binder;
             }
             else if (input.GetType() == typeof(JObject))
             {
@@ -109,8 +110,7 @@ namespace ModInstallerIPC
         /**
          * Allow a dynamic list type (JArray) to be implicitly converted to an array or any enumerable
          * as needed
-         * (does this even work? is it necessary?)
-         */
+         **/
         private class ArrayBinder : DynamicObject
         {
             private readonly JArray mArray;
