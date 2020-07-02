@@ -1,22 +1,25 @@
 ﻿using FomodInstaller.Interface;
 using FomodInstaller.ModInstaller;
 using Microsoft.CSharp.RuntimeBinder;
-using NetMQ;
-using NetMQ.Sockets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
+using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Security.Permissions;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Utils;
+using System.Net;
 
 namespace ModInstallerIPC
 {
@@ -299,21 +302,22 @@ namespace ModInstallerIPC
             }
         }
 
-        private readonly int mPort;
+        private readonly string mId;
         private readonly bool mListen;
+        private bool mUsePipe = false;
         private Installer mInstaller;
-        private NetMQQueue<OutMessage> mMessageQueue;
-        private NetMQPoller mPoller;
         private Dictionary<string, TaskCompletionSource<object>> mAwaitedReplies;
         private Dictionary<string, Dictionary<string, Delegate>> mCallbacks;
+        private Action<OutMessage> mEnqueue;
 
         /**
          * listens on a port and handles TestSupported/Install commands to deal with fomod installation
          */
-        public Server(int port, bool listen)
+        public Server(string id, bool pipe, bool listen)
         {
-            mPort = port;
+            mId = id;
             mListen = listen;
+            mUsePipe = pipe;
             mInstaller = new Installer();
 
             mAwaitedReplies = new Dictionary<string, TaskCompletionSource<object>>();
@@ -322,32 +326,118 @@ namespace ModInstallerIPC
 
         public void HandleMessages()
         {
-            using (var server = new PairSocket())
-            using (mMessageQueue = new NetMQQueue<OutMessage>())
-            using (mPoller = new NetMQPoller { server })
+            StreamReader reader;
+            StreamWriter writer;
+            var enc = new UTF8Encoding(false);
+            if (this.mUsePipe) {
+                var pipeIn = new NamedPipeClientStream(mId);
+                pipeIn.Connect();
+                var pipeOut = new NamedPipeServerStream(mId + "_reply");
+                pipeOut.WaitForConnection();
+
+                reader = new StreamReader(pipeIn, enc);
+                writer = new StreamWriter(pipeOut, enc);
+            } else
             {
-                if (mListen)
-                {
-                    server.Bind("tcp://localhost:" + this.mPort);
-                }
-                else
-                {
-                    server.Connect("tcp://localhost:" + this.mPort);
-                }
-                mPoller.Add(mMessageQueue);
-
-                mMessageQueue.ReceiveReady += (object sender, NetMQQueueEventArgs<OutMessage> args) =>
-                {
-                    SendResponse(server, mMessageQueue.Dequeue());
-                };
-                server.ReceiveReady += async (object sender, NetMQSocketEventArgs args) =>
-                {
-                    mMessageQueue.Enqueue(await OnReceived(args));
-                };
-
-                mPoller.Run();
+                // use a single network socket
+                TcpClient client = new TcpClient();
+                client.Connect("localhost", Int32.Parse(mId));
+                NetworkStream stream = client.GetStream();
+                reader = new StreamReader(stream, enc);
+                writer = new StreamWriter(stream, enc);
             }
-            mMessageQueue = null;
+            writer.AutoFlush = true;
+
+            // a queue where dequeuing blocks while the queue is empty
+            BlockingCollection<OutMessage> outgoing = new BlockingCollection<OutMessage>();
+
+            mEnqueue = msg => outgoing.Add(msg);
+
+            Task readerTask = Task.Run(() => {
+                ReaderLoop(reader, mEnqueue);
+                outgoing.CompleteAdding();
+            });
+            Task writerTask = Task.Run(() => {
+                WriterLoop(writer, outgoing);
+            });
+
+            // run until either reader or writer signal for termination
+            Task.WaitAll(readerTask, writerTask);
+        }
+
+        private void ReaderLoop(StreamReader reader, Action<OutMessage> onSend)
+        {
+            bool running = true;
+
+            try
+            {
+
+                int bufferSize = 64 * 1024;
+                int offset = 0;
+                char[] buffer = new char[bufferSize];
+
+                // this handles all messages from the client
+                while (running)
+                {
+                    int left = bufferSize - offset;
+                    int numRead = reader.Read(buffer, offset, left);
+                    if (numRead == 0)
+                    {
+                        running = false;
+                    }
+                    else if (numRead == left)
+                    {
+                        // buffer too small, double it
+                        bufferSize = bufferSize * 2;
+                        char[] newBuffer = new char[bufferSize];
+                        Array.Copy(buffer, newBuffer, buffer.Length);
+                        offset = buffer.Length;
+                        buffer = newBuffer;
+                    }
+                    else
+                    {
+                        var input = new string(buffer, 0, numRead + offset);
+                        offset = 0;
+                        foreach (var msg in input.Split('\uFFFF'))
+                        {
+                            if (msg.Length == 0)
+                            {
+                                continue;
+                            }
+
+                            OnReceived(msg).ContinueWith(reply =>
+                            {
+                                onSend(reply.Result);
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine("read loop failed: {0}", e.Message);
+            }
+        }
+
+        private void WriterLoop(StreamWriter writer, BlockingCollection<OutMessage> outgoing)
+        {
+            bool running = true;
+
+            try
+            {
+                while (running)
+                {
+                    OutMessage msg = outgoing.Take();
+                    SendResponse(writer, msg);
+                }
+            } catch (InvalidOperationException)
+            {
+                // queue was closed by the producer
+                return;
+            } catch (Exception e)
+            {
+                Console.Error.WriteLine("write loop failed: {0}", e.Message);
+            }
         }
 
         private static string GenerateId()
@@ -363,14 +453,16 @@ namespace ModInstallerIPC
 
             try
             {
+                // the following was added to deal with netmq running unmanaged code, we don't need
+                // it any more since we dropped netmq but keeping here to remind me of the weirdness of .Net:
+
                 // wow, ok, so, umm, this code is run in the context of the main/default appdomain but because
                 // it's run "on behalf of" the sandbox appdomain we have to raise our permissions again.
                 // Probably totally obvious to an experienced .net developer but I find this security system and
                 // this api - surprising.
-                // I didn't even know NetMQ was going to run unmanaged code or that it was my job to assert the
-                // necessary right...
-                new SecurityPermission(SecurityPermissionFlag.UnmanagedCode).Assert();
-                mMessageQueue.Enqueue(new OutMessage
+                // new SecurityPermission(SecurityPermissionFlag.UnmanagedCode).Assert();
+
+                mEnqueue(new OutMessage
                 {
                     id = id,
                     callback = new { id = targetId, type = targetType },
@@ -378,7 +470,7 @@ namespace ModInstallerIPC
                 });
             } catch (Exception e)
             {
-                Console.WriteLine("Failed to enqueue message: {0}", e.Message);
+                Console.Error.WriteLine("Failed to enqueue message: {0}", e.Message);
             }
 
             return result;
@@ -391,16 +483,13 @@ namespace ModInstallerIPC
             return repliesCompletion.Task;
         }
 
-        private void SendResponse(PairSocket server, OutMessage resp)
+        private void SendResponse(StreamWriter writer, OutMessage resp)
         {
-            Msg msg = new Msg();
             FunctionSerializer funcSer = new FunctionSerializer();
             BufferSerializer buffSer = new BufferSerializer();
             string serialized = JsonConvert.SerializeObject(new { resp.id, resp.callback, resp.data, resp.error }, funcSer, buffSer);
             mCallbacks[resp.id] = funcSer.callbacks;
-            byte[] encoded = Encoding.UTF8.GetBytes(serialized);
-            msg.InitGC(encoded, encoded.Length);
-            server.Send(ref msg, false);
+            writer.Write(serialized + "\uFFFF");
         }
 
         private async Task<object> DispatchTestSupported(JObject data)
@@ -494,19 +583,16 @@ namespace ModInstallerIPC
                     }
                 case "Quit":
                     {
-                        mPoller.Stop();
+                        // don't think we need to do anything, this shuts down cleanly when the peer closes the socket
                         return "";
                     }
             }
             return "";
         }
 
-        private async Task<OutMessage> OnReceived(NetMQSocketEventArgs evt)
+        private async Task<OutMessage> OnReceived(string data)
         {
-            Msg msg = new Msg();
-            msg.InitEmpty();
-            evt.Socket.Receive(ref msg);
-            JObject invocation = JObject.Parse(Encoding.UTF8.GetString(msg.Data));
+            JObject invocation = JObject.Parse(data);
             string id = invocation["id"].ToString();
             return await Task.Run(async () =>
             {

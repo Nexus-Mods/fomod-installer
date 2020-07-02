@@ -1,12 +1,16 @@
 const cp = require('child_process');
 const path = require('path');
 
-async function createIPC(port) {
+async function createIPC(usePipe, id) {
   // it does actually get named .exe on linux as well
   const exeName = 'ModInstallerIPC.exe';
 
   return new Promise((resolve, reject) => {
-    const proc = cp.spawn(path.join(__dirname, 'dist', exeName), [port.toString()]);
+    const args = [id];
+    if (usePipe) {
+      args.push('--pipe');
+    }
+    const proc = cp.spawn(path.join(__dirname, 'dist', exeName), args);
     proc.on('error', err => {
       reject(err);
     });
