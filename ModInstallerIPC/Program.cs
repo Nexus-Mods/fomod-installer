@@ -50,8 +50,8 @@ namespace ModInstallerIPC
             try
             {
                 Server server = new Server(cmdLine["$"], cmdLine.ContainsKey("pipe"), false);
-
                 server.HandleMessages();
+
                 return 0;
             }
             catch (Exception e)

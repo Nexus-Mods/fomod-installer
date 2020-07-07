@@ -20,15 +20,7 @@ async function createIPC(usePipe, id) {
       }
       reject(new Error(`Failed to run fomod installer. Errorcode ${code.toString(16)}`));
     });
-    proc.stdout.on('data', (dat) => {
-      if (resolve !== undefined) {
-        // the process should log to the console once to signal it started
-        resolve(proc);
-        resolve = undefined;
-      } else {
-        console.log('fwd: ', dat.toString());
-      }
-    });
+    resolve(proc);
   });
 }
 
