@@ -14,11 +14,14 @@ async function createIPC(usePipe, id) {
     proc.on('error', err => {
       reject(err);
     });
-    proc.on('exit', code => {
+    proc.on('exit', (code, signal) => {
       if (code === 0x80131700) {
         reject(new Error('No compatible .Net Framework, you need .Net framework 4.6 or newer'));
+      } else if (code !== null) {
+        reject(new Error(`Failed to run fomod installer. Errorcode ${code.toString(16)}`));
+      } else {
+        reject(new Error(`The fomod installer was terminated. Signal: ${signal}`));
       }
-      reject(new Error(`Failed to run fomod installer. Errorcode ${code.toString(16)}`));
     });
     resolve(proc);
   });
