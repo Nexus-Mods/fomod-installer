@@ -56,7 +56,15 @@ namespace FomodInstaller.Scripting.CSharpScript
         return null;
       }
       byte[] bteAssembly = File.ReadAllBytes(crsResults.PathToAssembly);
-      File.Delete(crsResults.PathToAssembly);
+      try
+      {
+        File.Delete(crsResults.PathToAssembly);
+      } catch (Exception e)
+      {
+        Console.WriteLine("failed to delete temporary file {0}: {1}", crsResults.PathToAssembly, e);
+        // what are people doing to their system? Oh well, this alone isn't worth doing anything about,
+        // what's one more abandoned temporary file?
+      }
       return bteAssembly;
     }
 
