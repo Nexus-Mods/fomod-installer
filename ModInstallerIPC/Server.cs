@@ -329,7 +329,7 @@ namespace ModInstallerIPC
             StreamReader reader;
             StreamWriter writer;
             var enc = new UTF8Encoding(false);
-            if (this.mUsePipe) {
+            if (mUsePipe) {
                 var pipeIn = new NamedPipeClientStream(mId);
                 pipeIn.Connect();
                 var pipeOut = new NamedPipeServerStream(mId + "_reply");
@@ -341,7 +341,14 @@ namespace ModInstallerIPC
             {
                 // use a single network socket
                 TcpClient client = new TcpClient();
-                client.Connect("localhost", Int32.Parse(mId));
+                try
+                {
+                    client.Connect("localhost", Int32.Parse(mId));
+                } catch (Exception e)
+                {
+                    Console.Error.WriteLine("failed to connect to local port {0}: {1}", mId, e.Message);
+                    throw e;
+                }
                 NetworkStream stream = client.GetStream();
                 reader = new StreamReader(stream, enc);
                 writer = new StreamWriter(stream, enc);
@@ -592,7 +599,18 @@ namespace ModInstallerIPC
 
         private async Task<OutMessage> OnReceived(string data)
         {
-            JObject invocation = JObject.Parse(data);
+            JObject invocation;
+            try
+            {
+                invocation = JObject.Parse(data);
+            } catch (Exception e)
+            {
+                Console.Error.WriteLine("Failed to parse json (error: {0}): {1}", e.Message, data);
+                return await Task.Run(() =>
+                {
+                    return new OutMessage { id = "parseerror", error = new { name = "ParseError", message = e.Message, stack = e.StackTrace } };
+                });
+            }
             string id = invocation["id"].ToString();
             return await Task.Run(async () =>
             {
