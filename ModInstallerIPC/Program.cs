@@ -24,7 +24,7 @@ namespace ModInstallerIPC
             int idx = 0;
             while (idx < args.Length)
             {
-                if (args[idx].ToUpper() == "--PIPE")
+                if (args[idx].Equals("--pipe", StringComparison.InvariantCultureIgnoreCase))
                 {
                     result["pipe"] = "true";
                 } else

@@ -620,7 +620,15 @@ namespace ModInstallerIPC
                 }
                 catch (Exception e)
                 {
-                    return new OutMessage { id = id, error = new { name = e.GetType().FullName, message = e.Message, stack = e.StackTrace } };
+                    return new OutMessage {
+                        id = id,
+                        error = new {
+                            name = e.GetType().FullName,
+                            message = e.Message,
+                            stack = e.StackTrace,
+                            data = e.Data,
+                        }
+                    };
                 }
             });
         }
