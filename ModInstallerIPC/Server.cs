@@ -20,6 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Utils;
 using System.Net;
+using System.Diagnostics;
 
 namespace ModInstallerIPC
 {
@@ -326,17 +327,20 @@ namespace ModInstallerIPC
 
         public void HandleMessages()
         {
-            StreamReader reader;
-            StreamWriter writer;
+            // StreamReader reader;
+            // StreamWriter writer;
             var enc = new UTF8Encoding(false);
+            Stream streamIn = null;
+            Stream streamOut = null;
             if (mUsePipe) {
-                var pipeIn = new NamedPipeClientStream(mId);
+                var pipeIn = new NamedPipeClientStream(".", mId, PipeDirection.In);
                 pipeIn.Connect();
-                var pipeOut = new NamedPipeServerStream(mId + "_reply");
+
+                var pipeOut = new NamedPipeServerStream(mId + "_reply", PipeDirection.Out);
                 pipeOut.WaitForConnection();
 
-                reader = new StreamReader(pipeIn, enc);
-                writer = new StreamWriter(pipeOut, enc);
+                streamIn = pipeIn;
+                streamOut = pipeOut;
             } else
             {
                 // use a single network socket
@@ -350,10 +354,9 @@ namespace ModInstallerIPC
                     throw e;
                 }
                 NetworkStream stream = client.GetStream();
-                reader = new StreamReader(stream, enc);
-                writer = new StreamWriter(stream, enc);
+                streamIn = streamOut = stream;
             }
-            writer.AutoFlush = true;
+            // writer.AutoFlush = true;
 
             // a queue where dequeuing blocks while the queue is empty
             BlockingCollection<OutMessage> outgoing = new BlockingCollection<OutMessage>();
@@ -361,33 +364,36 @@ namespace ModInstallerIPC
             mEnqueue = msg => outgoing.Add(msg);
 
             Task readerTask = Task.Run(() => {
-                ReaderLoop(reader, mEnqueue);
+                Thread.CurrentThread.Name = "reader loop";
+                ReaderLoop(streamIn, mEnqueue);
                 outgoing.CompleteAdding();
             });
             Task writerTask = Task.Run(() => {
-                WriterLoop(writer, outgoing);
+                Thread.CurrentThread.Name = "writer loop";
+                WriterLoop(streamOut, outgoing);
             });
 
             // run until either reader or writer signal for termination
             Task.WaitAll(readerTask, writerTask);
         }
 
-        private void ReaderLoop(StreamReader reader, Action<OutMessage> onSend)
+        private void ReaderLoop(Stream stream, Action<OutMessage> onSend)
         {
             bool running = true;
 
             try
             {
-
                 int bufferSize = 64 * 1024;
                 int offset = 0;
-                char[] buffer = new char[bufferSize];
+                byte[] buffer = new byte[bufferSize];
 
                 // this handles all messages from the client
                 while (running)
                 {
                     int left = bufferSize - offset;
-                    int numRead = reader.Read(buffer, offset, left);
+
+                    // int numRead = reader.Read(buffer, offset, left);
+                    int numRead = stream.Read(buffer, offset, left);
                     if (numRead == 0)
                     {
                         running = false;
@@ -396,15 +402,17 @@ namespace ModInstallerIPC
                     {
                         // buffer too small, double it
                         bufferSize = bufferSize * 2;
-                        char[] newBuffer = new char[bufferSize];
+                        byte[] newBuffer = new byte[bufferSize];
                         Array.Copy(buffer, newBuffer, buffer.Length);
                         offset = buffer.Length;
                         buffer = newBuffer;
                     }
                     else
                     {
-                        var input = new string(buffer, 0, numRead + offset);
+                        var input = System.Text.Encoding.UTF8.GetString(buffer, 0, numRead + offset);
+                        // var input = new string(buffer, 0, numRead + offset);
                         offset = 0;
+
                         foreach (var msg in input.Split('\uFFFF'))
                         {
                             if (msg.Length == 0)
@@ -426,7 +434,7 @@ namespace ModInstallerIPC
             }
         }
 
-        private void WriterLoop(StreamWriter writer, BlockingCollection<OutMessage> outgoing)
+        private void WriterLoop(Stream writer, BlockingCollection<OutMessage> outgoing)
         {
             bool running = true;
 
@@ -490,13 +498,14 @@ namespace ModInstallerIPC
             return repliesCompletion.Task;
         }
 
-        private void SendResponse(StreamWriter writer, OutMessage resp)
+        private void SendResponse(Stream writer, OutMessage resp)
         {
             FunctionSerializer funcSer = new FunctionSerializer();
             BufferSerializer buffSer = new BufferSerializer();
             string serialized = JsonConvert.SerializeObject(new { resp.id, resp.callback, resp.data, resp.error }, funcSer, buffSer);
             mCallbacks[resp.id] = funcSer.callbacks;
-            writer.Write(serialized + "\uFFFF");
+            var input = System.Text.Encoding.UTF8.GetBytes(serialized + "\uFFFF");
+            writer.Write(input, 0, input.Length);
         }
 
         private async Task<object> DispatchTestSupported(JObject data)

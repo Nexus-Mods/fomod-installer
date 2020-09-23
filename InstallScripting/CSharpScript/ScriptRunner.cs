@@ -5,27 +5,27 @@ using System.Windows.Forms;
 
 namespace FomodInstaller.Scripting.CSharpScript
 {
-	/// <summary>
-	/// Runs a C# script.
-	/// </summary>
-	/// <remarks>
-	/// This class is meant to be run in a sandboxed domain in order to limit the possible
-	/// damage from malicious or poorly written code.
-	/// </remarks>
-	public class ScriptRunner : MarshalByRefObject
-	{
-		private CSharpScriptFunctionProxy m_csfFunctions = null;
+    /// <summary>
+    /// Runs a C# script.
+    /// </summary>
+    /// <remarks>
+    /// This class is meant to be run in a sandboxed domain in order to limit the possible
+    /// damage from malicious or poorly written code.
+    /// </remarks>
+    public class ScriptRunner : MarshalByRefObject
+    {
+        private CSharpScriptFunctionProxy m_csfFunctions = null;
 
-		#region Constructors
-		
-		/// <summary>
-		/// A simple construtor that initializes the object with the given dependencies.
-		/// </summary>
-		/// <param name="p_csfFunctions">The object that implements the script functions.</param>
-		public ScriptRunner(CSharpScriptFunctionProxy p_csfFunctions)
-		{
-			m_csfFunctions = p_csfFunctions;
-		}
+        #region Constructors
+
+        /// <summary>
+        /// A simple construtor that initializes the object with the given dependencies.
+        /// </summary>
+        /// <param name="p_csfFunctions">The object that implements the script functions.</param>
+        public ScriptRunner(CSharpScriptFunctionProxy p_csfFunctions)
+        {
+            m_csfFunctions = p_csfFunctions;
+        }
 
         #endregion
 
@@ -60,7 +60,8 @@ namespace FomodInstaller.Scripting.CSharpScript
                         mifMethod = tpeScriptType.GetMethod("Setup", new Type[] { typeof(CSharpScriptFunctionProxy) });
                     mifMethod.Invoke(s, new object[] { m_csfFunctions });
                     return (bool)s.GetType().GetMethod("OnActivate").Invoke(s, null);
-                } catch (System.Reflection.TargetInvocationException ex)
+                }
+                catch (System.Reflection.TargetInvocationException ex)
                 {
                     throw ex.InnerException;
                 }
@@ -83,17 +84,17 @@ namespace FomodInstaller.Scripting.CSharpScript
                 return false;
             }
             catch (Exception ex)
-			{
-				StringBuilder stbException = new StringBuilder(ex.ToString());
-				while (ex.InnerException != null)
-				{
-					ex = ex.InnerException;
-					stbException.AppendLine().AppendLine().Append(ex.ToString());
-				}
-				string strMessage = "An exception occurred in the script.";
+            {
+                StringBuilder stbException = new StringBuilder(ex.ToString());
+                while (ex.InnerException != null)
+                {
+                    ex = ex.InnerException;
+                    stbException.AppendLine().AppendLine().Append(ex.ToString());
+                }
+                string strMessage = "An exception occurred in the script.";
                 m_csfFunctions.ExtendedMessageBox(strMessage, "Error", stbException.ToString());
-				return false;
-			}
-		}
-	}
+                return false;
+            }
+        }
+    }
 }

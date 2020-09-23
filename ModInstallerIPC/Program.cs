@@ -56,7 +56,7 @@ namespace ModInstallerIPC
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("Exception: " + e.Message);
+                Console.Error.WriteLine("Exception: {0}\n{1}", e.Message, e.StackTrace);
                 return 1;
             }
         }
