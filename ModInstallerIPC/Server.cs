@@ -473,15 +473,6 @@ namespace ModInstallerIPC
 
             try
             {
-                // the following was added to deal with netmq running unmanaged code, we don't need
-                // it any more since we dropped netmq but keeping here to remind me of the weirdness of .Net:
-
-                // wow, ok, so, umm, this code is run in the context of the main/default appdomain but because
-                // it's run "on behalf of" the sandbox appdomain we have to raise our permissions again.
-                // Probably totally obvious to an experienced .net developer but I find this security system and
-                // this api - surprising.
-                // new SecurityPermission(SecurityPermissionFlag.UnmanagedCode).Assert();
-
                 mEnqueue(new OutMessage
                 {
                     id = id,
@@ -634,6 +625,10 @@ namespace ModInstallerIPC
                 }
                 catch (Exception e)
                 {
+                    if (e.InnerException != null)
+                    {
+                        e = e.InnerException;
+                    }
                     return new OutMessage {
                         id = id,
                         error = new {
