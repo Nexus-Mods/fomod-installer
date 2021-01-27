@@ -1,7 +1,7 @@
 const cp = require('child_process');
 const path = require('path');
 
-async function createIPC(usePipe, id) {
+async function createIPC(usePipe, id, cb) {
   // it does actually get named .exe on linux as well
   const exeName = 'ModInstallerIPC.exe';
 
@@ -25,6 +25,7 @@ async function createIPC(usePipe, id) {
         }
         resolve = reject = undefined;
       });
+    cb(proc);
 
     // resolve slightly delayed to allow the error event to be triggered if the process fails to
     // start. Unfortunately cp.spawn seems to flip a coin on whether it reports events at all or not.

@@ -335,7 +335,7 @@ namespace ModInstallerIPC
             if (mUsePipe) {
                 var pipeIn = new NamedPipeClientStream(mId);
                 Console.Out.WriteLine("in pipe ready");
-                pipeIn.Connect();
+                pipeIn.Connect(30000);
                 Console.Out.WriteLine("in pipe connected");
 
                 var pipeOut = new NamedPipeServerStream(mId + "_reply");
