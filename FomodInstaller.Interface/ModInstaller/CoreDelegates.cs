@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.CSharp.RuntimeBinder;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -269,7 +270,15 @@ namespace FomodInstaller.Interface
                 this.cont = async (dynamic continuePar) =>
                 {
                     string direction = continuePar.direction;
-                    int currentStep = continuePar.currentStepId;
+                    int currentStep = -1;
+                    try
+                    {
+                        currentStep = continuePar.currentStepId;
+                    }
+                    catch (RuntimeBinderException)
+                    {
+                        // no problem, we'll just not validate if the message is for the expected page
+                    }
                     cont(direction == "forward", currentStep);
                     return await Task.FromResult<object>(null);
                 };

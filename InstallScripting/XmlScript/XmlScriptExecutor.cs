@@ -130,7 +130,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 // this needs to happen asynchronously, see above
                 Task.Run(() =>
                 {
-                    if (stepIdx != currentStep)
+                    if ((currentStep != -1) && (stepIdx != currentStep))
                     {
                         return;
                     }
