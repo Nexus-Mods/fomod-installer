@@ -368,74 +368,99 @@ namespace ModInstallerIPC
 
             mEnqueue = msg => outgoing.Add(msg);
 
+            CancellationTokenSource cancelSignal = new CancellationTokenSource();
+
+            Exception cancelEx = null;
+
             Task readerTask = Task.Run(() => {
                 Thread.CurrentThread.Name = "reader loop";
-                ReaderLoop(streamIn, mEnqueue);
-                outgoing.CompleteAdding();
+                try
+                {
+                    ReaderLoop(streamIn, mEnqueue);
+                    outgoing.CompleteAdding();
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine("read loop failed: {0}", e.Message);
+                    cancelSignal.Cancel();
+                    cancelEx = e;
+                };
             });
             Task writerTask = Task.Run(() => {
                 Thread.CurrentThread.Name = "writer loop";
-                WriterLoop(streamOut, outgoing);
+                try
+                {
+                    WriterLoop(streamOut, outgoing);
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine("write loop failed: {0}", e.Message);
+                    cancelSignal.Cancel();
+                    cancelEx = e;
+                }
             });
 
             // run until either reader or writer signal for termination
-            Task.WaitAll(readerTask, writerTask);
+            try
+            {
+                Task.WaitAll(new Task[] { readerTask, writerTask }, cancelSignal.Token);
+            } catch (Exception err)
+            {
+                throw cancelEx ?? err;
+            }
+            finally
+            {
+                cancelSignal.Dispose();
+            }
         }
 
         private void ReaderLoop(Stream stream, Action<OutMessage> onSend)
         {
             bool running = true;
 
-            try
+            int bufferSize = 64 * 1024;
+            int offset = 0;
+            byte[] buffer = new byte[bufferSize];
+
+            // this handles all messages from the client
+            while (running)
             {
-                int bufferSize = 64 * 1024;
-                int offset = 0;
-                byte[] buffer = new byte[bufferSize];
+                int left = bufferSize - offset;
 
-                // this handles all messages from the client
-                while (running)
+                // int numRead = reader.Read(buffer, offset, left);
+                int numRead = stream.Read(buffer, offset, left);
+                if (numRead == 0)
                 {
-                    int left = bufferSize - offset;
+                    running = false;
+                }
+                else if (numRead == left)
+                {
+                    // buffer too small, double it
+                    bufferSize = bufferSize * 2;
+                    byte[] newBuffer = new byte[bufferSize];
+                    Array.Copy(buffer, newBuffer, buffer.Length);
+                    offset = buffer.Length;
+                    buffer = newBuffer;
+                }
+                else
+                {
+                    var input = System.Text.Encoding.UTF8.GetString(buffer, 0, numRead + offset);
+                    // var input = new string(buffer, 0, numRead + offset);
+                    offset = 0;
 
-                    // int numRead = reader.Read(buffer, offset, left);
-                    int numRead = stream.Read(buffer, offset, left);
-                    if (numRead == 0)
+                    foreach (var msg in input.Split('\uFFFF'))
                     {
-                        running = false;
-                    }
-                    else if (numRead == left)
-                    {
-                        // buffer too small, double it
-                        bufferSize = bufferSize * 2;
-                        byte[] newBuffer = new byte[bufferSize];
-                        Array.Copy(buffer, newBuffer, buffer.Length);
-                        offset = buffer.Length;
-                        buffer = newBuffer;
-                    }
-                    else
-                    {
-                        var input = System.Text.Encoding.UTF8.GetString(buffer, 0, numRead + offset);
-                        // var input = new string(buffer, 0, numRead + offset);
-                        offset = 0;
-
-                        foreach (var msg in input.Split('\uFFFF'))
+                        if (msg.Length == 0)
                         {
-                            if (msg.Length == 0)
-                            {
-                                continue;
-                            }
-
-                            OnReceived(msg).ContinueWith(reply =>
-                            {
-                                onSend(reply.Result);
-                            });
+                            continue;
                         }
+
+                        OnReceived(msg).ContinueWith(reply =>
+                        {
+                            onSend(reply.Result);
+                        });
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine("read loop failed: {0}", e.Message);
             }
         }
 
@@ -454,9 +479,6 @@ namespace ModInstallerIPC
             {
                 // queue was closed by the producer
                 return;
-            } catch (Exception e)
-            {
-                Console.Error.WriteLine("write loop failed: {0}", e.Message);
             }
         }
 
