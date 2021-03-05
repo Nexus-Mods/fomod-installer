@@ -647,15 +647,19 @@ namespace ModInstallerIPC
                 }
                 catch (Exception e)
                 {
-                    if (e.InnerException != null)
+                    Exception err = e;
+                    string message = e.Message;
+
+                    while (err.InnerException != null)
                     {
-                        e = e.InnerException;
+                        err = err.InnerException;
+                        message += "; " + err.Message;
                     }
                     return new OutMessage {
                         id = id,
                         error = new {
                             name = e.GetType().FullName,
-                            message = e.Message,
+                            message = message,
                             stack = e.StackTrace,
                             data = e.Data,
                         }

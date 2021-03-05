@@ -12,6 +12,7 @@ using FomodInstaller.Scripting.XmlScript.Parsers;
 using FomodInstaller.Scripting.XmlScript.Unparsers;
 using FomodInstaller.Scripting.XmlScript.Xml;
 using FomodInstaller.Interface;
+using System.Net;
 
 namespace FomodInstaller.Scripting.XmlScript
 {
@@ -85,15 +86,53 @@ namespace FomodInstaller.Scripting.XmlScript
 			}
 		}
 
-        /// <summary>
-        /// Creates an executor that can run the script type.
-        /// </summary>
-        /// <param name="modArchive">The mod being installed.</param>
-        /// <param name="delegates">The application's envrionment info.</param>
-        /// <returns>An executor that can run the script type.</returns>
-        public IScriptExecutor CreateExecutor(Mod modArchive, CoreDelegates delegates)
+		/// <summary>
+		/// Creates an executor that can run the script type.
+		/// </summary>
+		/// <param name="modArchive">The mod being installed.</param>
+		/// <param name="delegates">The application's envrionment info.</param>
+		/// <returns>An executor that can run the script type.</returns>
+		public IScriptExecutor CreateExecutor(Mod modArchive, CoreDelegates delegates)
 		{
 			return new XmlScriptExecutor(modArchive, delegates);
+		}
+
+		private static Stream StringStream(string s)
+		{
+			var stream = new MemoryStream();
+			var writer = new StreamWriter(stream);
+			writer.Write(s);
+			writer.Flush();
+			stream.Position = 0;
+			return stream;
+		}
+
+		public void Validate(string xmlData)
+		{
+			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+			using (var stream = StringStream(xmlData)) {
+				List<string> errors = new List<string>();
+
+				XmlReaderSettings settings = new XmlReaderSettings();
+				settings.ValidationType = ValidationType.Schema;
+				settings.ValidationFlags |= XmlSchemaValidationFlags.ProcessInlineSchema;
+				settings.ValidationFlags |= XmlSchemaValidationFlags.ProcessSchemaLocation;
+				settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
+				settings.ValidationEventHandler += (sender, args) =>
+				{
+					errors.Add(string.Format("{0} (Line {1}, Pos {2})",
+						args.Exception.Message, args.Exception.LineNumber, args.Exception.LinePosition));
+				};
+
+				XmlReader reader = XmlReader.Create(stream, settings);
+
+				while (reader.Read()) { }
+
+				if (errors.Count > 0)
+				{
+					throw new Exception("Invalid XML: " + string.Join("; ", errors));
+				}
+			}
 		}
 
 		/// <summary>
@@ -103,6 +142,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <returns>The <see cref="IScript"/> represented by the given data.</returns>
 		public IScript LoadScript(string scriptData)
 		{
+			Validate(scriptData);
 			XElement XelScript = XElement.Parse(scriptData);
 			IParser Parser = GetParser(XelScript);
 			return Parser.Parse();
@@ -165,17 +205,17 @@ namespace FomodInstaller.Scripting.XmlScript
 			string SourceQualifiedName = SourcePath.Replace(Path.AltDirectorySeparatorChar, '.');
 			if (!Array.Exists(Assembly.GetManifestResourceNames(), (s) => { return SourceQualifiedName.Equals(s, StringComparison.OrdinalIgnoreCase); }))
 			{
-                Assembly = Assembly.GetExecutingAssembly();
+				Assembly = Assembly.GetExecutingAssembly();
 				SourcePath = string.Format("FomodInstaller/Scripting/XmlScript/Schemas/XmlScript{0}.xsd", ScriptVersion);
 				SourceQualifiedName = SourcePath.Replace(Path.AltDirectorySeparatorChar, '.');
 			}
 			using (Stream schema = Assembly.GetManifestResourceStream(SourceQualifiedName))
 			{
-                string SourceUri = string.Format("assembly://{0}", SourcePath);
-                XmlReaderSettings ReaderSettings = new XmlReaderSettings();
+				string SourceUri = string.Format("assembly://{0}", SourcePath);
+				XmlReaderSettings ReaderSettings = new XmlReaderSettings();
 				ReaderSettings.IgnoreComments = true;
 				ReaderSettings.IgnoreWhitespace = true;
-                using (XmlReader schemaReader = XmlReader.Create(schema, ReaderSettings, SourceUri))
+				using (XmlReader schemaReader = XmlReader.Create(schema, ReaderSettings, SourceUri))
 					XMLSchema = XmlSchema.Read(schemaReader, delegate(object sender, ValidationEventArgs e) { throw e.Exception; });
 			}
 			return XMLSchema;
@@ -199,64 +239,64 @@ namespace FomodInstaller.Scripting.XmlScript
 			string ScriptVersion = "1.0";
 			if (RegexVersion.IsMatch(xmlFile))
 			{
-                ScriptVersion = RegexVersion.Match(xmlFile).Groups[4].Value;
+				ScriptVersion = RegexVersion.Match(xmlFile).Groups[4].Value;
 				if (string.IsNullOrEmpty(ScriptVersion))
-                    ScriptVersion = "1.0";
+					ScriptVersion = "1.0";
 			}
 
 			return new Version(ScriptVersion);
 		}
 
-        /// <summary>
-        /// Gets the config version used by the given XML configuration file.
-        /// </summary>
-        /// <param name="xmlScript">The XML file whose version is to be determined.</param>
-        /// <returns>The config version used the given XML configuration file, or <c>null</c>
-        /// if the given file is not recognized as a configuration file.</returns>
-        public Version GetXmlScriptVersion(XElement xmlScript)
+		/// <summary>
+		/// Gets the config version used by the given XML configuration file.
+		/// </summary>
+		/// <param name="xmlScript">The XML file whose version is to be determined.</param>
+		/// <returns>The config version used the given XML configuration file, or <c>null</c>
+		/// if the given file is not recognized as a configuration file.</returns>
+		public Version GetXmlScriptVersion(XElement xmlScript)
 		{
 			string ScriptVersion = "1.0";
 			XElement XmlRoot = xmlScript.DescendantsAndSelf("config").First();
 			string SchemaName = XmlRoot.Attribute(XName.Get("noNamespaceSchemaLocation", "http://www.w3.org/2001/XMLSchema-instance")).Value.ToLowerInvariant();
 			int StartPos = SchemaName.LastIndexOf("xmlscript") + 9;
 			if (StartPos < 9)
-                StartPos = SchemaName.LastIndexOf("modconfig") + 9;
+				StartPos = SchemaName.LastIndexOf("modconfig") + 9;
 			if (StartPos > 8)
 			{
 				int intLength = SchemaName.Length - StartPos - 4;
 				if (intLength > 0)
-                    ScriptVersion = SchemaName.Substring(StartPos, intLength);
+					ScriptVersion = SchemaName.Substring(StartPos, intLength);
 			}
-            return new Version(ScriptVersion);
+			return new Version(ScriptVersion);
 		}
 
-        #endregion
+		#endregion
 
-        #region Validation
+		#region Validation
 
-        /// <summary>
-        /// Validates the given Xml Script against the appropriate schema.
-        /// </summary>
-        /// <param name="xmlScript">The script file.</param>
-        public void ValidateXmlScript(XElement xmlScript)
+		/// <summary>
+		/// Validates the given Xml Script against the appropriate schema.
+		/// </summary>
+		/// <param name="xmlScript">The script file.</param>
+		public void ValidateXmlScript(XElement xmlScript)
 		{
 			XmlSchema XMLSchema = GetXmlScriptSchema(GetXmlScriptVersion(xmlScript));
 			XmlSchemaSet SchemaSet = new XmlSchemaSet();
-            SchemaSet.XmlResolver = new XmlSchemaResourceResolver();
-            SchemaSet.Add(XMLSchema);
-            SchemaSet.Compile();
+			SchemaSet.XmlResolver = new XmlSchemaResourceResolver();
+			SchemaSet.Add(XMLSchema);
+			SchemaSet.Compile();
 
 			XDocument XDocScript = new XDocument(xmlScript);
-            XDocScript.Validate(SchemaSet, null, true);
+			XDocScript.Validate(SchemaSet, null, true);
 		}
 
-        /// <summary>
-        /// Validates the given Xml Script against the appropriate schema.
-        /// </summary>
-        /// <param name="xmlScript">The script file.</param>
-        /// <returns><c>true</c> if the given script is valid;
-        /// <c>false</c> otherwise.</returns>
-        public bool IsXmlScriptValid(XElement xmlScript)
+		/// <summary>
+		/// Validates the given Xml Script against the appropriate schema.
+		/// </summary>
+		/// <param name="xmlScript">The script file.</param>
+		/// <returns><c>true</c> if the given script is valid;
+		/// <c>false</c> otherwise.</returns>
+		public bool IsXmlScriptValid(XElement xmlScript)
 		{
 			try
 			{
