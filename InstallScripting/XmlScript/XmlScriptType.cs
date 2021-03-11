@@ -113,15 +113,24 @@ namespace FomodInstaller.Scripting.XmlScript
 			using (var stream = StringStream(xmlData)) {
 				List<string> errors = new List<string>();
 
+				XmlSchema XMLSchema = GetXmlScriptSchema(GetXmlScriptVersion(xmlData));
+				XmlSchemaSet SchemaSet = new XmlSchemaSet();
+				SchemaSet.XmlResolver = new XmlSchemaResourceResolver();
+				SchemaSet.Add(XMLSchema);
+				SchemaSet.Compile();
+
 				XmlReaderSettings settings = new XmlReaderSettings();
+				settings.Schemas = SchemaSet;
+
 				settings.ValidationType = ValidationType.Schema;
-				settings.ValidationFlags |= XmlSchemaValidationFlags.ProcessInlineSchema;
-				settings.ValidationFlags |= XmlSchemaValidationFlags.ProcessSchemaLocation;
 				settings.ValidationFlags |= XmlSchemaValidationFlags.ReportValidationWarnings;
 				settings.ValidationEventHandler += (sender, args) =>
 				{
-					errors.Add(string.Format("{0} (Line {1}, Pos {2})",
-						args.Exception.Message, args.Exception.LineNumber, args.Exception.LinePosition));
+					if (args.Severity == XmlSeverityType.Error)
+					{
+						errors.Add(string.Format("{0} (Line {1}, Pos {2})",
+							args.Exception.Message, args.Exception.LineNumber, args.Exception.LinePosition));
+					}
 				};
 
 				XmlReader reader = XmlReader.Create(stream, settings);
@@ -130,7 +139,7 @@ namespace FomodInstaller.Scripting.XmlScript
 
 				if (errors.Count > 0)
 				{
-					throw new Exception("Invalid XML: " + string.Join("; ", errors));
+					throw new Exception("Invalid XML: " + string.Join("\n", errors));
 				}
 			}
 		}
