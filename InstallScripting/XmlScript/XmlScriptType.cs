@@ -13,6 +13,7 @@ using FomodInstaller.Scripting.XmlScript.Unparsers;
 using FomodInstaller.Scripting.XmlScript.Xml;
 using FomodInstaller.Interface;
 using System.Net;
+using System.Text;
 
 namespace FomodInstaller.Scripting.XmlScript
 {
@@ -97,11 +98,14 @@ namespace FomodInstaller.Scripting.XmlScript
 			return new XmlScriptExecutor(modArchive, delegates);
 		}
 
-		private static Stream StringStream(string s)
+		private static Stream StringStream(string strInput)
 		{
 			var stream = new MemoryStream();
-			var writer = new StreamWriter(stream);
-			writer.Write(s);
+			var writer = new StreamWriter(stream, new UnicodeEncoding(true, true));
+			// removing encoding specification from header line because it's usually wrong anyway
+			strInput = Regex.Replace(strInput, "^([^>]*)encoding=\"[^\"]+\"", "$1");
+
+			writer.Write(strInput);
 			writer.Flush();
 			stream.Position = 0;
 			return stream;
@@ -139,7 +143,7 @@ namespace FomodInstaller.Scripting.XmlScript
 
 				if (errors.Count > 0)
 				{
-					throw new Exception("Invalid XML: " + string.Join("\n", errors));
+					throw new XmlException("Invalid XML: " + string.Join("\n", errors));
 				}
 			}
 		}
