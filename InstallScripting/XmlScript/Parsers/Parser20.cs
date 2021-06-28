@@ -148,6 +148,9 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
             case "fommDependency":
               Version verMinFommVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
               return new ModManagerCondition(verMinFommVersion);
+            case "foseDependency":
+              Version verMinFOSEVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+              return new SEVersionCondition(verMinFOSEVersion, "fose");
             default:
               throw new ParserException("Invalid dependency node: " + p_xelCondition.Name + ". At this point the config file has been validated against the schema, so there's something wrong with the parser.");
           }
