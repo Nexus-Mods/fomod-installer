@@ -248,12 +248,11 @@ namespace FomodInstaller.Scripting.XmlScript
                     bool setFirst = group.Type == OptionGroupType.SelectExactlyOne;
                     foreach (Option option in group.Options)
                     {
-                        bool hasPresetValue = ((groupPreset != null) && groupPreset.HasValue && groupPreset.Value.choices.Any (preChoice => preChoice.name == option.Name));
                         OptionType type = resolveOptionType(option);
                         if ((type == OptionType.Required)
                             || (type == OptionType.Recommended)
                             || (group.Type == OptionGroupType.SelectAll)
-                            || hasPresetValue)
+                            || ((groupPreset != null) && groupPreset.HasValue && groupPreset.Value.choices.Any(preChoice => preChoice.name == option.Name)))
                         {
                             // in case there are multiple recommended options in a group that only
                             // supports one selection, disable all other options, otherwise we would
@@ -270,12 +269,11 @@ namespace FomodInstaller.Scripting.XmlScript
 
                             setFirst = false;
 
-                            if (groupPreset != null && groupPreset.HasValue && !hasPresetValue)
+                            if ((groupPreset != null) && groupPreset.HasValue && !groupPreset.Value.choices.Any(preChoice => preChoice.name == option.Name))
                             {
                                 // We have a groupPreset setting available and this option is _not_
                                 //  part of it - disable the option.
                                 disableOption(option);
-                                continue;
                             } else {
                                 enableOption (option);
                             }
