@@ -548,7 +548,7 @@ namespace ModInstallerIPC
             dynamic choices;
             try
             {
-                choices = data["choices"] != null ? data["choices"] : data["fomodChoices"];
+                choices = data["fomodChoices"];
             }
             catch (RuntimeBinderException) {
                 choices = null;
