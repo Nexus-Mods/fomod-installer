@@ -266,8 +266,17 @@ namespace FomodInstaller.Scripting.XmlScript
                                     disableOption(innerOption);
                                 }
                             }
-                            enableOption(option);
+
                             setFirst = false;
+
+                            if ((groupPreset != null) && groupPreset.HasValue && !groupPreset.Value.choices.Any(preChoice => preChoice.name == option.Name))
+                            {
+                                // We have a groupPreset setting available and this option is _not_
+                                //  part of it - disable the option.
+                                disableOption(option);
+                            } else {
+                                enableOption (option);
+                            }
                         }
                     }
 
@@ -411,7 +420,7 @@ namespace FomodInstaller.Scripting.XmlScript
             return 0;
         }
 
-        private OptionsPreset? convertPreset(dynamic[] input)
+        private OptionsPreset? convertPreset(dynamic input)
         {
             if (input == null)
             {
@@ -425,15 +434,15 @@ namespace FomodInstaller.Scripting.XmlScript
 
             Func<IEnumerable<dynamic>, IEnumerable<OptionsPresetGroup>> convertGroups = groupsIn =>
             {
-                return groupsIn.Select(group => new OptionsPresetGroup() { name = group.name, choices = convertChoices((dynamic[])group.choices).ToArray() });
+                return groupsIn.Select(group => new OptionsPresetGroup() { name = group.name, choices = convertChoices(group["choices"] as IEnumerable<dynamic>).ToArray() });
             };
 
             Func<IEnumerable<dynamic>, IEnumerable<OptionsPresetStep>> convertSteps = stepsIn =>
             {
-                return stepsIn.Select(step => new OptionsPresetStep() { name = step.name, groups = convertGroups((dynamic[])step.groups).ToArray() });
+                return stepsIn.Select (step => new OptionsPresetStep () { name = step.name, groups = convertGroups(step["groups"] as IEnumerable<dynamic>).ToArray() });
             };
 
-            return new OptionsPreset() { steps = convertSteps(input).ToArray() };
+            return new OptionsPreset() { steps = (convertSteps(input) as IEnumerable<OptionsPresetStep>).ToArray() };
         }
 
         #endregion
