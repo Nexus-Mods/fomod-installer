@@ -4,7 +4,6 @@ using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,15 +11,10 @@ using System.Dynamic;
 using System.IO;
 using System.IO.Pipes;
 using System.Linq;
-using System.Reflection;
-using System.Security.Permissions;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Utils;
-using System.Net;
-using System.Diagnostics;
 
 namespace ModInstallerIPC
 {
@@ -327,8 +321,6 @@ namespace ModInstallerIPC
 
         public void HandleMessages()
         {
-            // StreamReader reader;
-            // StreamWriter writer;
             var enc = new UTF8Encoding(false);
             Stream streamIn = null;
             Stream streamOut = null;

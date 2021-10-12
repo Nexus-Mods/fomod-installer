@@ -230,17 +230,25 @@ namespace FomodInstaller.Scripting.XmlScript
 
         private void preselectOptions(InstallStep step)
         {
-            OptionsPresetStep? stepPreset = null;
+            IList<OptionsPresetStep> stepPresets = null;
             if (m_Preset.HasValue)
             {
-                stepPreset = m_Preset.Value.steps.FirstOrDefault(preStep => preStep.name == step.Name);
+                // step names are not unique :(
+                stepPresets = m_Preset.Value.steps.Where(preStep => preStep.name == step.Name).ToList();
             }
 
             foreach (OptionGroup group in step.OptionGroups)
             {
-                OptionsPresetGroup? groupPreset = null;
-                if ((stepPreset != null) && stepPreset.HasValue) {
-                    groupPreset = stepPreset.Value.groups.FirstOrDefault(preGroup => preGroup.name == group.Name);
+                OptionsPresetGroup groupPreset = new OptionsPresetGroup();
+                if ((stepPresets != null) && stepPresets.Count > 0) {
+                    foreach (OptionsPresetStep stepPreset in stepPresets)
+                    {
+                        groupPreset = stepPreset.groups.FirstOrDefault(preGroup => preGroup.name == group.Name);
+                        if (groupPreset.name != null)
+                        {
+                            break;
+                        }
+                    }
                 }
 
                 if (group.Options.FirstOrDefault(opt => m_SelectedOptions.Contains(opt)) == null)
@@ -252,7 +260,7 @@ namespace FomodInstaller.Scripting.XmlScript
                         if ((type == OptionType.Required)
                             || (type == OptionType.Recommended)
                             || (group.Type == OptionGroupType.SelectAll)
-                            || ((groupPreset != null) && groupPreset.HasValue && groupPreset.Value.choices.Any(preChoice => preChoice.name == option.Name)))
+                            || ((groupPreset.name != null) && groupPreset.choices.Any(preChoice => preChoice.name == option.Name)))
                         {
                             // in case there are multiple recommended options in a group that only
                             // supports one selection, disable all other options, otherwise we would
@@ -269,7 +277,7 @@ namespace FomodInstaller.Scripting.XmlScript
 
                             setFirst = false;
 
-                            if ((groupPreset != null) && groupPreset.HasValue && !groupPreset.Value.choices.Any(preChoice => preChoice.name == option.Name))
+                            if ((groupPreset.name != null) && !groupPreset.choices.Any(preChoice => preChoice.name == option.Name))
                             {
                                 // We have a groupPreset setting available and this option is _not_
                                 //  part of it - disable the option.
