@@ -372,7 +372,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 return groups.Select(group =>
                 {
                     OptionsPresetGroup? groupPreset = null;
-                    if (stepPreset.HasValue) {
+                    if ((stepPreset.HasValue) && (stepPreset.Value.groups != null)) {
                         groupPreset = stepPreset.Value.groups.FirstOrDefault(preGroup => preGroup.name == group.Name);
                     }
 
@@ -385,7 +385,7 @@ namespace FomodInstaller.Scripting.XmlScript
             {
                 InstallStep inStep = lstSteps[idx];
                 OptionsPresetStep? stepPreset = null;
-                if (m_Preset.HasValue)
+                if ((m_Preset.HasValue) && (m_Preset.Value.steps != null))
                 {
                     stepPreset = m_Preset.Value.steps.FirstOrDefault(preStep => preStep.name == inStep.Name);
                 }
@@ -437,11 +437,19 @@ namespace FomodInstaller.Scripting.XmlScript
 
             Func<IEnumerable<dynamic>, IEnumerable<OptionsPresetChoice>> convertChoices = choiceIn =>
             {
+                if (choiceIn == null)
+                {
+                    return new List<OptionsPresetChoice> { };
+                }
                 return choiceIn.Select(choice => new OptionsPresetChoice() { name = choice.name, idx = choice.idx });
             };
 
             Func<IEnumerable<dynamic>, IEnumerable<OptionsPresetGroup>> convertGroups = groupsIn =>
             {
+                if (groupsIn == null)
+                {
+                    return new List<OptionsPresetGroup> { };
+                }
                 return groupsIn.Select(group => new OptionsPresetGroup() { name = group.name, choices = convertChoices(group["choices"] as IEnumerable<dynamic>).ToArray() });
             };
 
