@@ -239,19 +239,12 @@ namespace FomodInstaller.Scripting.XmlScript
 
             foreach (OptionGroup group in step.OptionGroups)
             {
-                List<OptionsPresetGroup> groupPresets = null;
+                List<OptionsPresetGroup> groupPresets = new List<OptionsPresetGroup>();
                 if ((stepPresets != null) && stepPresets.Count > 0) {
                     foreach (OptionsPresetStep stepPreset in stepPresets)
                     {
                         // group names not unique either...
-                        List<OptionsPresetGroup> stepGroupPreset = stepPreset.groups.Where(preGroup => preGroup.name == group.Name).ToList();
-                        if (groupPresets == null)
-                        {
-                            groupPresets = stepGroupPreset;
-                        } else
-                        {
-                            groupPresets.AddRange(stepGroupPreset);
-                        }
+                        groupPresets.AddRange(stepPreset.groups.Where(preGroup => preGroup.name == group.Name));
                     }
                 }
 
