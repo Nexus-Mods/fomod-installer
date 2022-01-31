@@ -262,6 +262,13 @@ namespace FomodInstaller.Scripting.XmlScript
                                 isPreset = true;
                             }
                         }
+                        if (isPreset && type == OptionType.NotUsable)
+                        {
+                            // force preset options to be selectable, otherwise the user might not be able to deselect it
+                            // even if it is actually invalid
+                            option.OptionTypeResolver = new StaticOptionTypeResolver(OptionType.CouldBeUsable);
+                            type = OptionType.CouldBeUsable;
+                        }
                         if ((type == OptionType.Required)
                             || (type == OptionType.Recommended)
                             || (group.Type == OptionGroupType.SelectAll)

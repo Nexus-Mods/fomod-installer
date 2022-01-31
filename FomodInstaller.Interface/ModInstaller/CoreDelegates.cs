@@ -24,6 +24,8 @@ namespace FomodInstaller.Interface
         private Func<object, Task<object>> mGetAll;
         private Func<object, Task<object>> mIsActive;
         private Func<object, Task<object>> mIsPresent;
+        private string[] mActiveCache;
+        private string[] mPresentCache;
 
         public PluginDelegates(dynamic source)
         {
@@ -46,14 +48,20 @@ namespace FomodInstaller.Interface
 
         public async Task<bool> IsActive(string pluginName)
         {
-            object res = await TaskHelper.Timeout(mIsActive(pluginName), Defaults.TIMEOUT_MS);
-            return (bool)res;
+            if (mActiveCache == null)
+            {
+                mActiveCache = await GetAll(true);
+            }
+            return mActiveCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default(string);
         }
 
         public async Task<bool> IsPresent(string pluginName)
         {
-            object res = await TaskHelper.Timeout(mIsPresent(pluginName), Defaults.TIMEOUT_MS);
-            return (bool)res;
+            if (mPresentCache == null)
+            {
+                mPresentCache = await GetAll(false);
+            }
+            return mPresentCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default(string);
         }
     }
 
