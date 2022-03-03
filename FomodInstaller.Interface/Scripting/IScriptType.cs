@@ -48,7 +48,7 @@ namespace FomodInstaller.Scripting
 		/// </summary>
 		/// <param name="p_strScriptData">The text to convert into a script.</param>
 		/// <returns>The <see cref="IScript"/> represented by the given data.</returns>
-		IScript LoadScript(string p_strScriptData);
+		IScript LoadScript(string p_strScriptData, bool validate);
 
 		/// <summary>
 		/// Saves the given script into a text representation.

@@ -29,6 +29,7 @@ namespace FomodInstaller.ModInstaller
                                                                  string pluginPath,
                                                                  string destinationPath,
                                                                  dynamic preset,
+                                                                 bool validate,
                                                                  ProgressDelegate progressDelegate,
                                                                  CoreDelegates coreDelegate);
 

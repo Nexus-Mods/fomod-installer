@@ -52,7 +52,7 @@ namespace FomodInstaller.ModInstaller.Tests
 			Assert.NotNull(coreDelegate);
 
 			Installer installer = new Installer();
-			var actual = await installer.Install(modArchiveFileList, gameSpecificStopFolders, "", destinationPath, null, progressDelegate, coreDelegate);
+			var actual = await installer.Install(modArchiveFileList, gameSpecificStopFolders, "", destinationPath, null, true, progressDelegate, coreDelegate);
 
 			// Xunit test
 			Assert.Null(actual);

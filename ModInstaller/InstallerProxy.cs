@@ -53,6 +53,7 @@ namespace FomodInstaller.ModInstaller
                 (string)pluginPath,
                 destinationPath,
                 choices,
+                (bool)(input.validate ?? true),
                 (ProgressDelegate)((int percent) => progressCB(percent)),
                 coreDelegates
             );

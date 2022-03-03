@@ -536,6 +536,12 @@ namespace ModInstallerIPC
             var stopPatterns = new List<string>(data["stopPatterns"].Children().ToList().Select(input => input.ToString()));
             var pluginPath = data["pluginPath"].ToString();
             var scriptPath = data["scriptPath"].ToString();
+            bool validate = true;
+            JToken val;
+            if (data.TryGetValue("validate", out val))
+            {
+                validate = val.ToObject<bool>();
+            }
 
             dynamic choices;
             try
@@ -549,7 +555,7 @@ namespace ModInstallerIPC
             DeferContext context = new DeferContext(id, (targetId, targetType, name, args) => ContextIPC(targetId, targetType, name, args));
             CoreDelegates coreDelegates = new CoreDelegates(ToExpando(context));
 
-            return await mInstaller.Install(files, stopPatterns, pluginPath, scriptPath, choices, (ProgressDelegate)((int progress) => { }), coreDelegates);
+            return await mInstaller.Install(files, stopPatterns, pluginPath, scriptPath, choices, validate, (ProgressDelegate)((int progress) => { }), coreDelegates);
         }
 
         private async Task<object> DispatchInvoke(JObject data)

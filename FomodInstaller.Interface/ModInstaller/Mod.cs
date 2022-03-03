@@ -128,13 +128,13 @@ namespace FomodInstaller.Interface
 
         #endregion
 
-        public async Task Initialize()
+        public async Task Initialize(bool validate)
         {
             await Task.Run(() => GetScreenshotPath(ModFiles));
-            await GetScriptFile();
+            await GetScriptFile(validate);
         }
 
-        private async Task GetScriptFile()
+        private async Task GetScriptFile(bool validate)
         {
             byte[] scriptData = null;
 
@@ -143,7 +143,7 @@ namespace FomodInstaller.Interface
                 await Task.Run(() =>
                 {
                     scriptData = FileSystem.ReadAllBytes(Path.Combine(TempPath, InstallScriptPath));
-                    ModInstallScript = InstallScriptType.LoadScript(TextUtil.ByteToString(scriptData));
+                    ModInstallScript = InstallScriptType.LoadScript(TextUtil.ByteToString(scriptData), validate);
                     // when we have an install script, do we really assume that this script uses paths relative
                     // to what our heuristics assumes is the top level directory?
                     int offset = InstallScriptPath.IndexOf(Path.Combine("fomod", "ModuleConfig.xml"),

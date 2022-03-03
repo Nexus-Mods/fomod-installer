@@ -75,7 +75,7 @@ namespace FomodInstaller.Scripting.ModScript
 		/// </summary>
 		/// <param name="p_strScriptData">The text to convert into a script.</param>
 		/// <returns>The <see cref="IScript"/> represented by the given data.</returns>
-		public IScript LoadScript(string p_strScriptData)
+		public IScript LoadScript(string p_strScriptData, bool validate)
 		{
 			return new ModScript(this, p_strScriptData);
 		}

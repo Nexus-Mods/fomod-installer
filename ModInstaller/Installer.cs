@@ -78,6 +78,7 @@ namespace FomodInstaller.ModInstaller
                                                                        string pluginPath,
                                                                        string scriptPath,
                                                                        dynamic preset,
+                                                                       bool validate,
                                                                        ProgressDelegate progressDelegate,
                                                                        CoreDelegates coreDelegate)
         {
@@ -96,7 +97,7 @@ namespace FomodInstaller.ModInstaller
             }
             IScriptType ScriptType = await GetScriptType(modArchiveFileList, scriptPath);
             Mod modToInstall = new Mod(modArchiveFileList, stopPatterns, ScriptFilePath, scriptPath, ScriptType);
-            await modToInstall.Initialize();
+            await modToInstall.Initialize(validate);
 
             progressDelegate(50);
 

@@ -68,7 +68,7 @@ namespace FomodInstaller.ModInstaller
                             bool isOmod = false;
                             try
                             {
-                                isOmod = (!string.IsNullOrEmpty(omodMatch) && scriptType.ValidateScript(scriptType.LoadScript(omodMatch)));
+                                isOmod = (!string.IsNullOrEmpty(omodMatch) && scriptType.ValidateScript(scriptType.LoadScript(omodMatch, true)));
                             } catch (Exception) {
                                 // don't care
                             }
@@ -131,7 +131,7 @@ namespace FomodInstaller.ModInstaller
                                 scriptDataString = System.Text.Encoding.Default.GetString(scriptData);
                             }
 
-                            if (!string.IsNullOrEmpty(omodMatch) && scriptType.ValidateScript(scriptType.LoadScript(scriptDataString)))
+                            if (!string.IsNullOrEmpty(omodMatch) && scriptType.ValidateScript(scriptType.LoadScript(scriptDataString, true)))
                             {
                                 HasFoundScriptType = true;
                                 FoundScriptType = scriptType;

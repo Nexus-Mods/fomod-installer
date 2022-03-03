@@ -153,9 +153,12 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// </summary>
 		/// <param name="p_strScriptData">The text to convert into a script.</param>
 		/// <returns>The <see cref="IScript"/> represented by the given data.</returns>
-		public IScript LoadScript(string scriptData)
+		public IScript LoadScript(string scriptData, bool validate)
 		{
-			Validate(scriptData);
+			if (validate)
+			{
+				Validate(scriptData);
+			}
 			XElement XelScript = XElement.Parse(scriptData);
 			IParser Parser = GetParser(XelScript);
 			return Parser.Parse();
