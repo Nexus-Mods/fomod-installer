@@ -270,14 +270,15 @@ namespace FomodInstaller.Scripting.XmlScript
                             type = OptionType.CouldBeUsable;
                         }
                         if ((type == OptionType.Required)
-                            || (type == OptionType.Recommended)
+                            || (!m_Preset.HasValue && (type == OptionType.Recommended))
                             || (group.Type == OptionGroupType.SelectAll)
                             || isPreset)
                         {
                             // in case there are multiple recommended options in a group that only
                             // supports one selection, disable all other options, otherwise we would
                             // create an invalid pre-selection
-                            if ((type == OptionType.Recommended)
+                            if (!m_Preset.HasValue
+                                && (type == OptionType.Recommended)
                                 && ((group.Type == OptionGroupType.SelectExactlyOne)
                                     || (group.Type == OptionGroupType.SelectAtMostOne)))
                             {
