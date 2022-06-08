@@ -54,7 +54,7 @@ async function main() {
     await dotnet(['restore']);
     await dotnet(['build', '-c', 'Release']);
     await fsExtra.remove(path.join(__dirname, 'dist'));
-    await dotnet(['publish', '-c', 'Release', '--self-contained', '-r', 'win-x64', '-o', 'dist']);
+    await dotnet(['publish', '-c', 'Release', '--self-contained', '-r', 'win-x64', '-o', 'dist', '/p:DebugType=None', '/p:DebugSymbols=false']);
     // await dotnet(['publish', '-c', 'Release', '-a', 'x64', '-o', 'dist']);
     await sign('dist\\ModInstallerIPC.exe');
   } catch (err) {
