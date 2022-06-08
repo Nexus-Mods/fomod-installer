@@ -12,8 +12,7 @@ namespace FomodInstaller.ModInstaller.Tests
 			this.output = output;
 		}
 
-		[Theory()]
-		// input missing
+    // input missing
 		public async Task Install(dynamic input)
 		{
 			InstallerProxy installer = new InstallerProxy();
@@ -25,7 +24,6 @@ namespace FomodInstaller.ModInstaller.Tests
 			output.WriteLine("This is output from {0}", actual);
 		}
 
-		[Theory()]
 		// input missing
 		public async Task TestSupported(dynamic input)
 		{

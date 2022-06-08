@@ -348,7 +348,7 @@ namespace ModInstallerIPC
                 } catch (Exception e)
                 {
                     Console.Error.WriteLine("failed to connect to local port {0}: {1}", mId, e.Message);
-                    throw e;
+                    throw;
                 }
                 NetworkStream stream = client.GetStream();
                 streamIn = streamOut = stream;

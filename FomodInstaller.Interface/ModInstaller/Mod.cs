@@ -181,7 +181,8 @@ namespace FomodInstaller.Interface
             IList<string> NormalizedModFile = NormalizePathList(ModFiles);
             if (!NormalizedModFile.Any(x => x.Contains(file, StringComparison.InvariantCultureIgnoreCase)))
             {
-                if (IsImageFile(Path.GetFileName(file)))
+                if (IsImageFile(Path.GetFileName(file)) && OperatingSystem.IsWindows())
+                    // TODO: This has to be ported to more modern libraries that support non-windows OSes
                     return (byte[])(new ImageConverter().ConvertTo(new Bitmap(1, 1), typeof(byte[])));
                 else
                     throw new FileNotFoundException("File doesn't exist in FOMod", file);

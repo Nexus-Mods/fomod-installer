@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.CodeDom.Compiler;
 using System.Threading;
 using FomodInstaller.Interface;
+using Microsoft.CodeAnalysis;
 
 namespace FomodInstaller.Scripting.CSharpScript
 {
@@ -75,6 +76,7 @@ namespace FomodInstaller.Scripting.CSharpScript
 		/// Loads the script from the given text representation.
 		/// </summary>
 		/// <param name="p_strScriptData">The text to convert into a script.</param>
+		/// <param name="validate">Do syntax/semantics checks on the script.</param>
 		/// <returns>The <see cref="IScript"/> represented by the given data.</returns>
 		public IScript LoadScript(string p_strScriptData, bool validate)
 		{
@@ -100,7 +102,7 @@ namespace FomodInstaller.Scripting.CSharpScript
 		public bool ValidateScript(IScript p_scpScript)
 		{
 			CSharpScriptCompiler sccCompiler = new CSharpScriptCompiler();
-			CompilerErrorCollection cecErrors = null;
+			IEnumerable<Diagnostic> cecErrors = null;
 			sccCompiler.Compile(((CSharpScript)p_scpScript).Code, BaseScriptType, out cecErrors);
 			return cecErrors == null;
 		}

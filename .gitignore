@@ -20,3 +20,5 @@ FomodInstaller.VC.db
 
 # test cases
 test_cases
+
+AnalysisReport.sarif

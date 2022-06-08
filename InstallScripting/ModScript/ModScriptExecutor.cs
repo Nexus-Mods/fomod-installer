@@ -55,9 +55,7 @@ namespace FomodInstaller.Scripting.ModScript
             if (string.IsNullOrEmpty(mscScript.Code))
                 return null;
 
-            AppDomain admScript = CreateSandbox(p_scpScript, p_strDataPath);
             object[] args = { m_msfFunctions };
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
 
             IList<Instruction> instructions = new List<Instruction>();
             m_msfFunctions.SetInstructionContainer(instructions);
@@ -65,7 +63,7 @@ namespace FomodInstaller.Scripting.ModScript
             ScriptRunner srnRunner = null;
             try
             {
-                srnRunner = (ScriptRunner)admScript.CreateInstanceFromAndUnwrap(typeof(ScriptRunner).Assembly.ManifestModule.FullyQualifiedName, typeof(ScriptRunner).FullName, false, BindingFlags.Default, null, args, null, null);
+                srnRunner = new ScriptRunner(m_msfFunctions);
             }
             catch (Exception e)
             {
@@ -83,10 +81,7 @@ namespace FomodInstaller.Scripting.ModScript
             }
             return Task.Run(() =>
             {
-                bool res = srnRunner.Execute(mscScript.Code.Substring(3));
-                AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
-                AppDomain.Unload(admScript);
-                if (!res)
+                if (!srnRunner.Execute(mscScript.Code.Substring(3)))
                 {
                     return null;
                 }
@@ -117,73 +112,6 @@ namespace FomodInstaller.Scripting.ModScript
                 if (asmLoaded.FullName == args.Name)
                     return asmLoaded;
             return null;
-        }
-
-        /// <summary>
-        /// Creates a sandboxed domain.
-        /// </summary>
-        /// <remarks>
-        /// The sandboxed domain is only given permission to alter the parts of the system
-        /// that are relevant to mod management for the current game mode.
-        /// </remarks>
-        /// <param name="p_scpScript">The script we are going to execute. This is required so we can include
-        /// the folder containing the script's script type class in the sandboxes PrivateBinPath.
-        /// We need to do this so that any helper classes and libraries used by the script
-        /// can be found.</param>
-        /// <param name="p_strDataPath">path where script data is stored. unused?</param>
-        /// <returns>A sandboxed domain.</returns>
-        protected AppDomain CreateSandbox(IScript p_scpScript, string p_strDataPath)
-        {
-            Trace.TraceInformation("Creating Mod Script Sandbox...");
-            Trace.Indent();
-
-            Evidence eviSecurityInfo = null;
-            AppDomainSetup adsInfo = new AppDomainSetup();
-            //should this be different from the current ApplicationBase?
-            // adsInfo.ApplicationBase = Path.GetDirectoryName(Application.ExecutablePath);
-            adsInfo.ApplicationBase = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-
-            ISet<string> setPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            Type tpeScript = p_scpScript.Type.GetType();
-            while ((tpeScript != null) && (tpeScript != typeof(object)))
-            {
-                setPaths.Add(Path.GetDirectoryName(Assembly.GetAssembly(tpeScript).Location));
-                tpeScript = tpeScript.BaseType;
-            }
-            adsInfo.PrivateBinPath = string.Join(";", setPaths.GetEnumerator());
-
-
-            Trace.TraceInformation("ApplicationBase: {0}", adsInfo.ApplicationBase);
-            Trace.TraceInformation("PrivateBinPath: {0}", adsInfo.PrivateBinPath);
-
-            adsInfo.ApplicationName = "ModScriptRunner";
-            adsInfo.DisallowBindingRedirects = true;
-            adsInfo.DisallowCodeDownload = true;
-            adsInfo.DisallowPublisherPolicy = true;
-
-
-            PermissionSet pstGrantSet = new PermissionSet(PermissionState.None);
-            pstGrantSet.AddPermission(new SecurityPermission(SecurityPermissionFlag.Execution));
-            pstGrantSet.AddPermission(new ReflectionPermission(ReflectionPermissionFlag.RestrictedMemberAccess));
-
-            //need access to path with modinstaller binaries so the script can load the script assembly
-            pstGrantSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.PathDiscovery, adsInfo.ApplicationBase));
-            pstGrantSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read, adsInfo.ApplicationBase));
-
-            //It's not clear to me if these permissions are dangerous
-            pstGrantSet.AddPermission(new UIPermission(UIPermissionClipboard.NoClipboard));
-            pstGrantSet.AddPermission(new UIPermission(UIPermissionWindow.AllWindows));
-            pstGrantSet.AddPermission(new MediaPermission(MediaPermissionImage.SafeImage));
-
-            //add the specific permissions the script will need
-            pstGrantSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read, p_strDataPath));
-            pstGrantSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.PathDiscovery, p_strDataPath));
-
-
-            return AppDomain.CreateDomain("ModScriptRunnerDomain", eviSecurityInfo, adsInfo, pstGrantSet);
-
-
         }
     }
 }

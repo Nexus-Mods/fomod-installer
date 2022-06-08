@@ -1,9 +1,13 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
+using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
-using Microsoft.CSharp;
+// using Microsoft.CSharp
 
 namespace FomodInstaller.Scripting.CSharpScript
 {
@@ -22,8 +26,49 @@ namespace FomodInstaller.Scripting.CSharpScript
     /// <param name="p_tpeBaseScriptType">The type of the base script from which the class in the code derives.</param>
     /// <param name="p_cecErrors">The collection in which to return any compilation errors.</param>
     /// <returns>The bytes of the compiled assembly.</returns>
-    public byte[] Compile(string p_strCode, Type p_tpeBaseScriptType, out CompilerErrorCollection p_cecErrors)
+    public byte[] Compile(string p_strCode, Type p_tpeBaseScriptType, out IEnumerable<Diagnostic> p_cecErrors)
     {
+      HashSet<Assembly> referencedAssemblies = new HashSet<Assembly>()
+      {
+          typeof(object).Assembly,
+          Assembly.Load(new AssemblyName("System")),
+          Assembly.Load(new AssemblyName("System.Drawing")),
+          Assembly.Load(new AssemblyName("System.Drawing.Common")),
+          Assembly.Load(new AssemblyName("System.Drawing.Primitives")),
+          Assembly.Load(new AssemblyName("System.ComponentModel.Primitives")),
+          Assembly.Load(new AssemblyName("System.Runtime")),
+          Assembly.Load(new AssemblyName("System.Text.RegularExpressions")),
+          Assembly.Load(new AssemblyName("System.Windows.Forms")),
+          Assembly.Load(new AssemblyName("System.Xml")),
+
+          Assembly.Load(new AssemblyName("System.Windows.Extensions")),
+          Assembly.Load(new AssemblyName("System.Windows.Forms.Primitives")),
+      };
+
+      List<string> setAssemblies = new List<string>();
+      Type tpeReference = p_tpeBaseScriptType;
+      while (tpeReference != null)
+      {
+        referencedAssemblies.Add(Assembly.GetAssembly(tpeReference));
+        tpeReference = tpeReference.BaseType;
+      }
+
+      CSharpCompilation compilation = CSharpCompilation.Create("TestProgram", new[] {
+          CSharpSyntaxTree.ParseText(p_strCode)
+        }, referencedAssemblies
+          .Select(assembly => MetadataReference.CreateFromFile(assembly.Location)),
+        new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+      );
+
+      MemoryStream memoryStream = new MemoryStream();
+      EmitResult emitResult = compilation.Emit(memoryStream);
+      memoryStream.Position = 0;
+
+      p_cecErrors = emitResult.Success ? null : emitResult.Diagnostics;
+
+      return memoryStream.ToArray();
+
+      /*
       Dictionary<string, string> dicOptions = new Dictionary<string, string>();
       dicOptions["CompilerVersion"] = "v4.0";
       CSharpCodeProvider ccpProvider = new CSharpCodeProvider(dicOptions);
@@ -66,6 +111,7 @@ namespace FomodInstaller.Scripting.CSharpScript
         // what's one more abandoned temporary file?
       }
       return bteAssembly;
+      */
     }
 
     private static string GetTempFileName()
