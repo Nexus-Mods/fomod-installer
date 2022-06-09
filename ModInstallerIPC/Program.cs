@@ -39,6 +39,7 @@ namespace ModInstallerIPC
 
         static int Main(string[] args)
         {
+            Application.SetHighDpiMode(HighDpiMode.DpiUnawareGdiScaled);
             Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
 
             // Add the event handler for handling non-UI thread exceptions to the event.
