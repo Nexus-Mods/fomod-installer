@@ -1,14 +1,12 @@
 const cp = require('child_process');
 const path = require('path');
 
-const CONTAINER_NAME = 'fomod_installer';
-
 let winapi;
 try {
   winapi = require('winapi-bindings');
 } catch (err) {}
 
-async function createIPC(usePipe, id, onExit, onStdout) {
+async function createIPC(usePipe, id, onExit, onStdout, containerName) {
   // it does actually get named .exe on linux as well
   const exeName = 'ModInstallerIPC.exe';
 
@@ -19,20 +17,20 @@ async function createIPC(usePipe, id, onExit, onStdout) {
     args.push('--pipe');
   }
 
-  if (winapi !== undefined) {
+  if ((winapi !== undefined) && (containerName !== undefined)) {
     return new Promise((resolve, reject) => {
       // in case the container wasn't cleaned up before
       try {
-        winapi.DeleteAppContainer(CONTAINER_NAME);
-        winapi.CreateAppContainer(CONTAINER_NAME, 'FOMOD', 'Container for fomod installers');
+        winapi.DeleteAppContainer(containerName);
+        winapi.CreateAppContainer(containerName, 'FOMOD', 'Container for fomod installers');
         process.on('exit', () => {
-          winapi.DeleteAppContainer(CONTAINER_NAME);
+          winapi.DeleteAppContainer(containerName);
         });
-        winapi.GrantAppContainer(CONTAINER_NAME, path.join(__dirname, 'dist'), 'file_object', ['generic_execute', 'list_directory']);
-        winapi.GrantAppContainer(CONTAINER_NAME, `\\\\?\\pipe\\${id}`, 'named_pipe', ['all_access']);
-        winapi.GrantAppContainer(CONTAINER_NAME, `\\\\?\\pipe\\${id}_reply`, 'named_pipe', ['all_access']);
+        winapi.GrantAppContainer(containerName, path.join(__dirname, 'dist'), 'file_object', ['generic_execute', 'list_directory']);
+        winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}`, 'named_pipe', ['all_access']);
+        winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}_reply`, 'named_pipe', ['all_access']);
 
-        const pid = winapi.RunInContainer(CONTAINER_NAME, `${exePath} ${args.join(' ')}`, __dirname, onExit, onStdout);
+        const pid = winapi.RunInContainer(containerName, `${exePath} ${args.join(' ')}`, __dirname, onExit, onStdout);
         resolve(pid);
       } catch (err) {
         reject(err);
