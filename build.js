@@ -1,8 +1,9 @@
-var cp = require('child_process');
-var fs = require('fs');
-var path = require('path');
-var fsExtra = require('fs-extra');
+const cp = require('child_process');
+const fs = require('fs');
+const path = require('path');
+const fsExtra = require('fs-extra');
 
+const debugBuild = false;
 
 function spawnAsync(exe, args, options, out) {
   if (options === undefined) {
@@ -51,10 +52,15 @@ function sign(filePath) {
 
 async function main() {
   try {
+    const buildType = debugBuild ? 'Debug' : 'Release';
     await dotnet(['restore']);
-    await dotnet(['build', '-c', 'Release']);
+    await dotnet(['build', '-c', buildType]);
     await fsExtra.remove(path.join(__dirname, 'dist'));
-    await dotnet(['publish', '-c', 'Release', '--self-contained', '-r', 'win-x64', '-o', 'dist', '/p:DebugType=None', '/p:DebugSymbols=false']);
+    const args = ['publish', '-c', buildType, '--self-contained', '-r', 'win-x64', '-o', 'dist'];
+    if (!debugBuild) {
+      args.push('/p:DebugType=None', '/p:DebugSymbols=false');
+    }
+    await dotnet(args);
     // await dotnet(['publish', '-c', 'Release', '-a', 'x64', '-o', 'dist']);
     await sign('dist\\ModInstallerIPC.exe');
   } catch (err) {

@@ -325,15 +325,14 @@ namespace ModInstallerIPC
             Stream streamIn = null;
             Stream streamOut = null;
             if (mUsePipe) {
-                var pipeIn = new NamedPipeClientStream(mId);
-                Console.Out.WriteLine("in pipe ready");
+                var pipeIn = new NamedPipeClientStream(".", mId, PipeDirection.In);
+                Console.Out.WriteLine("in pipe ready: " + mId);
                 pipeIn.Connect(30000);
                 Console.Out.WriteLine("in pipe connected");
 
-                var pipeOut = new NamedPipeServerStream(mId + "_reply");
-                Console.Out.WriteLine("out pipe ready");
-
-                pipeOut.WaitForConnection();
+                var pipeOut = new NamedPipeClientStream(".", mId + "_reply", PipeDirection.Out);
+                Console.Out.WriteLine("out pipe ready: " + mId + "_reply");
+                pipeOut.Connect(30000);
                 Console.Out.WriteLine("out pipe connected");
 
                 streamIn = pipeIn;
@@ -359,6 +358,9 @@ namespace ModInstallerIPC
             BlockingCollection<OutMessage> outgoing = new BlockingCollection<OutMessage>();
 
             mEnqueue = msg => outgoing.Add(msg);
+
+            byte[] input = System.Text.Encoding.UTF8.GetBytes("connected");
+            streamOut.Write(input, 0, input.Length);
 
             CancellationTokenSource cancelSignal = new CancellationTokenSource();
 
