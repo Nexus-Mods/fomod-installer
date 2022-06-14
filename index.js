@@ -10,7 +10,8 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName) {
   // it does actually get named .exe on linux as well
   const exeName = 'ModInstallerIPC.exe';
 
-  const exePath = path.join(__dirname, 'dist', exeName);
+  const cwd = path.join(__dirname.replace('app.asar', 'app.asar.unpacked'), 'dist');
+  const exePath = path.join(cwd, exeName);
 
   const args = [id];
   if (usePipe) {
@@ -26,11 +27,11 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName) {
         process.on('exit', () => {
           winapi.DeleteAppContainer(containerName);
         });
-        winapi.GrantAppContainer(containerName, path.join(__dirname, 'dist'), 'file_object', ['generic_execute', 'list_directory']);
+        // winapi.GrantAppContainer(containerName, path.join(__dirname, 'dist'), 'file_object', ['generic_execute', 'list_directory']);
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}`, 'named_pipe', ['all_access']);
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}_reply`, 'named_pipe', ['all_access']);
 
-        const pid = winapi.RunInContainer(containerName, `${exePath} ${args.join(' ')}`, __dirname, onExit, onStdout);
+        const pid = winapi.RunInContainer(containerName, `${exePath} ${args.join(' ')}`, cwd, onExit, onStdout);
         resolve(pid);
       } catch (err) {
         reject(err);
