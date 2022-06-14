@@ -27,7 +27,13 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName) {
         process.on('exit', () => {
           winapi.DeleteAppContainer(containerName);
         });
-        // winapi.GrantAppContainer(containerName, path.join(__dirname, 'dist'), 'file_object', ['generic_execute', 'list_directory']);
+        try {
+          winapi.GrantAppContainer(containerName, cwd, 'file_object', ['generic_execute', 'generic_read', 'list_directory']);
+        } catch (err) {
+          // I don't get this. This is apparantly required in development builds or .net will complain it can't read
+          // the directory with the main exe.
+          // In release builds when running from program files it's ok for this to not be called or to fail. why???
+        }
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}`, 'named_pipe', ['all_access']);
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}_reply`, 'named_pipe', ['all_access']);
 
