@@ -35,11 +35,16 @@ namespace FomodInstaller.Scripting.CSharpScript
           Assembly.Load(new AssemblyName("System.Drawing")),
           Assembly.Load(new AssemblyName("System.Drawing.Common")),
           Assembly.Load(new AssemblyName("System.Drawing.Primitives")),
+          Assembly.Load(new AssemblyName("System.ComponentModel")),
           Assembly.Load(new AssemblyName("System.ComponentModel.Primitives")),
+          Assembly.Load(new AssemblyName("System.ComponentModel.EventBasedAsync")),
+          Assembly.Load(new AssemblyName("System.ComponentModel.TypeConverter")),
           Assembly.Load(new AssemblyName("System.Runtime")),
           Assembly.Load(new AssemblyName("System.Text.RegularExpressions")),
           Assembly.Load(new AssemblyName("System.Windows.Forms")),
           Assembly.Load(new AssemblyName("System.Xml")),
+          Assembly.Load(new AssemblyName("System.Private.Xml")),
+
 
           Assembly.Load(new AssemblyName("System.Windows.Extensions")),
           Assembly.Load(new AssemblyName("System.Windows.Forms.Primitives")),

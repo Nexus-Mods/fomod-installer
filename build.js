@@ -53,10 +53,11 @@ function sign(filePath) {
 async function main() {
   try {
     const buildType = debugBuild ? 'Debug' : 'Release';
-    await dotnet(['restore']);
-    await dotnet(['build', '-c', buildType]);
+    // await dotnet(['restore']);
+    // await dotnet(['build', '-c', buildType]);
     await fsExtra.remove(path.join(__dirname, 'dist'));
-    const args = ['publish', '-c', buildType, '--self-contained', '-r', 'win-x64', '-o', 'dist'];
+    // const args = ['publish', '-c', buildType, '--self-contained', '-r', 'win-x64', '-o', 'dist'];
+    const args = ['publish', '-c', buildType, '--no-self-contained', '-r', 'win-x64', '-o', 'dist'];
     if (!debugBuild) {
       args.push('/p:DebugType=None', '/p:DebugSymbols=false');
     }

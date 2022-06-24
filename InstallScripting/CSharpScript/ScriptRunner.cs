@@ -37,8 +37,6 @@ namespace FomodInstaller.Scripting.CSharpScript
         /// <c>false</c> otherwise.</returns>
         public bool Execute(byte[] p_bteScript)
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
             Control.CheckForIllegalCrossThreadCalls = false;
 
             Assembly asmScript = Assembly.Load(p_bteScript);
