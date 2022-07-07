@@ -19,7 +19,9 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName) {
     args.push('--pipe');
   }
 
-  if ((winapi !== undefined) && (containerName !== undefined)) {
+  if ((winapi !== undefined)
+      && (winapi?.SupportsAppContainer?.() === true)
+      && (containerName !== undefined)) {
     return new Promise((resolve, reject) => {
       // in case the container wasn't cleaned up before
       try {

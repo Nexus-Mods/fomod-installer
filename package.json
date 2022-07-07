@@ -1,6 +1,6 @@
 {
   "name": "fomod-installer",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "Installer for xml and c# fomods",
   "scripts": {
     "buildDev": "node build.js Debug && copyfiles -f Build/bin/Debug/*.dll dist/ && copyfiles -f Build/bin/Debug/*.pdb dist/ && copyfiles -f Build/bin/Release/*.exe dist/",
@@ -10,7 +10,7 @@
   "author": "Black Tree Gaming Ltd.",
   "license": "GPL-3.0",
   "peerDependencies": {
-    "winapi-bindings": "Nexus-Mods/node-winapi-bindings#appcontainer"
+    "winapi-bindings": "Nexus-Mods/node-winapi-bindings"
   },
   "dependencies": {
     "async": "^3.2.2",
