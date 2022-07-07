@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using FomodInstaller.Extensions;
 using FomodInstaller.Scripting;
 using System.Text;
+using FomodInstaller.Scripting.CSharpScript;
+using FomodInstaller.Scripting.XmlScript;
+using FomodInstaller.Scripting.ModScript;
 
 namespace FomodInstaller.ModInstaller
 {
@@ -43,7 +46,11 @@ namespace FomodInstaller.ModInstaller
 
         public async Task<IList<string>> GetRequirements(IList<string> modFiles, bool includeAssets, IList<string> allowedTypes)
         {
-            CurrentScriptTypeRegistry = await ScriptTypeRegistry.DiscoverScriptTypes(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            CurrentScriptTypeRegistry = new ScriptTypeRegistry();
+            CurrentScriptTypeRegistry.RegisterType(new CSharpScriptType());
+            CurrentScriptTypeRegistry.RegisterType(new XmlScriptType());
+            CurrentScriptTypeRegistry.RegisterType(new ModScriptType());
+            // CurrentScriptTypeRegistry = await ScriptTypeRegistry.DiscoverScriptTypes(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             // TODO: I don't think there is a good way to determine which image files are referenced by the installer script without
             //   unpacking it first, right?
             IList<string> RequiredFiles = includeAssets
@@ -110,7 +117,11 @@ namespace FomodInstaller.ModInstaller
 
         public async Task<IScriptType> GetScriptType(IList<string> modFiles, string extractedFilePath = null)
         {
-            CurrentScriptTypeRegistry = await ScriptTypeRegistry.DiscoverScriptTypes(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            CurrentScriptTypeRegistry = new ScriptTypeRegistry();
+            CurrentScriptTypeRegistry.RegisterType(new CSharpScriptType());
+            CurrentScriptTypeRegistry.RegisterType(new XmlScriptType());
+            CurrentScriptTypeRegistry.RegisterType(new ModScriptType());
+            // CurrentScriptTypeRegistry = await ScriptTypeRegistry.DiscoverScriptTypes(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             IScriptType FoundScriptType = null;
 
             string omodMatch = modFiles.Where(x => x.Equals("script") || x.Equals("script.txt")).FirstOrDefault();

@@ -1,5 +1,6 @@
 const cp = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 let winapi;
 try {
@@ -28,11 +29,12 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName) {
           winapi.DeleteAppContainer(containerName);
         });
         try {
-          winapi.GrantAppContainer(containerName, cwd, 'file_object', ['generic_execute', 'generic_read', 'list_directory']);
+          const files = fs.readdirSync(cwd);
+          for (const f of files) {
+            winapi.GrantAppContainer(containerName, path.join(cwd, f), 'file_object', ['generic_read', 'read_ea', 'read_attributes']);
+          }
         } catch (err) {
-          // I don't get this. This is apparantly required in development builds or .net will complain it can't read
-          // the directory with the main exe.
-          // In release builds when running from program files it's ok for this to not be called or to fail. why???
+          console.log('failed to grant access', err);
         }
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}`, 'named_pipe', ['all_access']);
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}_reply`, 'named_pipe', ['all_access']);
