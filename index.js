@@ -1,6 +1,7 @@
 const cp = require('child_process');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
+const os = require('os');
 
 let winapi;
 try {
@@ -11,8 +12,8 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName) {
   // it does actually get named .exe on linux as well
   const exeName = 'ModInstallerIPC.exe';
 
-  const cwd = path.join(__dirname.replace('app.asar', 'app.asar.unpacked'), 'dist');
-  const exePath = path.join(cwd, exeName);
+  let cwd = path.join(__dirname.replace('app.asar', 'app.asar.unpacked'), 'dist');
+  let exePath = path.join(cwd, exeName);
 
   const args = [id];
   if (usePipe) {
@@ -37,6 +38,14 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName) {
           }
         } catch (err) {
           console.log('failed to grant access', err);
+          const newCWD = path.join(os.tmpdir(), containerName);
+          try {
+            fs.removeSync(newCWD);
+          } catch (err) {}
+          fs.copySync(cwd, newCWD);
+          cwd = newCWD;
+          exePath = path.join(newCWD, exeName);
+          winapi.GrantAppContainer(containerName, cwd, 'file_object', ['generic_read', 'read_ea', 'read_attributes', 'list_directory']);
         }
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}`, 'named_pipe', ['all_access']);
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}_reply`, 'named_pipe', ['all_access']);
