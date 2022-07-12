@@ -1,6 +1,6 @@
 {
   "name": "fomod-installer",
-  "version": "0.7.7",
+  "version": "0.7.8",
   "description": "Installer for xml and c# fomods",
   "scripts": {
     "buildDev": "node build.js Debug && copyfiles -f Build/bin/Debug/*.dll dist/ && copyfiles -f Build/bin/Debug/*.pdb dist/ && copyfiles -f Build/bin/Release/*.exe dist/",
