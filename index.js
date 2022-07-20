@@ -50,8 +50,20 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName) {
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}`, 'named_pipe', ['all_access']);
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}_reply`, 'named_pipe', ['all_access']);
 
-        const pid = winapi.RunInContainer(containerName, `${exePath} ${args.join(' ')}`, cwd, onExit, onStdout);
-        resolve(pid);
+        try {
+          const pid = winapi.RunInContainer(containerName, `${exePath} ${args.join(' ')}`, cwd, onExit, onStdout);
+          resolve(pid);
+        } catch (err) {
+          // I think this may be caused by an AV scanning the files after we copied them
+          setTimeout(() => {
+            try {
+              const pid = winapi.RunInContainer(containerName, `${exePath} ${args.join(' ')}`, cwd, onExit, onStdout);
+              resolve(pid);
+            } catch (err) {
+              reject(err);
+            }
+          }, 1000);
+        }
       } catch (err) {
         reject(err);
       }
