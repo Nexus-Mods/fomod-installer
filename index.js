@@ -46,6 +46,10 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName) {
           cwd = newCWD;
           exePath = path.join(newCWD, exeName);
           winapi.GrantAppContainer(containerName, cwd, 'file_object', ['generic_read', 'read_ea', 'read_attributes', 'list_directory']);
+          const files = fs.readdirSync(cwd);
+          for (const f of files) {
+            winapi.GrantAppContainer(containerName, path.join(cwd, f), 'file_object', ['generic_read', 'read_ea', 'read_attributes']);
+          }
         }
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}`, 'named_pipe', ['all_access']);
         winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}_reply`, 'named_pipe', ['all_access']);
