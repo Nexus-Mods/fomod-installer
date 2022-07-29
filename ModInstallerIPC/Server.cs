@@ -330,6 +330,9 @@ namespace ModInstallerIPC
                 pipeIn.Connect(30000);
                 Console.Out.WriteLine("in pipe connected");
 
+                // In an appcontainer we can't host the pipe,
+                // in a low integrity process we can't create a client stream with direction out.
+
                 var pipeOut = new NamedPipeClientStream(".", mId + "_reply", PipeDirection.Out);
                 Console.Out.WriteLine("out pipe ready: " + mId + "_reply");
                 pipeOut.Connect(30000);

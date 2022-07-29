@@ -59,7 +59,12 @@ namespace ModInstallerIPC
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("{0}: {1}\n{2}", e.GetType().Name, e.Message, e.StackTrace);
+                Exception cur = e;
+                while (cur != null)
+                {
+                    Console.Error.WriteLine("{0}: {1}\n{2}", e.GetType().Name, e.Message, e.StackTrace);
+                    cur = cur.InnerException;
+                }
                 return 1;
             }
         }

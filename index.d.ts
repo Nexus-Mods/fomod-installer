@@ -11,6 +11,6 @@ declare module "fomod-installer" {
    * @param onStdOut callback for console output (stdout and stderr)
    * @param containerName name of the container. Only relevant on windows 8+. If set, the process will run in an app container
    */
-  export function createIPC(usePipe: boolean, id: string, onExit: (code: number) => void, onStdOut: (msg: string) => void, containerName: string): Promise<number>;
+  export function createIPC(usePipe: boolean, id: string, onExit: (code: number) => void, onStdOut: (msg: string) => void, containerName: string, lowIntegrityProcess: boolean): Promise<number>;
 }
 
