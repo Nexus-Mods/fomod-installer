@@ -283,7 +283,15 @@ namespace FomodInstaller.Interface
         /// <returns>The specified file, or <c>null</c> if the file does not exist.</returns>
         public byte[] GetExistingDataFile(string filePath)
         {
-            return Core.context.GetExistingDataFile(filePath).GetAwaiter().GetResult();
+            byte[] result = null;
+
+            Task.Run(async () =>
+            {
+                result = await Core.context.GetExistingDataFile(filePath);
+            }).Wait();
+
+            // return Core.context.GetExistingDataFile(filePath).GetAwaiter().GetResult();
+            return result;
         }
 
         /// <summary>
