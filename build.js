@@ -5,6 +5,19 @@ const fsExtra = require('fs-extra');
 
 const debugBuild = false;
 
+class MissingDotNetSDKException extends Error {
+  constructor() {
+    super('Missing .NET SDK - Install a .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/6.0');
+    this.name = 'MissingDotNetSDKException';
+  }
+}
+
+const ERROR_CODE_HANDLER = {
+  2147516561: {
+    genError: () => new MissingDotNetSDKException(),
+  },
+}
+
 function spawnAsync(exe, args, options, out) {
   if (options === undefined) {
     options = {};
@@ -65,7 +78,11 @@ async function main() {
     // await dotnet(['publish', '-c', 'Release', '-a', 'x64', '-o', 'dist']);
     await sign('dist\\ModInstallerIPC.exe');
   } catch (err) {
-    console.error('failed', err.message);
+    const error = ERROR_CODE_HANDLER[err?.code] !== undefined
+      ? ERROR_CODE_HANDLER[err.code].genError() : err;
+    console.error('build failed:', error.message);
+    const exitCode = !err.code ? -1 : err.code;
+    process.exit(exitCode);
   }
 }
 
