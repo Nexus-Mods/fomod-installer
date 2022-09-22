@@ -8,7 +8,7 @@ try {
   winapi = require('winapi-bindings');
 } catch (err) {}
 
-async function startRegular(exePath, args, onExit) {
+async function startRegular(exePath, args, onExit, onStdout) {
   return new Promise((resolve, reject) => {
     const proc = cp.spawn(exePath, args)
       .on('error', err => {
@@ -27,8 +27,8 @@ async function startRegular(exePath, args, onExit) {
         onExit(code);
       });
 
-    proc.stdout.on('data', dat => dat.toString());
-    proc.stderr.on('data', dat => dat.toString());
+    proc.stdout.on('data', dat => onStdout(dat.toString()));
+    proc.stderr.on('data', dat => onStdout(dat.toString()));
 
     // resolve slightly delayed to allow the error event to be triggered if the process fails to
     // start. Unfortunately cp.spawn seems to flip a coin on whether it reports events at all or not.
@@ -108,7 +108,7 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName, lowIntegr
     }
   }
   // fallback for other OSes and if the above solutions are disabled
-  return startRegular(exePath, args, onExit);
+  return startRegular(exePath, args, onExit, onStdout);
 }
 
 module.exports = {
