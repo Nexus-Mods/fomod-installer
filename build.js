@@ -59,7 +59,7 @@ async function dotnet(args) {
 
 function sign(filePath) {
   if (process.env['SIGN_TOOL'] !== undefined) {
-    return spawnAsync(process.env['SIGN_TOOL'], ['sign', '/sha1', process.env['SIGN_THUMBPRINT'], '/t', 'http://timestamp.verisign.com/scripts/timestamp.dll', filePath]);
+    return spawnAsync(process.env['SIGN_TOOL'], ['sign', '/sha1', process.env['SIGN_THUMBPRINT'], '/t', 'http://timestamp.comodoca.com', filePath]);
   }
 }
 
