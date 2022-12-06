@@ -74,7 +74,13 @@ async function main() {
     if (!debugBuild) {
       args.push('/p:DebugType=None', '/p:DebugSymbols=false');
     }
-    await dotnet(args);
+    try {
+      await dotnet(args);
+    } catch (err) {
+      // the build may fail because of locked files (sigh) so just try again...
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      await dotnet(args);
+    }
     // await dotnet(['publish', '-c', 'Release', '-a', 'x64', '-o', 'dist']);
     await sign('dist\\ModInstallerIPC.exe');
   } catch (err) {
