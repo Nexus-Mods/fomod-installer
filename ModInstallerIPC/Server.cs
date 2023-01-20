@@ -235,7 +235,7 @@ namespace ModInstallerIPC
             {
             }
 
-            public Dictionary<string, Delegate> callbacks { get; } = new Dictionary<string, Delegate>();
+            public ConcurrentDictionary<string, Delegate> callbacks { get; } = new ConcurrentDictionary<string, Delegate>();
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
@@ -301,8 +301,8 @@ namespace ModInstallerIPC
         private readonly bool mListen;
         private bool mUsePipe = false;
         private Installer mInstaller;
-        private Dictionary<string, TaskCompletionSource<object>> mAwaitedReplies;
-        private Dictionary<string, Dictionary<string, Delegate>> mCallbacks;
+        private ConcurrentDictionary<string, TaskCompletionSource<object>> mAwaitedReplies;
+        private ConcurrentDictionary<string, ConcurrentDictionary<string, Delegate>> mCallbacks;
         private Action<OutMessage> mEnqueue;
 
         /**
@@ -315,8 +315,8 @@ namespace ModInstallerIPC
             mUsePipe = pipe;
             mInstaller = new Installer();
 
-            mAwaitedReplies = new Dictionary<string, TaskCompletionSource<object>>();
-            mCallbacks = new Dictionary<string, Dictionary<string, Delegate>>();
+            mAwaitedReplies = new ConcurrentDictionary<string, TaskCompletionSource<object>>();
+            mCallbacks = new ConcurrentDictionary<string, ConcurrentDictionary<string, Delegate>>();
         }
 
         public void HandleMessages()
@@ -509,7 +509,10 @@ namespace ModInstallerIPC
         private Task<object> AwaitReply(string id)
         {
             var repliesCompletion = new TaskCompletionSource<object>();
-            mAwaitedReplies.Add(id, repliesCompletion);
+            if (!mAwaitedReplies.TryAdd(id, repliesCompletion))
+            {
+                return Task.FromException<object>(new ArgumentException("Key already exists", id));
+            }
             return repliesCompletion.Task;
         }
 
