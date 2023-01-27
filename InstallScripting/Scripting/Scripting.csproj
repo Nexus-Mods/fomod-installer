@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
     <RootNamespace>Nexus.Client.ModManagement.Scripting</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -11,6 +11,11 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DocumentationFile>..\..\Build\bin\Release\Scripting.XML</DocumentationFile>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.dll" />
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.Forms.dll" />
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.Forms.DataVisualization.dll" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\FomodInstaller.Interface\FomodInstaller.Interface.csproj" />
     <ProjectReference Include="..\..\Utils\Utils.csproj" />

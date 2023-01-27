@@ -1,11 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
     <RootNamespace>Nexus.Client.ModManagement.Scripting.CSharpScript</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DocumentationFile>..\..\Build\bin\Debug\CSharpScript.XML</DocumentationFile>
@@ -18,6 +16,11 @@
     <Reference Update="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.dll" />
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.Forms.dll" />
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.Forms.DataVisualization.dll" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\FomodInstaller.Interface\FomodInstaller.Interface.csproj" />

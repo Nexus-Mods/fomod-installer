@@ -4,7 +4,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>UtilsTests1</RootNamespace>
     <AssemblyName>UtilsTests1</AssemblyName>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IsPublishable>false</IsPublishable>
   </PropertyGroup>
@@ -15,6 +15,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.dll" />
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.Forms.dll" />
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.Forms.DataVisualization.dll" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Utils\Utils.csproj" />

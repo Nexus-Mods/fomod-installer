@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <OutputType>Library</OutputType>
     <RootNamespace>Nexus.Client.ModManagement.Scripting.ModScript</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DocumentationFile>..\..\Build\bin\Debug\ModScript.XML</DocumentationFile>
@@ -26,6 +24,11 @@
     <Antlr3 Include="ModScriptParser.g">
       <Generator>MSBuild:Compile</Generator>
     </Antlr3>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.dll" />
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.Forms.dll" />
+    <Reference Include="/usr/lib/mono/4.8-api/System.Windows.Forms.DataVisualization.dll" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\AntlrUtil\AntlrUtil.csproj" />

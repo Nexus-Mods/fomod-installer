@@ -69,8 +69,15 @@ async function main() {
     // await dotnet(['restore']);
     // await dotnet(['build', '-c', buildType]);
     await fsExtra.remove(path.join(__dirname, 'dist'));
-    // const args = ['publish', '-c', buildType, '--self-contained', '-r', 'win-x64', '-o', 'dist'];
-    const args = ['publish', '-c', buildType, '--no-self-contained', '-r', 'win-x64', '-o', 'dist'];
+    const args = ['publish', '-c', buildType, '--no-self-contained'];
+    if (process.platform === 'win32'){
+      args.push('-r', 'win-x64');
+    } else if (process.platform != 'android' && process.platform != 'linux'){
+      throw new Error('.NET RID for ' + process.report.getReport().header.osName + ' Not Yet Implemented');
+    } else {
+      args.push('-r', process.platform + '-' + process.arch);
+    }
+    args.push('-o', 'dist');
     if (!debugBuild) {
       args.push('/p:DebugType=None', '/p:DebugSymbols=false');
     }

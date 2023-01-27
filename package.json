@@ -10,7 +10,7 @@
   "author": "Black Tree Gaming Ltd.",
   "license": "GPL-3.0",
   "peerDependencies": {
-    "winapi-bindings": "Nexus-Mods/node-winapi-bindings"
+    "winapi-bindings": "*"
   },
   "dependencies": {
     "async": "^3.2.2",
