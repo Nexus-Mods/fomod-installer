@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Utils;
 using System.Windows.Forms;
 using System.Linq;
+using Nito.AsyncEx;
 
 namespace FomodInstaller.Interface
 {
@@ -234,19 +235,7 @@ namespace FomodInstaller.Interface
         /// <returns>The requested file data.</returns>
         public byte[] GetFileFromMod(string file)
         {
-            byte[] bteFile = null;
-
-            try
-            {
-                new SecurityPermission(SecurityPermissionFlag.UnmanagedCode).Assert();
-                bteFile = Mod.GetFile(file);
-            }
-            finally
-            {
-                PermissionSet.RevertAssert();
-            }
-
-            return bteFile;
+            return Mod.GetFile(file);
         }
 
         /// <summary>
@@ -294,7 +283,15 @@ namespace FomodInstaller.Interface
         /// <returns>The specified file, or <c>null</c> if the file does not exist.</returns>
         public byte[] GetExistingDataFile(string filePath)
         {
-            return Core.context.GetExistingDataFile(filePath).GetAwaiter().GetResult();
+            byte[] result = null;
+
+            Task.Run(async () =>
+            {
+                result = await Core.context.GetExistingDataFile(filePath);
+            }).Wait();
+
+            // return Core.context.GetExistingDataFile(filePath).GetAwaiter().GetResult();
+            return result;
         }
 
         /// <summary>
@@ -459,13 +456,14 @@ namespace FomodInstaller.Interface
     
         public Version GetNvseVersion()
         {
-            string ExtVersion = Core.context.GetExtenderVersion("nvse").GetAwaiter().GetResult();
+            string ExtVersion = AwaitDelegate(() => Core.context.GetExtenderVersion("nvse"));
+
             return ExtVersion != null ? new Version(ExtVersion) : null;
         }
 
         public bool ScriptExtenderPresent()
         {
-            return Core.context.IsExtenderPresent().GetAwaiter().GetResult();
+            return AwaitDelegate(() => Core.context.IsExtenderPresent());
         }
 
         #endregion
@@ -721,5 +719,12 @@ namespace FomodInstaller.Interface
         #endregion
 
         #endregion
+
+        private T AwaitDelegate<T>(Func<Task<T>> task)
+        {
+            return Task.Run(task)
+              .GetAwaiter()
+              .GetResult();
+        }
     }
 }

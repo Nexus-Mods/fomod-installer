@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using Newtonsoft.Json;
 
 namespace ModInstallerIPC
 {
@@ -39,7 +41,17 @@ namespace ModInstallerIPC
 
         static int Main(string[] args)
         {
+            Application.SetHighDpiMode(HighDpiMode.DpiUnawareGdiScaled);
             Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+
+            // oh dear god .NET, make the bloody localized error messages stop, it's the dumbest thing ever...
+            Thread.CurrentThread.CurrentCulture
+                = Thread.CurrentThread.CurrentUICulture
+                = CultureInfo.DefaultThreadCurrentCulture
+                = CultureInfo.DefaultThreadCurrentUICulture
+                = CultureInfo.InvariantCulture;
 
             // Add the event handler for handling non-UI thread exceptions to the event.
             AppDomain.CurrentDomain.UnhandledException += new
@@ -56,7 +68,12 @@ namespace ModInstallerIPC
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("{0}: {1}\n{2}", e.GetType().Name, e.Message, e.StackTrace);
+                Exception cur = e;
+                while (cur != null)
+                {
+                    Console.Error.WriteLine("{0}: {1}\n{2}", e.GetType().Name, e.Message, e.StackTrace);
+                    cur = cur.InnerException;
+                }
                 return 1;
             }
         }

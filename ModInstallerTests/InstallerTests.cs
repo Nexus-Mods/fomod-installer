@@ -12,6 +12,21 @@ namespace FomodInstaller.ModInstaller.Tests
 
 		private readonly ITestOutputHelper output;
 
+		public static void progress(int perc) { }
+
+		public static IEnumerable<object[]> TestData()
+		{
+			yield return new object[] { 0, new List<string> { "test.esm", "test.esp" } };
+			yield return new object[] { 0, new List<string> { } };
+		}
+
+		public static IEnumerable<object[]> InstallData()
+		{
+			yield return new object[] { 0, new List<string> { "test.esm", "test.esp" }, new List<string> { }, "C:\\Xunit\\TEST", null, null };
+			yield return new object[] { 0, new List<string> { }, new List<string> { }, "C:\\Xunit\\TEST", null, null };
+			yield return new object[] { 0, new List<string> { "test.esm", "test.esp" }, new List<string> { }, "", null, null };
+		}
+
 		public InstallerTests(ITestOutputHelper output)
 		{
 			this.output = output;
@@ -19,13 +34,9 @@ namespace FomodInstaller.ModInstaller.Tests
 
 
 		[Theory]
-		[InlineData(0, new object[] { "test.esm", "test.esp" })]
-		[InlineData(0, new object[] { })]
+		[MemberData(nameof(TestData))]
 		public async Task TestSupported(int dummy, List<string> modArchiveFileList)
 		{
-
-			Assert.Empty(modArchiveFileList);
-
 			Installer installer = new Installer();
 			var actual = await installer.TestSupported(modArchiveFileList, new List<string>{ "BasicType" });
 
@@ -37,11 +48,7 @@ namespace FomodInstaller.ModInstaller.Tests
 
 		[Theory()]
 		// empty ProgressDelegate and CoreDelegates
-		[InlineData(0, new object[] { "test.esm", "test.esp" }, "C:\\Xunit\\TEST", null , null)]
-		[InlineData(0, new object[] { }, "C:\\Xunit\\TEST", null, null)]
-		[InlineData(0, new object[] { "test.esm", "test.esp" }, "", null, null)]
-		[InlineData(0, new object[] { "test.esm", "test.esp" }, "C:\\Xunit\\TEST", null, null)]
-		[InlineData(0, new object[] { "test.esm", "test.esp" }, "C:\\Xunit\\TEST", null, null)]
+		[MemberData(nameof(InstallData))]
 		public async Task Install(int dummy, List<string> modArchiveFileList, List<string> gameSpecificStopFolders,
             string destinationPath, ProgressDelegate progressDelegate, CoreDelegates coreDelegate)
 		{

@@ -74,6 +74,7 @@ namespace FomodInstaller.Scripting.ModScript
 		/// Loads the script from the given text representation.
 		/// </summary>
 		/// <param name="p_strScriptData">The text to convert into a script.</param>
+		/// <param name="validate">syntax/semantics validation is available</param>
 		/// <returns>The <see cref="IScript"/> represented by the given data.</returns>
 		public IScript LoadScript(string p_strScriptData, bool validate)
 		{

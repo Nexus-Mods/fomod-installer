@@ -36,8 +36,6 @@ namespace FomodInstaller.Scripting.ModScript
 		/// <c>false</c> otherwise.</returns>
 		public bool Execute(string p_strScript)
 		{
-			Application.EnableVisualStyles();
-			Application.SetCompatibleTextRenderingDefault(false);
 			Control.CheckForIllegalCrossThreadCalls = false;
 
 			try

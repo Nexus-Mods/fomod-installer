@@ -40,10 +40,14 @@ namespace FomodInstaller.Scripting.XmlScript
             Task.Run(async () => {
                 string VersionString = await coreDelegates.context.GetCurrentGameVersion();
 
-                if (!string.IsNullOrEmpty(VersionString))
-                    GameVersion = new Version(VersionString);
-                else
-                    GameVersion = new Version("0.0.0.0");
+                try
+                {
+                    if (!string.IsNullOrEmpty(VersionString))
+                        GameVersion = new Version(VersionString);
+                } catch (Exception)
+                {
+                    // don't report as error, treat unparsable version string as version 0.0.0.0
+                }
             }).Wait();
 
             return ((GameVersion != null) && (GameVersion >= MinimumVersion));
@@ -67,10 +71,14 @@ namespace FomodInstaller.Scripting.XmlScript
             Task.Run(async () => {
                 string VersionString = await coreDelegates.context.GetCurrentGameVersion();
 
-                if (!string.IsNullOrEmpty(VersionString))
-                    GameVersion = new Version(VersionString);
-                else
-                    GameVersion = new Version("0.0.0.0");
+                try
+                {
+                    if (!string.IsNullOrEmpty(VersionString))
+                        GameVersion = new Version(VersionString);
+                } catch (Exception)
+                {
+                    // don't report as error, treat unparsable version string as version 0.0.0.0
+                }
             }).Wait();
 
             if ((GameVersion < MinimumVersion) && !invert)

@@ -36,7 +36,7 @@ namespace FomodInstaller.Interface
 
         public async Task<string[]> GetAll(bool activeOnly)
         {
-            dynamic res = await TaskHelper.Timeout(mGetAll(activeOnly), Defaults.TIMEOUT_MS);
+            dynamic res = await Task.Run(() => mGetAll(activeOnly)).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
             if (res != null)
             {
                 IEnumerable enu = res;
@@ -83,7 +83,7 @@ namespace FomodInstaller.Interface
         public async Task<string> GetIniString(string iniFileName, string iniSection, string iniKey)
         {
             string[] Params = new string[] { iniFileName, iniSection, iniKey };
-            object res = await TaskHelper.Timeout(mGetIniString(Params), Defaults.TIMEOUT_MS);
+            object res = await mGetIniString(Params).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
             if (res != null)
             {
                 return res.ToString();
@@ -95,7 +95,7 @@ namespace FomodInstaller.Interface
         public async Task<int> GetIniInt(string iniFileName, string iniSection, string iniKey)
         {
             string[] Params = new string[] { iniFileName, iniSection, iniKey };
-            object res = await TaskHelper.Timeout(mGetIniInt(Params), Defaults.TIMEOUT_MS);
+            object res = await mGetIniInt(Params).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
             if (res != null)
             {
                 return (int)res;
@@ -132,44 +132,46 @@ namespace FomodInstaller.Interface
 
         public async Task<string> GetAppVersion()
         {
-            object res = await TaskHelper.Timeout(mGetAppVersion(null), Defaults.TIMEOUT_MS);
+            object res = await mGetAppVersion(null).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
             return (string)res;
         }
 
         public async Task<string> GetCurrentGameVersion()
         {
-            object res = await TaskHelper.Timeout(mGetCurrentGameVersion(null), Defaults.TIMEOUT_MS);
+            object res = await mGetCurrentGameVersion(null).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
             return (string)res;
         }
 
         public async Task<string> GetExtenderVersion(string extender)
         {
-            object res = await TaskHelper.Timeout(mGetExtenderVersion(extender), Defaults.TIMEOUT_MS);
+            object res = await mGetExtenderVersion(extender);
             return (string)res;
+            // .WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS)));
+            // return (string)res;
         }
 
         public async Task<bool> IsExtenderPresent()
         {
-            object res = await TaskHelper.Timeout(mIsExtenderPresent(null), Defaults.TIMEOUT_MS);
+            object res = await mIsExtenderPresent(null);
             return (bool)res;
         }
 
         public async Task<bool> CheckIfFileExists(string fileName)
         {
-            object res = await TaskHelper.Timeout(mCheckIfFileExists(fileName), Defaults.TIMEOUT_MS);
+            object res = await mCheckIfFileExists(fileName).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
             return (bool)res;
         }
 
         public async Task<byte[]> GetExistingDataFile(string dataFile)
         {
-            object res = await TaskHelper.Timeout(mGetExistingDataFile(dataFile), Defaults.TIMEOUT_MS);
+            object res = await mGetExistingDataFile(dataFile).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
             return (byte[])res;
         }
 
         public async Task<string[]> GetExistingDataFileList(string folderPath, string searchFilter, bool isRecursive)
         {
             object[] Params = new object[] { folderPath, searchFilter, isRecursive };
-            object res = await TaskHelper.Timeout(mGetExistingDataFileList(Params), Defaults.TIMEOUT_MS);
+            object res = await mGetExistingDataFileList(Params).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
             return ((object[])res).Select(iter => (string)iter).ToArray();
         }
     }
@@ -330,8 +332,7 @@ namespace FomodInstaller.Interface
             {
                 try
                 {
-                    await TaskHelper.Timeout(
-                       mStartDialog(new StartParameters(moduleName, image, select, cont, cancel)), Defaults.TIMEOUT_MS);
+                    await mStartDialog(new StartParameters(moduleName, image, select, cont, cancel)).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
                 } catch (Exception e)
                 {
                     Console.WriteLine("exception in start dialog: {0}", e);
@@ -342,7 +343,7 @@ namespace FomodInstaller.Interface
             {
                 try
                 {
-                    await TaskHelper.Timeout(mEndDialog(null), Defaults.TIMEOUT_MS);
+                    await mEndDialog(null).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
                 } catch (Exception e)
                 {
                     Console.WriteLine("exception in end dialog: {0}", e);
@@ -353,7 +354,7 @@ namespace FomodInstaller.Interface
             {
                 try
                 {
-                    await TaskHelper.Timeout(mUpdateState(new UpdateParameters(installSteps, currentStep)), Defaults.TIMEOUT_MS);
+                    await mUpdateState(new UpdateParameters(installSteps, currentStep)).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
                 } catch (Exception e)
                 {
                     Console.WriteLine("exception in update state: {0}", e);
@@ -364,11 +365,11 @@ namespace FomodInstaller.Interface
             {
                 try
                 {
-                    await TaskHelper.Timeout(mReportError(new Dictionary<string, dynamic> {
+                    await mReportError(new Dictionary<string, dynamic> {
                         { "title", title },
                         { "message", message },
                         { "details", details }
-                    }), Defaults.TIMEOUT_MS);
+                    }).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
                 }
                 catch (Exception e)
                 {

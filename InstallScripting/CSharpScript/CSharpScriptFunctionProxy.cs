@@ -199,15 +199,7 @@ namespace FomodInstaller.Scripting.CSharpScript
 
         private DialogResult ShowMessageBox(string p_strMessage, string p_strCaption, MessageBoxButtons p_mbbButtons, MessageBoxIcon p_mbiIcon)
         {
-            try
-            {
-                new PermissionSet(PermissionState.Unrestricted).Assert();
-                return System.Windows.Forms.MessageBox.Show(p_strMessage, p_strCaption, p_mbbButtons, p_mbiIcon, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
-            }
-            finally
-            {
-                PermissionSet.RevertAssert();
-            }
+            return System.Windows.Forms.MessageBox.Show(p_strMessage, p_strCaption, p_mbbButtons, p_mbiIcon, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
         }
         #endregion
     }

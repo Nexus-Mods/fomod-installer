@@ -37,14 +37,11 @@ namespace FomodInstaller.Scripting.CSharpScript
         /// <c>false</c> otherwise.</returns>
         public bool Execute(byte[] p_bteScript)
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
             Control.CheckForIllegalCrossThreadCalls = false;
 
             Assembly asmScript = Assembly.Load(p_bteScript);
 
             object s = asmScript.CreateInstance("Script");
-            //s = new Script();
             if (s == null)
             {
                 m_csfFunctions.ExtendedMessageBox("C# Script did not contain a 'Script' class in the root namespace.", "Error", null);
@@ -59,7 +56,9 @@ namespace FomodInstaller.Scripting.CSharpScript
                     for (Type tpeScriptType = s.GetType(); mifMethod == null; tpeScriptType = tpeScriptType.BaseType)
                         mifMethod = tpeScriptType.GetMethod("Setup", new Type[] { typeof(CSharpScriptFunctionProxy) });
                     mifMethod.Invoke(s, new object[] { m_csfFunctions });
-                    return (bool)s.GetType().GetMethod("OnActivate").Invoke(s, null);
+                    var onActivate = s.GetType().GetMethod("OnActivate");
+                    object res = onActivate.Invoke(s, null);
+                    return (bool)res;
                 }
                 catch (System.Reflection.TargetInvocationException ex)
                 {

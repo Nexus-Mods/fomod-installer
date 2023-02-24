@@ -622,22 +622,28 @@ namespace FomodInstaller.Scripting.ModScript
 			ReplaceTextInFile(p_strPath, p_strOldValue, p_strNewValue);
 		}
 
-        public void EditINI(string section, string key, string value)
-        {
-            Instructions.Add(Instruction.CreateIniEdit("", section, key, value));
-        }
+    /// <summary>
+    /// create an ini edit
+    /// </summary>
+    /// <param name="section"></param>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    public void EditINI(string section, string key, string value)
+    {
+      Instructions.Add(Instruction.CreateIniEdit("", section, key, value));
+    }
 
-		#endregion
+    #endregion
 
-		#region Path Manipulation
+    #region Path Manipulation
 
-		/// <summary>
-		/// Combines the given paths.
-		/// </summary>
-		/// <param name="p_strPath1">The first path to combine.</param>
-		/// <param name="p_strPath2">The second path to combine.</param>
-		/// <returns>The combined paths.</returns>
-		public string CombinePaths(string p_strPath1, string p_strPath2)
+    /// <summary>
+    /// Combines the given paths.
+    /// </summary>
+    /// <param name="p_strPath1">The first path to combine.</param>
+    /// <param name="p_strPath2">The second path to combine.</param>
+    /// <returns>The combined paths.</returns>
+    public string CombinePaths(string p_strPath1, string p_strPath2)
 		{
 			return Path.Combine(p_strPath1, p_strPath2);
 		}
@@ -1143,15 +1149,7 @@ namespace FomodInstaller.Scripting.ModScript
 
         private DialogResult ShowMessageBox(string p_strMessage, string p_strCaption, MessageBoxButtons p_mbbButtons, MessageBoxIcon p_mbiIcon)
         {
-            try
-            {
-                new PermissionSet(PermissionState.Unrestricted).Assert();
-                return System.Windows.Forms.MessageBox.Show(p_strMessage, p_strCaption, p_mbbButtons, p_mbiIcon, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
-            }
-            finally
-            {
-                PermissionSet.RevertAssert();
-            }
+            return System.Windows.Forms.MessageBox.Show(p_strMessage, p_strCaption, p_mbbButtons, p_mbiIcon, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
         }
 
 		#endregion

@@ -235,7 +235,7 @@ namespace ModInstallerIPC
             {
             }
 
-            public Dictionary<string, Delegate> callbacks { get; } = new Dictionary<string, Delegate>();
+            public ConcurrentDictionary<string, Delegate> callbacks { get; } = new ConcurrentDictionary<string, Delegate>();
 
             public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             {
@@ -301,8 +301,8 @@ namespace ModInstallerIPC
         private readonly bool mListen;
         private bool mUsePipe = false;
         private Installer mInstaller;
-        private Dictionary<string, TaskCompletionSource<object>> mAwaitedReplies;
-        private Dictionary<string, Dictionary<string, Delegate>> mCallbacks;
+        private ConcurrentDictionary<string, TaskCompletionSource<object>> mAwaitedReplies;
+        private ConcurrentDictionary<string, ConcurrentDictionary<string, Delegate>> mCallbacks;
         private Action<OutMessage> mEnqueue;
 
         /**
@@ -315,8 +315,8 @@ namespace ModInstallerIPC
             mUsePipe = pipe;
             mInstaller = new Installer();
 
-            mAwaitedReplies = new Dictionary<string, TaskCompletionSource<object>>();
-            mCallbacks = new Dictionary<string, Dictionary<string, Delegate>>();
+            mAwaitedReplies = new ConcurrentDictionary<string, TaskCompletionSource<object>>();
+            mCallbacks = new ConcurrentDictionary<string, ConcurrentDictionary<string, Delegate>>();
         }
 
         public void HandleMessages()
@@ -325,15 +325,17 @@ namespace ModInstallerIPC
             Stream streamIn = null;
             Stream streamOut = null;
             if (mUsePipe) {
-                var pipeIn = new NamedPipeClientStream(mId);
-                Console.Out.WriteLine("in pipe ready");
+                var pipeIn = new NamedPipeClientStream(".", mId, PipeDirection.In);
+                Console.Out.WriteLine("in pipe ready: " + mId);
                 pipeIn.Connect(30000);
                 Console.Out.WriteLine("in pipe connected");
 
-                var pipeOut = new NamedPipeServerStream(mId + "_reply");
-                Console.Out.WriteLine("out pipe ready");
+                // In an appcontainer we can't host the pipe,
+                // in a low integrity process we can't create a client stream with direction out.
 
-                pipeOut.WaitForConnection();
+                var pipeOut = new NamedPipeClientStream(".", mId + "_reply", PipeDirection.Out);
+                Console.Out.WriteLine("out pipe ready: " + mId + "_reply");
+                pipeOut.Connect(30000);
                 Console.Out.WriteLine("out pipe connected");
 
                 streamIn = pipeIn;
@@ -348,7 +350,7 @@ namespace ModInstallerIPC
                 } catch (Exception e)
                 {
                     Console.Error.WriteLine("failed to connect to local port {0}: {1}", mId, e.Message);
-                    throw e;
+                    throw;
                 }
                 NetworkStream stream = client.GetStream();
                 streamIn = streamOut = stream;
@@ -359,6 +361,9 @@ namespace ModInstallerIPC
             BlockingCollection<OutMessage> outgoing = new BlockingCollection<OutMessage>();
 
             mEnqueue = msg => outgoing.Add(msg);
+
+            byte[] input = System.Text.Encoding.UTF8.GetBytes("connected");
+            streamOut.Write(input, 0, input.Length);
 
             CancellationTokenSource cancelSignal = new CancellationTokenSource();
 
@@ -504,7 +509,10 @@ namespace ModInstallerIPC
         private Task<object> AwaitReply(string id)
         {
             var repliesCompletion = new TaskCompletionSource<object>();
-            mAwaitedReplies.Add(id, repliesCompletion);
+            if (!mAwaitedReplies.TryAdd(id, repliesCompletion))
+            {
+                return Task.FromException<object>(new ArgumentException("Key already exists", id));
+            }
             return repliesCompletion.Task;
         }
 
