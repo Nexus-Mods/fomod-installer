@@ -38,7 +38,7 @@ namespace FomodInstaller.Scripting.XmlScript
 
 			#region IComparer<InstallStep> Members
 
-			public abstract int Compare(T x, T y);
+			public abstract int Compare(T? x, T? y);
 
 			#endregion
 		}

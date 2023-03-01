@@ -1,4 +1,5 @@
-﻿using Microsoft.CSharp.RuntimeBinder;
+﻿using FomodInstaller.Interface.ui;
+using Microsoft.CSharp.RuntimeBinder;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ namespace FomodInstaller.Interface
 
     #region Plugin
 
-    public class PluginDelegates
+    public class PluginDelegates : IPluginDelegates
     {
         private Func<object, Task<object>> mGetAll;
         private Func<object, Task<object>> mIsActive;
@@ -69,7 +70,7 @@ namespace FomodInstaller.Interface
 
     #region Ini
 
-    public class IniDelegates
+    public class IniDelegates : IIniDelegates
     {
         private Func<object[], Task<object>> mGetIniString;
         private Func<object[], Task<object>> mGetIniInt;
@@ -86,7 +87,7 @@ namespace FomodInstaller.Interface
             object res = await mGetIniString(Params).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
             if (res != null)
             {
-                return res.ToString();
+                return res.ToString() ?? string.Empty;
             }
             else
                 return string.Empty;
@@ -109,7 +110,7 @@ namespace FomodInstaller.Interface
 
     #region Context
 
-    public class ContextDelegates
+    public class ContextDelegates : IContextDelegates
     {
         private Func<object, Task<object>> mGetAppVersion;
         private Func<object, Task<object>> mGetCurrentGameVersion;
@@ -313,7 +314,7 @@ namespace FomodInstaller.Interface
             }
         }
 
-        public class Delegates
+        public class Delegates : IUIDelegates
         {
             private Func<object, Task<object>> mStartDialog;
             private Func<object, Task<object>> mEndDialog;
@@ -333,7 +334,8 @@ namespace FomodInstaller.Interface
                 try
                 {
                     await mStartDialog(new StartParameters(moduleName, image, select, cont, cancel)).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     Console.WriteLine("exception in start dialog: {0}", e);
                 }
@@ -344,7 +346,8 @@ namespace FomodInstaller.Interface
                 try
                 {
                     await mEndDialog(null).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     Console.WriteLine("exception in end dialog: {0}", e);
                 }
@@ -355,7 +358,8 @@ namespace FomodInstaller.Interface
                 try
                 {
                     await mUpdateState(new UpdateParameters(installSteps, currentStep)).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
-                } catch (Exception e)
+                }
+                catch (Exception e)
                 {
                     Console.WriteLine("exception in update state: {0}", e);
                 }
@@ -381,7 +385,7 @@ namespace FomodInstaller.Interface
 
     #endregion
 
-    public class CoreDelegates
+    public class CoreDelegates : ICoreDelegates
     {
         private PluginDelegates mPluginDelegates;
         private ContextDelegates mContextDelegates;
@@ -396,7 +400,7 @@ namespace FomodInstaller.Interface
             mUIDelegates = new ui.Delegates(source.ui);
         }
 
-        public PluginDelegates plugin
+        public IPluginDelegates plugin
         {
             get
             {
@@ -404,7 +408,7 @@ namespace FomodInstaller.Interface
             }
         }
 
-        public IniDelegates ini
+        public IIniDelegates ini
         {
             get
             {
@@ -412,7 +416,7 @@ namespace FomodInstaller.Interface
             }
         }
 
-        public ContextDelegates context
+        public IContextDelegates context
         {
             get
             {
@@ -420,7 +424,7 @@ namespace FomodInstaller.Interface
             }
         }
 
-        public ui.Delegates ui
+        public IUIDelegates ui
         {
             get
             {

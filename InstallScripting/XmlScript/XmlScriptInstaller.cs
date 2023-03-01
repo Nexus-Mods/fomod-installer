@@ -42,7 +42,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <param name="pluginsToActivate">The list of plugins to activate.</param>
         /// <returns><c>true</c> if the installation succeeded;
         /// <c>false</c> otherwise.</returns>
-        public IList<Instruction> Install(XmlScript xscScript, ConditionStateManager csmState, CoreDelegates coreDelegates, IEnumerable<InstallableFile> filesToInstall, ICollection<InstallableFile> pluginsToActivate)
+        public IList<Instruction> Install(XmlScript xscScript, ConditionStateManager csmState, ICoreDelegates coreDelegates, IEnumerable<InstallableFile> filesToInstall, ICollection<InstallableFile> pluginsToActivate)
         {
             try
             {
@@ -62,7 +62,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <param name="coreDelegates">The Core delegates component.</param>
         /// <param name="filesToInstall">The list of files to install.</param>
         /// <param name="pluginsToActivate">The list of plugins to activate.</param>
-        protected bool InstallFiles(XmlScript xscScript, ConditionStateManager csmState, CoreDelegates coreDelegates, IEnumerable<InstallableFile> filesToInstall, ICollection<InstallableFile> pluginsToActivate)
+        protected bool InstallFiles(XmlScript xscScript, ConditionStateManager csmState, ICoreDelegates coreDelegates, IEnumerable<InstallableFile> filesToInstall, ICollection<InstallableFile> pluginsToActivate)
         {
             bool HadIssues = false;
             IList<InstallableFile> lstRequiredFiles = xscScript.RequiredInstallFiles;
@@ -157,7 +157,7 @@ namespace FomodInstaller.Scripting.XmlScript
             string strTo = installableFile.Destination.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             if ((strTo.Length > 0) && (!strTo.EndsWith(Path.DirectorySeparatorChar.ToString())))
                 strTo += Path.DirectorySeparatorChar;
-            string strMODFile = null;
+            string strMODFile;
             for (int i = 0; i < lstModFiles.Count; i++)
             {
                 strMODFile = lstModFiles[i];

@@ -13,7 +13,7 @@ namespace Utils
 
 		#region INotifyPropertyChanged Members
 
-		public event PropertyChangedEventHandler PropertyChanged = delegate { };
+		public event PropertyChangedEventHandler? PropertyChanged = delegate { };
 
 		#endregion
 
@@ -57,7 +57,10 @@ namespace Utils
 
 		protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
 		{
-			PropertyChanged(this, e);
+			if (PropertyChanged != null)
+			{
+				PropertyChanged(this, e);
+			}
 		}
 	}
 }

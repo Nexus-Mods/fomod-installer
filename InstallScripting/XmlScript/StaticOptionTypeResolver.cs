@@ -49,12 +49,12 @@ namespace FomodInstaller.Scripting.XmlScript
         /// </summary>
         /// <returns>The option type.</returns>
         /// <param name="coreDelegates">The Core delegates component.</param>
-        public OptionType ResolveOptionType(ConditionStateManager csmState, CoreDelegates coreDelegates)
+        public OptionType ResolveOptionType(ConditionStateManager csmState, ICoreDelegates coreDelegates)
 		{
 			return m_ptpType;
 		}
 
-    public string ResolveConditionMessage(ConditionStateManager csmState, CoreDelegates coreDelegates)
+    public string ResolveConditionMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates)
     {
       return m_ptpType == OptionType.NotUsable
         ? "hardcoded"

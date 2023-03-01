@@ -17,8 +17,8 @@ namespace Utils.Collections
 	public class ThreadSafeObservableList<T> : IList<T>, INotifyCollectionChanged, INotifyPropertyChanged
 	{
 		protected ReaderWriterLockSlim m_rwlLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-		private List<T> m_lstItems = null;
-		private IComparer<T> m_cmpComparer = null;
+		private List<T?> m_lstItems;
+		private IComparer<T>? m_cmpComparer;
 
 		#region Constructors
 
@@ -53,9 +53,9 @@ namespace Utils.Collections
 		/// </summary>
 		/// <param name="p_enmItems">The items with which to initialize the list.</param>
 		/// <param name="p_cmpComparer">The comparer to use when comparing items in the list.</param>
-		public ThreadSafeObservableList(IEnumerable<T> p_enmItems, IComparer<T> p_cmpComparer)
+		public ThreadSafeObservableList(IEnumerable<T>? p_enmItems, IComparer<T>? p_cmpComparer)
 		{
-			m_lstItems = (p_enmItems == null) ? new List<T>() : new List<T>(p_enmItems);
+			m_lstItems = (p_enmItems == null) ? new List<T?>() : new List<T?>(p_enmItems);
 			m_cmpComparer = p_cmpComparer;
 		}
 
@@ -114,7 +114,7 @@ namespace Utils.Collections
 		/// <param name="index">The index of the item to remove from the list.</param>
 		public void RemoveAt(int index)
 		{
-			T tOldItem = default(T);
+			T? tOldItem = default(T);
 			try
 			{
 				m_rwlLock.EnterWriteLock();
@@ -139,11 +139,11 @@ namespace Utils.Collections
 		{
 			get
 			{
-				return (index >= m_lstItems.Count ? default(T) : m_lstItems[index]);
+				return (index >= m_lstItems.Count ? default : m_lstItems[index])!;
 			}
 			set
 			{
-				T tOldItem = default(T);
+				T? tOldItem = default(T);
 				try
 				{
 					m_rwlLock.EnterWriteLock();
@@ -190,7 +190,7 @@ namespace Utils.Collections
 		/// </summary>
 		public void Clear()
 		{
-			List<T> lstOldItems = new List<T>();
+			List<T?> lstOldItems = new List<T?>();
 			try
 			{
 				m_rwlLock.EnterWriteLock();
@@ -363,7 +363,7 @@ namespace Utils.Collections
 		/// <summary>
 		/// Raised when the collection changes.
 		/// </summary>
-		public event NotifyCollectionChangedEventHandler CollectionChanged = delegate { };
+		public event NotifyCollectionChangedEventHandler? CollectionChanged = delegate { };
 
 		#endregion
 
@@ -372,7 +372,7 @@ namespace Utils.Collections
 		/// <summary>
 		/// Raised when a property of the collection changes.
 		/// </summary>
-		public event PropertyChangedEventHandler PropertyChanged = delegate { };
+		public event PropertyChangedEventHandler? PropertyChanged = delegate { };
 
 		#endregion
 
@@ -384,7 +384,10 @@ namespace Utils.Collections
 		/// <param name="e">A <see cref="NotifyCollectionChangedEventArgs"/> describing the event arguments.</param>
 		protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
 		{
-			CollectionChanged(this, e);
+			if (CollectionChanged != null)
+			{
+				CollectionChanged(this, e);
+			}
 		}
 
 		/// <summary>
@@ -393,7 +396,10 @@ namespace Utils.Collections
 		/// <param name="e">A <see cref="PropertyChangedEventArgs"/> describing the event arguments.</param>
 		protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
 		{
-			PropertyChanged(this, e);
+			if (PropertyChanged != null)
+			{
+				PropertyChanged(this, e);
+			}
 		}
 
 		#endregion
@@ -403,7 +409,7 @@ namespace Utils.Collections
 		/// </summary>
 		/// <param name="index">The index at which to set the item.</param>
 		/// <param name="item">The item to set.</param>
-		protected virtual void SetItem(int index, T item)
+		protected virtual void SetItem(int index, T? item)
 		{
 			m_lstItems[index] = item;
 		}
@@ -426,7 +432,7 @@ namespace Utils.Collections
 		/// <param name="p_intToIndex">The index to which to move the item.</param>
 		public virtual void Move(Int32 p_intFromIndex, Int32 p_intToIndex)
 		{
-			T tItem = default(T);
+			T? tItem = default(T);
 			try
 			{
 				if (p_intFromIndex < m_lstItems.Count)

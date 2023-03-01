@@ -153,8 +153,8 @@ namespace FomodInstaller.Scripting.XmlScript
     /// </remarks>
     /// <param name="coreDelegates">The Core delegates component.</param>
     /// <returns>The option type.</returns>
-    /// <seealso cref="IOptionTypeResolver.ResolveOptionType(CoreDelegates)"/>
-    public OptionType ResolveOptionType(ConditionStateManager csmState, CoreDelegates coreDelegates)
+    /// <seealso cref="IOptionTypeResolver.ResolveOptionType(ICoreDelegates)"/>
+    public OptionType ResolveOptionType(ConditionStateManager csmState, ICoreDelegates coreDelegates)
     {
       foreach (ConditionalTypePattern ctpPattern in m_lstPatterns)
         if (ctpPattern.Condition.GetIsFulfilled(csmState, coreDelegates))
@@ -164,7 +164,7 @@ namespace FomodInstaller.Scripting.XmlScript
       return m_ptpDefaultType;
     }
 
-    public string ResolveConditionMessage(ConditionStateManager csmState, CoreDelegates coreDelegates)
+    public string ResolveConditionMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates)
     {
       List<string> unmatched = new List<string>();
 

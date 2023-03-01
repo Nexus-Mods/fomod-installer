@@ -45,15 +45,15 @@ namespace FomodInstaller.Scripting.XmlScript
 			/// <returns>A value less than 0 if <paramref name="x"/> is less than <paramref name="y"/>.
 			/// 0 if this node is equal to the other.
 			/// A value greater than 0 if <paramref name="x"/> is greater than <paramref name="y"/>.</returns>
-			public override int Compare(InstallStep x, InstallStep y)
+			public override int Compare(InstallStep? x, InstallStep? y)
 			{
-				return StringCompare(x.Name, y.Name);
+				return StringCompare(x?.Name ?? "", y?.Name ?? "");
 			}
 		}
 
 		private SortOrder m_srtStepOrder = SortOrder.Explicit;
-		private Version m_verVersion = null;
-		private ICondition m_cndModPrerequisites = null;
+		private Version m_verVersion;
+		private ICondition? m_cndModPrerequisites;
 
 		#region Properties
 
@@ -113,7 +113,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// Gets or sets the mod prerequisites encoded in the script.
 		/// </summary>
 		/// <value>The mod prerequisites encoded in the script.</value>
-		public ICondition ModPrerequisites
+		public ICondition? ModPrerequisites
 		{
 			get
 			{
@@ -184,12 +184,12 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <param name="p_srtStepOrder">The order of the script's <see cref="InstallStep"/>s.</param>
 		/// <param name="p_lstConditionallyInstalledFileSets">The list of file sets that the script wants installed if certain conditions
 		/// are satified.</param>
-		public XmlScript(XmlScriptType p_xstScripType, Version p_verVersion, HeaderInfo p_hdrHeader, ICondition p_cndModPrerequisites, IList<InstallableFile> p_lstRequiredInstallFiles, List<InstallStep> p_lstInstallSteps, SortOrder p_srtStepOrder, List<ConditionallyInstalledFileSet> p_lstConditionallyInstalledFileSets)
+		public XmlScript(XmlScriptType p_xstScripType, Version p_verVersion, HeaderInfo p_hdrHeader, ICondition? p_cndModPrerequisites, IList<InstallableFile>? p_lstRequiredInstallFiles, List<InstallStep>? p_lstInstallSteps, SortOrder p_srtStepOrder, List<ConditionallyInstalledFileSet>? p_lstConditionallyInstalledFileSets)
 		{
 			Type = p_xstScripType;
-			Version = p_verVersion;
+			m_verVersion = p_verVersion;
 			HeaderInfo = p_hdrHeader;
-			ModPrerequisites = p_cndModPrerequisites;
+			m_cndModPrerequisites = p_cndModPrerequisites;
 			RequiredInstallFiles = (p_lstRequiredInstallFiles == null) ? new ThreadSafeObservableList<InstallableFile>() : new ThreadSafeObservableList<InstallableFile>(p_lstRequiredInstallFiles);
 			InstallSteps = (p_lstInstallSteps == null) ? new ThreadSafeObservableList<InstallStep>() : new ThreadSafeObservableList<InstallStep>(p_lstInstallSteps);
 			InstallSteps.CollectionChanged += new NotifyCollectionChangedEventHandler(InstallSteps_CollectionChanged);
@@ -209,7 +209,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// </remarks>
 		/// <param name="sender">The object that raised the event.</param>
 		/// <param name="e">A <see cref="NotifyCollectionChangedEventArgs"/> describing the event arguments.</param>
-		private void InstallSteps_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		private void InstallSteps_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			OnPropertyChanged(() => InstallSteps);
 		}

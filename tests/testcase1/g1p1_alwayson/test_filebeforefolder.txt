@@ -1,1 +1,0 @@
-Given the same priority, folders should be installed after files, overwriting files specified individually.

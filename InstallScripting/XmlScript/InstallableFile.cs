@@ -88,17 +88,17 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <returns>A value less than 0 if this PluginFile is less than the given PluginFile,
 		/// or 0 if this PluginFile is equal to the given PluginFile,
 		///or a value greater than 0 if this PluginFile is greater than the given PluginFile.</returns>
-		public int CompareTo(InstallableFile other)
+		public int CompareTo(InstallableFile? other)
 		{
-			Int32 intResult = Priority.CompareTo(other.Priority);
+			Int32 intResult = Priority.CompareTo(other?.Priority);
 			if (intResult == 0)
 			{
-				intResult =IsFolder.CompareTo(other.IsFolder);
+				intResult =IsFolder.CompareTo(other?.IsFolder);
 				if (intResult == 0)
 				{
-					intResult = String.Compare(Source, other.Source, StringComparison.OrdinalIgnoreCase);
+					intResult = String.Compare(Source, other?.Source, StringComparison.OrdinalIgnoreCase);
 					if (intResult == 0)
-						intResult = String.Compare(Destination, other.Destination, StringComparison.OrdinalIgnoreCase);
+						intResult = String.Compare(Destination, other?.Destination, StringComparison.OrdinalIgnoreCase);
 				}
 			}
 			return intResult;

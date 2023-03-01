@@ -31,7 +31,7 @@ namespace FomodInstaller.ModInstaller
                                                                  dynamic preset,
                                                                  bool validate,
                                                                  ProgressDelegate progressDelegate,
-                                                                 CoreDelegates coreDelegate);
+                                                                 ICoreDelegates coreDelegate);
 
         #endregion
     }

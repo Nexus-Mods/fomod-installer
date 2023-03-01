@@ -33,7 +33,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <returns><c>true</c> if the condition is fulfilled;
         /// <c>false</c> otherwise.</returns>
         /// <seealso cref="ICondition.GetIsFulfilled(CoreDelegates)"/>
-        public override bool GetIsFulfilled(ConditionStateManager csmState, CoreDelegates coreDelegates)
+        public override bool GetIsFulfilled(ConditionStateManager csmState, ICoreDelegates coreDelegates)
 		{
             Version GameVersion = new Version("0.0.0.0");
 
@@ -63,8 +63,8 @@ namespace FomodInstaller.Scripting.XmlScript
         /// </remarks>
         /// <param name="coreDelegates">The Core delegates component.</param>
         /// <returns>A message describing whether or not the condition is fulfilled.</returns>
-        /// <seealso cref="ICondition.GetMessage(CoreDelegates)"/>
-		public override string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates, bool invert)
+        /// <seealso cref="ICondition.GetMessage(ICoreDelegates)"/>
+		public override string GetMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates, bool invert)
 		{
             Version GameVersion = new Version("0.0.0.0");
 

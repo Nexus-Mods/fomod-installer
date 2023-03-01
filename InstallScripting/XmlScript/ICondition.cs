@@ -18,7 +18,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <returns><c>true</c> if the condition is fulfilled;
         /// <c>false</c> otherwise.</returns>
         /// <seealso cref="ICondition.GetIsFulfilled(CoreDelegates)"/>
-		bool GetIsFulfilled(ConditionStateManager csmState, CoreDelegates coreDelegates);
+		bool GetIsFulfilled(ConditionStateManager csmState, ICoreDelegates coreDelegates);
 
         /// <summary>
         /// Gets a message describing whether or not the condition is fulfilled.
@@ -31,6 +31,6 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <param name="coreDelegates">The Core delegates component.</param>
         /// <returns>A message describing whether or not the condition is fulfilled.</returns>
         /// <seealso cref="ICondition.GetMessage(CoreDelegates)"/>
-		string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates, bool invert);
+		string GetMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates, bool invert);
 	}
 }

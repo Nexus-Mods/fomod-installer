@@ -94,7 +94,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <returns><c>true</c> if the condition is fulfilled;
 		/// <c>false</c> otherwise.</returns>
 		/// <seealso cref="ICondition.GetIsFulfilled(CoreDelegates)"/>
-		public bool GetIsFulfilled(ConditionStateManager csmState, CoreDelegates coreDelegates)
+		public bool GetIsFulfilled(ConditionStateManager csmState, ICoreDelegates coreDelegates)
 		{
 			bool booAllFulfilled = (Operator == ConditionOperator.And) ? true : false;
 			bool booThisFulfilled = true;
@@ -125,8 +125,8 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <param name="coreDelegates">The Core delegates component.</param>
     /// <param name="invert">Invert the logic in the message, explaining why it passed instead of why not</param>
 		/// <returns>A message describing whether or not the condition is fulfilled.</returns>
-		/// <seealso cref="ICondition.GetMessage(CoreDelegates)"/>
-		public string GetMessage(ConditionStateManager csmState, CoreDelegates coreDelegates, bool invert)
+		/// <seealso cref="ICondition.GetMessage(ICoreDelegates)"/>
+		public string GetMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates, bool invert)
 		{
 			bool booAllFulfilled = (Operator == ConditionOperator.And) ? true : false;
 			bool booThisFulfilled = true;

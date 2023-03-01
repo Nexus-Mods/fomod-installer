@@ -37,7 +37,7 @@ namespace FomodInstaller.Scripting.XmlScript
     public class XmlScriptExecutor : ScriptExecutorBase
     {
         private Mod ModArchive = null;
-        private CoreDelegates m_Delegates;
+        private ICoreDelegates m_Delegates;
         private ConditionStateManager m_csmState;
         private ISet<Option> m_SelectedOptions;
         private OptionsPreset? m_Preset;
@@ -50,7 +50,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <param name="modArchive">The mod object containing the file list in the mod archive.</param>
         /// <param name="UserInteractionDelegate">The utility class to use to install the mod items.</param>
         /// <param name="scxUIContext">The <see cref="SynchronizationContext"/> to use to marshall UI interactions to the UI thread.</param>		
-        public XmlScriptExecutor(Mod modArchive, CoreDelegates coreDelegates)
+        public XmlScriptExecutor(Mod modArchive, ICoreDelegates coreDelegates)
         {
             ModArchive = modArchive;
             m_Delegates = coreDelegates;

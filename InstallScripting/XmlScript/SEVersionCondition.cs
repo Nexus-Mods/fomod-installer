@@ -36,7 +36,7 @@ namespace FomodInstaller.Scripting.XmlScript
     /// <returns><c>true</c> if the condition is fulfilled;
     /// <c>false</c> otherwise.</returns>
     /// <seealso cref="ICondition.GetIsFulfilled(ConditionStateManager)"/>
-    public override bool GetIsFulfilled(ConditionStateManager p_csmStateManager, CoreDelegates coreDelegates)
+    public override bool GetIsFulfilled(ConditionStateManager p_csmStateManager, ICoreDelegates coreDelegates)
     {
       Version verInstalledVersion = null;
 
@@ -66,7 +66,7 @@ namespace FomodInstaller.Scripting.XmlScript
     /// <param name="p_csmStateManager">The manager that tracks the currect install state.</param>
     /// <returns>A message describing whether or not the condition is fulfilled.</returns>
     /// <seealso cref="ICondition.GetMessage(ConditionStateManager)"/>
-    public override string GetMessage(ConditionStateManager p_csmStateManager, CoreDelegates coreDelegates, bool invert)
+    public override string GetMessage(ConditionStateManager p_csmStateManager, ICoreDelegates coreDelegates, bool invert)
     {
       Version verInstalledVersion = null;
 

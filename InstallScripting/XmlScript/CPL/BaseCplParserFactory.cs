@@ -1,4 +1,5 @@
-﻿using Antlr.Runtime;
+﻿/*
+using Antlr.Runtime;
 using FomodInstaller.Util.Antlr;
 
 namespace FomodInstaller.Scripting.XmlScript
@@ -43,3 +44,4 @@ namespace FomodInstaller.Scripting.XmlScript
 		#endregion
 	}
 }
+*/

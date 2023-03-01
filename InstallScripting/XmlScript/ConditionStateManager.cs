@@ -28,7 +28,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		}
 
 		private Dictionary<string, FlagValue> m_dicFlags = new Dictionary<string, FlagValue>();
-		private Dictionary<string, Image> m_dicImageCache;
+		// private Dictionary<string, Image> m_dicImageCache;
 
 		#region Properties
 
@@ -76,10 +76,12 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <param name="p_eifEnvironmentInfo">The application's envrionment info.</param>
 		public ConditionStateManager()
 		{
+			/*
 			if (OperatingSystem.IsWindows())
 			{
 				m_dicImageCache = new Dictionary<string, Image>();
 			}
+			*/
 		}
 
 		#endregion
@@ -115,6 +117,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// </summary>
 		/// <param name="p_strPath">The path to the image in the mod to retrieve.</param>
 		/// <returns>The specified image from the mod against which the script is running.</returns>
+		/*
 		public Image GetImage(string p_strPath)
 		{
 			if (string.IsNullOrEmpty(p_strPath) || !OperatingSystem.IsWindows())
@@ -134,5 +137,6 @@ namespace FomodInstaller.Scripting.XmlScript
 			}
 			return m_dicImageCache[p_strPath];
 		}
+		*/
 	}
 }

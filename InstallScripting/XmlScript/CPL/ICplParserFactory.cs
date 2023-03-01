@@ -1,4 +1,5 @@
-﻿using FomodInstaller.Util.Antlr;
+﻿/*
+using FomodInstaller.Util.Antlr;
 
 namespace FomodInstaller.Scripting.XmlScript
 {
@@ -26,3 +27,4 @@ namespace FomodInstaller.Scripting.XmlScript
 		AntlrLexerBase CreateLexer(string p_strCode, ErrorTracker p_ertErrorTracker);
 	}
 }
+*/

@@ -93,7 +93,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <param name="modArchive">The mod being installed.</param>
 		/// <param name="delegates">The application's envrionment info.</param>
 		/// <returns>An executor that can run the script type.</returns>
-		public IScriptExecutor CreateExecutor(Mod modArchive, CoreDelegates delegates)
+		public IScriptExecutor CreateExecutor(Mod modArchive, ICoreDelegates delegates)
 		{
 			return new XmlScriptExecutor(modArchive, delegates);
 		}
@@ -214,25 +214,25 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <returns>The path to the schema file for the specified xml script version.</returns>
 		public XmlSchema GetXmlScriptSchema(Version XmlScriptVersion)
 		{
-			Assembly Assembly = Assembly.GetAssembly(GetType());
-			XmlSchema XMLSchema = null;
+			Assembly Assembly = Assembly.GetAssembly(GetType())!;
+			XmlSchema XMLSchema;
 			string ScriptVersion = string.Format("{0}.{1}", XmlScriptVersion.Major, XmlScriptVersion.Minor);
 			string SourcePath = string.Format(Path.Combine(GameSpecificXMLScriptSchemaPath, "XmlScript{0}.xsd").Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), ScriptVersion);
 			string SourceQualifiedName = SourcePath.Replace(Path.AltDirectorySeparatorChar, '.');
 			if (!Array.Exists(Assembly.GetManifestResourceNames(), (s) => { return SourceQualifiedName.Equals(s, StringComparison.OrdinalIgnoreCase); }))
 			{
 				Assembly = Assembly.GetExecutingAssembly();
-				SourcePath = string.Format("FomodInstaller/Scripting/XmlScript/Schemas/XmlScript{0}.xsd", ScriptVersion);
+				SourcePath = string.Format("NexusMods/FOMOD/fomod_installer/InstallScripting/XmlScript/Schemas/XmlScript{0}.xsd", ScriptVersion);
 				SourceQualifiedName = SourcePath.Replace(Path.AltDirectorySeparatorChar, '.');
 			}
-			using (Stream schema = Assembly.GetManifestResourceStream(SourceQualifiedName))
+			using (Stream schema = Assembly.GetManifestResourceStream(SourceQualifiedName)!)
 			{
 				string SourceUri = string.Format("assembly://{0}", SourcePath);
 				XmlReaderSettings ReaderSettings = new XmlReaderSettings();
 				ReaderSettings.IgnoreComments = true;
 				ReaderSettings.IgnoreWhitespace = true;
 				using (XmlReader schemaReader = XmlReader.Create(schema, ReaderSettings, SourceUri))
-					XMLSchema = XmlSchema.Read(schemaReader, delegate(object sender, ValidationEventArgs e) { throw e.Exception; });
+					XMLSchema = XmlSchema.Read(schemaReader, delegate(object sender, ValidationEventArgs e) { throw e.Exception; }!)!;
 			}
 			return XMLSchema;
 		}
@@ -273,7 +273,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		{
 			string ScriptVersion = "1.0";
 			XElement XmlRoot = xmlScript.DescendantsAndSelf("config").First();
-			string SchemaName = XmlRoot.Attribute(XName.Get("noNamespaceSchemaLocation", "http://www.w3.org/2001/XMLSchema-instance")).Value.ToLowerInvariant();
+			string SchemaName = XmlRoot.Attribute(XName.Get("noNamespaceSchemaLocation", "http://www.w3.org/2001/XMLSchema-instance"))!.Value.ToLowerInvariant();
 			int StartPos = SchemaName.LastIndexOf("xmlscript") + 9;
 			if (StartPos < 9)
 				StartPos = SchemaName.LastIndexOf("modconfig") + 9;
@@ -407,10 +407,12 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// Gets a CPL Parser factory.
 		/// </summary>
 		/// <returns>A CPL Parser factory.</returns>
+		/*
 		public virtual ICplParserFactory GetCplParserFactory()
 		{
 			return new BaseCplParserFactory();
 		}
+		*/
 
 		/// <summary>
 		/// Gets the commands supported by the specified XML Script version.

@@ -172,6 +172,7 @@ namespace FomodInstaller.Interface
             }
         }
 
+        /*
         public byte[] GetFile(string file)
         {
             if (!string.IsNullOrEmpty(PathPrefix) || !file.StartsWith(PathPrefix, StringComparison.InvariantCultureIgnoreCase))
@@ -195,6 +196,7 @@ namespace FomodInstaller.Interface
             else
                 return null;
         }
+        */
 
         public IList<string> GetFileList(string targetDirectory, bool isRecursive, bool dropPrefix)
         {

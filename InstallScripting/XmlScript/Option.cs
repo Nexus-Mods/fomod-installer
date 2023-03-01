@@ -133,12 +133,12 @@ namespace FomodInstaller.Scripting.XmlScript
     /// </summary>
     /// <param name="coreDelegates">The Core delegates component.</param>
     /// <returns>The <see cref="OptionType"/> of the option.</returns>
-    public OptionType GetOptionType(ConditionStateManager csmState, CoreDelegates coreDelegates)
+    public OptionType GetOptionType(ConditionStateManager csmState, ICoreDelegates coreDelegates)
     {
       return m_otrTypeResolver.ResolveOptionType(csmState, coreDelegates);
     }
 
-    public string GetConditionMessage(ConditionStateManager csmState, CoreDelegates coreDelegates)
+    public string GetConditionMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates)
     {
       return m_otrTypeResolver.ResolveConditionMessage(csmState, coreDelegates);
     }

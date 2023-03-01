@@ -41,7 +41,7 @@ namespace FomodInstaller.Scripting
         /// <param name="modArchive">The mod being installed.</param>
         /// <param name="userInteractionDelegate">The application's envrionment info.</param>
         /// <returns>An executor that can run the script type.</returns>
-        IScriptExecutor CreateExecutor(Mod modArchive, CoreDelegates delegates);
+        IScriptExecutor CreateExecutor(Mod modArchive, ICoreDelegates delegates);
 
 		/// <summary>
 		/// Loads the script from the given text representation.

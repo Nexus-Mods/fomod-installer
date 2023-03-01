@@ -1,7 +1,6 @@
-﻿using System;
+﻿/*
+using System;
 using System.Text;
-using Antlr.Runtime.Tree;
-using FomodInstaller.Util.Antlr;
 
 namespace FomodInstaller.Scripting.XmlScript
 {
@@ -158,3 +157,4 @@ namespace FomodInstaller.Scripting.XmlScript
 		}
 	}
 }
+*/

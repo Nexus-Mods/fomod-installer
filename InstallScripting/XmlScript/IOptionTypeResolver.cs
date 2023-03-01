@@ -46,7 +46,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <param name="csmState">condition state</param>
         /// <param name="coreDelegates">The Core delegates component.</param>
         /// <returns>The option type.</returns>
-        OptionType ResolveOptionType(ConditionStateManager csmState, CoreDelegates coreDelegates);
+        OptionType ResolveOptionType(ConditionStateManager csmState, ICoreDelegates coreDelegates);
 
         /// <summary>
         /// Return a message explaining why the condition resolves to "NotUsable". Will return null
@@ -55,6 +55,6 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <param name="csmState">condition state</param>
         /// <param name="coreDelegates">delegates for communicating with the user interface</param>
         /// <returns></returns>
-        string ResolveConditionMessage(ConditionStateManager csmState, CoreDelegates coreDelegates);
+        string ResolveConditionMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates);
 	}
 }
