@@ -36,10 +36,10 @@ namespace FomodInstaller.Scripting.XmlScript
     /// </summary>
     public class XmlScriptExecutor : ScriptExecutorBase
     {
-        private Mod ModArchive = null;
+        private Mod ModArchive;
         private ICoreDelegates m_Delegates;
-        private ConditionStateManager m_csmState;
-        private ISet<Option> m_SelectedOptions;
+        private ConditionStateManager? m_csmState;
+        private ISet<Option>? m_SelectedOptions;
         private OptionsPreset? m_Preset;
 
         #region Constructors
@@ -154,7 +154,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 });
             };
 
-            string bannerPath = string.IsNullOrEmpty(hifHeaderInfo.ImagePath)
+            string? bannerPath = string.IsNullOrEmpty(hifHeaderInfo.ImagePath)
                 ? null
                 : Path.Combine(ModArchive.Prefix, hifHeaderInfo.ImagePath);
             m_Delegates.ui.StartDialog(hifHeaderInfo.Title,
@@ -181,14 +181,14 @@ namespace FomodInstaller.Scripting.XmlScript
                     {
                         foreach (Option option in group.Options)
                         {
-                            if (m_SelectedOptions.Contains(option))
+                            if (m_SelectedOptions!.Contains(option))
                             {
                                 FilesToInstall = FilesToInstall.Union(option.Files);
                             } else
                             {
                                 IEnumerable<InstallableFile> installAnyway = option.Files.Where(
                                   file => file.AlwaysInstall ||
-                                  (file.InstallIfUsable && option.GetOptionType(m_csmState, m_Delegates) != OptionType.NotUsable));
+                                  (file.InstallIfUsable && option.GetOptionType(m_csmState!, m_Delegates) != OptionType.NotUsable));
                                 if (installAnyway.Count() > 0)
                                 {
                                     FilesToInstall = FilesToInstall.Union(installAnyway);
@@ -198,7 +198,7 @@ namespace FomodInstaller.Scripting.XmlScript
                     }
                 }
 
-                Source.SetResult(xsiInstaller.Install(xscScript, m_csmState, m_Delegates, FilesToInstall, PluginsToActivate));
+                Source.SetResult(xsiInstaller.Install(xscScript, m_csmState!, m_Delegates, FilesToInstall, PluginsToActivate));
             }
             else
             {
@@ -209,28 +209,28 @@ namespace FomodInstaller.Scripting.XmlScript
 
         private void enableOption(Option option)
         {
-            m_SelectedOptions.Add(option);
+            m_SelectedOptions!.Add(option);
             option.Flags.ForEach((ConditionalFlag flag) =>
             {
-                m_csmState.SetFlagValue(flag.Name, flag.ConditionalValue, option);
+                m_csmState!.SetFlagValue(flag.Name, flag.ConditionalValue, option);
             });
         }
 
         private void disableOption(Option option)
         {
-            m_SelectedOptions.Remove(option);
-            m_csmState.RemoveFlags(option);
+            m_SelectedOptions!.Remove(option);
+            m_csmState!.RemoveFlags(option);
         }
 
         private OptionType resolveOptionType(Option opt)
         {
-            return opt.GetOptionType(m_csmState, m_Delegates);
+            return opt.GetOptionType(m_csmState!, m_Delegates);
         }
 
 
         private void preselectOptions(InstallStep step)
         {
-            IList<OptionsPresetStep> stepPresets = null;
+            IList<OptionsPresetStep>? stepPresets = null;
             if (m_Preset.HasValue)
             {
                 // step names are not unique :(
@@ -248,7 +248,7 @@ namespace FomodInstaller.Scripting.XmlScript
                     }
                 }
 
-                if (group.Options.FirstOrDefault(opt => m_SelectedOptions.Contains(opt)) == null)
+                if (group.Options.FirstOrDefault(opt => m_SelectedOptions!.Contains(opt)) == null)
                 {
                     bool setFirst = group.Type == OptionGroupType.SelectExactlyOne;
                     foreach (Option option in group.Options)
@@ -351,7 +351,7 @@ namespace FomodInstaller.Scripting.XmlScript
             {
                 int idx = 0;
                 return steps.Select(step => new InstallerStep(idx++, step.Name,
-                    step.VisibilityCondition == null || step.VisibilityCondition.GetIsFulfilled(m_csmState, m_Delegates)));
+                    step.VisibilityCondition == null || step.VisibilityCondition.GetIsFulfilled(m_csmState!, m_Delegates)));
             };
 
             Func<IEnumerable<Option>, OptionsPresetGroup?, bool, IEnumerable<Interface.ui.Option>> convertOptions = (options, groupPreset, selectAll) =>
@@ -370,12 +370,12 @@ namespace FomodInstaller.Scripting.XmlScript
                         choicePreset = groupPreset.Value.choices.Any(preOption => preOption.name == option.Name);
                     }
 
-                    string conditionMsg = type == OptionType.NotUsable
-                    ? option.GetConditionMessage(m_csmState, m_Delegates)
+                    string? conditionMsg = type == OptionType.NotUsable
+                    ? option.GetConditionMessage(m_csmState!, m_Delegates)
                     : null;
                     return new Interface.ui.Option(idx++, option.Name, option.Description,
                       string.IsNullOrEmpty(option.ImagePath) ? null : Path.Combine(strPrefixPath, option.ImagePath),
-                      m_SelectedOptions.Contains(option), choicePreset, type.ToString(), conditionMsg);
+                      m_SelectedOptions!.Contains(option), choicePreset, type.ToString(), conditionMsg);
                 });
             };
 
@@ -421,7 +421,7 @@ namespace FomodInstaller.Scripting.XmlScript
         {
             for (int i = currentIdx + 1; i < lstSteps.Count; ++i) {
                 if ((lstSteps[i].VisibilityCondition == null) ||
-                    lstSteps[i].VisibilityCondition.GetIsFulfilled(m_csmState, m_Delegates))
+                    lstSteps[i].VisibilityCondition.GetIsFulfilled(m_csmState!, m_Delegates))
                 {
                     return i;
                 }
@@ -433,7 +433,7 @@ namespace FomodInstaller.Scripting.XmlScript
         {
             for (int i = currentIdx - 1; i >= 0; --i) {
                 if ((lstSteps[i].VisibilityCondition == null) ||
-                    lstSteps[i].VisibilityCondition.GetIsFulfilled(m_csmState, m_Delegates))
+                    lstSteps[i].VisibilityCondition.GetIsFulfilled(m_csmState!, m_Delegates))
                 {
                     return i;
                 }
@@ -448,7 +448,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 return null;
             }
 
-            Func<IEnumerable<dynamic>, IEnumerable<OptionsPresetChoice>> convertChoices = choiceIn =>
+            Func<IEnumerable<dynamic>?, IEnumerable<OptionsPresetChoice>> convertChoices = choiceIn =>
             {
                 if (choiceIn == null)
                 {
@@ -457,7 +457,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 return choiceIn.Select(choice => new OptionsPresetChoice() { name = choice.name, idx = choice.idx });
             };
 
-            Func<IEnumerable<dynamic>, IEnumerable<OptionsPresetGroup>> convertGroups = groupsIn =>
+            Func<IEnumerable<dynamic>?, IEnumerable<OptionsPresetGroup>> convertGroups = groupsIn =>
             {
                 if (groupsIn == null)
                 {
@@ -466,12 +466,16 @@ namespace FomodInstaller.Scripting.XmlScript
                 return groupsIn.Select(group => new OptionsPresetGroup() { name = group.name, choices = convertChoices(group["choices"] as IEnumerable<dynamic>).ToArray() });
             };
 
-            Func<IEnumerable<dynamic>, IEnumerable<OptionsPresetStep>> convertSteps = stepsIn =>
+            Func<IEnumerable<dynamic>?, IEnumerable<OptionsPresetStep>> convertSteps = stepsIn =>
             {
+                if (stepsIn == null)
+                {
+                    return new List<OptionsPresetStep> { };
+                }
                 return stepsIn.Select (step => new OptionsPresetStep () { name = step.name, groups = convertGroups(step["groups"] as IEnumerable<dynamic>).ToArray() });
             };
 
-            return new OptionsPreset() { steps = (convertSteps(input) as IEnumerable<OptionsPresetStep>).ToArray() };
+            return new OptionsPreset() { steps = convertSteps(input).ToArray() };
         }
 
         #endregion

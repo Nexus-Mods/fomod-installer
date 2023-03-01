@@ -25,8 +25,8 @@ namespace FomodInstaller.Interface
         private Func<object, Task<object>> mGetAll;
         private Func<object, Task<object>> mIsActive;
         private Func<object, Task<object>> mIsPresent;
-        private string[] mActiveCache;
-        private string[] mPresentCache;
+        private string[]? mActiveCache;
+        private string[]? mPresentCache;
 
         public PluginDelegates(dynamic source)
         {
@@ -41,7 +41,7 @@ namespace FomodInstaller.Interface
             if (res != null)
             {
                 IEnumerable enu = res;
-                return enu.Cast<object>().Select(x => x.ToString()).ToArray();
+                return enu.Cast<object>().Select(x => x.ToString() ?? "").ToArray();
             }
             else
                 return new string[0];
@@ -112,12 +112,12 @@ namespace FomodInstaller.Interface
 
     public class ContextDelegates : IContextDelegates
     {
-        private Func<object, Task<object>> mGetAppVersion;
-        private Func<object, Task<object>> mGetCurrentGameVersion;
-        private Func<object, Task<object>> mGetExtenderVersion;
-        private Func<object, Task<object>> mIsExtenderPresent;
-        private Func<object, Task<object>> mCheckIfFileExists;
-        private Func<object, Task<object>> mGetExistingDataFile;
+        private Func<object?, Task<object>> mGetAppVersion;
+        private Func<object?, Task<object>> mGetCurrentGameVersion;
+        private Func<object?, Task<object>> mGetExtenderVersion;
+        private Func<object?, Task<object>> mIsExtenderPresent;
+        private Func<object?, Task<object>> mCheckIfFileExists;
+        private Func<object?, Task<object>> mGetExistingDataFile;
         private Func<object[], Task<object>> mGetExistingDataFileList;
 
         public ContextDelegates(dynamic source)
@@ -183,11 +183,11 @@ namespace FomodInstaller.Interface
 
     public struct HeaderImage
     {
-        public string path;
+        public string? path;
         public bool showFade;
         public int height;
 
-        public HeaderImage(string path, bool showFade, int height) : this()
+        public HeaderImage(string? path, bool showFade, int height) : this()
         {
             this.path = path;
             this.showFade = showFade;
@@ -204,11 +204,11 @@ namespace FomodInstaller.Interface
             public bool preset;
             public string name;
             public string description;
-            public string image;
+            public string? image;
             public string type;
-            public string conditionMsg;
+            public string? conditionMsg;
 
-            public Option(int id, string name, string description, string image, bool selected, bool preset, string type, string conditionMsg) : this()
+            public Option(int id, string name, string description, string? image, bool selected, bool preset, string type, string? conditionMsg) : this()
             {
                 this.id = id;
                 this.name = name;
@@ -260,13 +260,13 @@ namespace FomodInstaller.Interface
 
         struct StartParameters
         {
-            public string moduleName;
+            public string? moduleName;
             public HeaderImage image;
-            public Func<object, Task<object>> select;
-            public Func<object, Task<object>> cont;
-            public Func<object, Task<object>> cancel;
+            public Func<object, Task<object?>> select;
+            public Func<object, Task<object?>> cont;
+            public Func<object, Task<object?>> cancel;
 
-            public StartParameters(string moduleName, HeaderImage image, SelectCB select, ContinueCB cont, CancelCB cancel)
+            public StartParameters(string? moduleName, HeaderImage image, SelectCB select, ContinueCB cont, CancelCB cancel)
             {
                 this.moduleName = moduleName;
                 this.image = image;
@@ -275,7 +275,7 @@ namespace FomodInstaller.Interface
                     object[] pluginObjs = selectPar.plugins;
                     IEnumerable<int> pluginIds = pluginObjs.Select(id => (int)id);
                     select(selectPar.stepId, selectPar.groupId, pluginIds.ToArray());
-                    return await Task.FromResult<object>(null);
+                    return await Task.FromResult<object?>(null);
                 };
 
                 this.cont = async (dynamic continuePar) =>
@@ -291,13 +291,13 @@ namespace FomodInstaller.Interface
                         // no problem, we'll just not validate if the message is for the expected page
                     }
                     cont(direction == "forward", currentStep);
-                    return await Task.FromResult<object>(null);
+                    return await Task.FromResult<object?>(null);
                 };
 
                 this.cancel = async (dynamic dummy) =>
                 {
                     cancel();
-                    return await Task.FromResult<object>(null);
+                    return await Task.FromResult<object?>(null);
                 };
             }
         }
@@ -316,8 +316,8 @@ namespace FomodInstaller.Interface
 
         public class Delegates : IUIDelegates
         {
-            private Func<object, Task<object>> mStartDialog;
-            private Func<object, Task<object>> mEndDialog;
+            private Func<object?, Task<object>> mStartDialog;
+            private Func<object?, Task<object>> mEndDialog;
             private Func<object, Task<object>> mUpdateState;
             private Func<object, Task<object>> mReportError;
 
@@ -329,7 +329,7 @@ namespace FomodInstaller.Interface
                 mReportError = source.reportError;
             }
 
-            public async void StartDialog(string moduleName, HeaderImage image, SelectCB select, ContinueCB cont, CancelCB cancel)
+            public async void StartDialog(string? moduleName, HeaderImage image, SelectCB select, ContinueCB cont, CancelCB cancel)
             {
                 try
                 {

@@ -12,12 +12,12 @@ namespace FomodInstaller.Scripting.XmlScript
   /// </remarks>
   public class Option : ObservableObject
   {
-    private string m_strName = null;
-    private string m_strDesc = null;
-    private string m_strImagePath = null;
-    private IOptionTypeResolver m_otrTypeResolver = null;
-    private List<InstallableFile> m_lstFiles = null;
-    private List<ConditionalFlag> m_lstFlags = null;
+    private string m_strName;
+    private string m_strDesc;
+    private string m_strImagePath;
+    private IOptionTypeResolver m_otrTypeResolver;
+    private List<InstallableFile> m_lstFiles;
+    private List<ConditionalFlag> m_lstFlags;
 
     #region Properties
 

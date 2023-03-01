@@ -12,7 +12,7 @@ namespace FomodInstaller.Scripting.XmlScript
 				m_sodOrder = p_sodOrder;
 			}
 
-			private Int32 DoStringCompare(string x, string y)
+			private Int32 DoStringCompare(string? x, string? y)
 			{
 				if (String.IsNullOrEmpty(x))
 				{
@@ -23,7 +23,7 @@ namespace FomodInstaller.Scripting.XmlScript
 				return x.CompareTo(y);
 			}
 
-			protected Int32 StringCompare(string x, string y)
+			protected Int32 StringCompare(string? x, string? y)
 			{
 				switch (m_sodOrder)
 				{

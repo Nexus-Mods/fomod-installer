@@ -101,7 +101,7 @@ namespace FomodInstaller.Scripting
         /// </summary>
         /// <returns><c>true</c> if the script completed
         /// successfully; <c>false</c> otherwise.</returns>
-        public async Task<IList<Instruction>> Execute(IScript p_scpScript, string p_strDataPath, dynamic preset)
+        public async Task<IList<Instruction>> Execute(IScript p_scpScript, string p_strDataPath, dynamic? preset)
         {
             
             // ??? OnTaskSetCompleted(booResult, "The script has finished executing.", p_scpScript);

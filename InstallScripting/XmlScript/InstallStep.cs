@@ -18,13 +18,13 @@ namespace FomodInstaller.Scripting.XmlScript
 			{
 			}
 
-			public override int Compare(OptionGroup x, OptionGroup y)
+			public override int Compare(OptionGroup? x, OptionGroup? y)
 			{
-				return StringCompare(x.Name, y.Name);
+				return StringCompare(x?.Name, y?.Name);
 			}
 		}
 
-		private string m_strName = null;
+		private string m_strName;
 		private ThreadSafeObservableList<OptionGroup> m_lstGroupedOptions = new ThreadSafeObservableList<OptionGroup>();
 		private SortOrder m_srtGroupOrder = SortOrder.Explicit;
 
@@ -122,7 +122,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// </remarks>
 		/// <param name="sender">The object that raised the event.</param>
 		/// <param name="e">A <see cref="NotifyCollectionChangedEventArgs"/> describing the event arguments.</param>
-		private void OptionGroups_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		private void OptionGroups_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs? e)
 		{
 			OnPropertyChanged(() => OptionGroups);
 		}
