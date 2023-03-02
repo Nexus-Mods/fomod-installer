@@ -35,9 +35,9 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
     /// </summary>
     /// <returns>The script's <see cref="XmlScript.ModPrerequisites"/>, based on the XML,
     /// or <c>null</c> if the XML doesn't describe any <see cref="XmlScript.ModPrerequisites"/>.</returns>
-    protected override ICondition GetModPrerequisites()
+    protected override ICondition? GetModPrerequisites()
     {
-      XElement xelModDependencies = Script.Element("moduleDependencies");
+      XElement? xelModDependencies = Script.Element("moduleDependencies");
       if (xelModDependencies == null)
         return null;
       return LoadCondition(xelModDependencies);
@@ -50,8 +50,8 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
     /// or <c>null</c> if the script doesn't describe any <see cref="XmlScript.InstallSteps"/>.</returns>
     protected override List<InstallStep> GetInstallSteps()
     {
-      XElement xelGroups = Script.Element("optionalFileGroups");
-      SortOrder sodGroupOrder = ParseSortOrder(xelGroups.Attribute("order").Value);
+      XElement xelGroups = Script.Element("optionalFileGroups")!;
+      SortOrder sodGroupOrder = ParseSortOrder(xelGroups.Attribute("order")!.Value);
       InstallStep stpStep = new InstallStep(null, null, sodGroupOrder);
       if (xelGroups != null)
         foreach (XElement xelGroup in xelGroups.Elements())
@@ -68,19 +68,19 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
     /// <returns>A <see cref="XmlScript.HeaderInfo"/> based on the XML.</returns>
     protected override HeaderInfo GetHeaderInfo()
     {
-      XElement xelTitle = Script.Element("moduleName");
+      XElement xelTitle = Script.Element("moduleName")!;
       string strTitle = xelTitle.Value;
-      Color clrColour = Color.FromArgb((Int32)(UInt32.Parse(xelTitle.Attribute("colour").Value, NumberStyles.HexNumber, null) | 0xff000000));
-      TextPosition tpsPosition = (TextPosition)Enum.Parse(typeof(TextPosition), xelTitle.Attribute("position").Value);
+      Color clrColour = Color.FromArgb((Int32)(UInt32.Parse(xelTitle.Attribute("colour")!.Value, NumberStyles.HexNumber, null) | 0xff000000));
+      TextPosition tpsPosition = (TextPosition)Enum.Parse(typeof(TextPosition), xelTitle.Attribute("position")!.Value);
 
-      XElement xelImage = Script.Element("moduleImage");
+      XElement? xelImage = Script.Element("moduleImage");
       if (xelImage != null)
       {
-        XAttribute xatPath = xelImage.Attribute("path");
-        string strImagePath = (xatPath == null) ? null : xatPath.Value;
-        bool booShowImage = Boolean.Parse(xelImage.Attribute("showImage").Value);
-        bool booShowFade = Boolean.Parse(xelImage.Attribute("showFade").Value);
-        Int32 intHeight = Int32.Parse(xelImage.Attribute("height").Value);
+        XAttribute? xatPath = xelImage.Attribute("path");
+        string? strImagePath = (xatPath == null) ? null : xatPath.Value;
+        bool booShowImage = Boolean.Parse(xelImage.Attribute("showImage")!.Value);
+        bool booShowFade = Boolean.Parse(xelImage.Attribute("showFade")!.Value);
+        Int32 intHeight = Int32.Parse(xelImage.Attribute("height")!.Value);
         return new HeaderInfo(strTitle, clrColour, tpsPosition, strImagePath, booShowImage, booShowFade, intHeight);
       }
       return new HeaderInfo(strTitle, clrColour, tpsPosition, null, true, true, -1);
@@ -97,11 +97,11 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
     /// <returns>The added group.</returns>
     protected override OptionGroup ParseGroup(XElement p_xelGroup)
     {
-      string strName = p_xelGroup.Attribute("name").Value;
-      OptionGroupType gtpType = (OptionGroupType)Enum.Parse(typeof(OptionGroupType), p_xelGroup.Attribute("type").Value);
+      string strName = p_xelGroup.Attribute("name")!.Value;
+      OptionGroupType gtpType = (OptionGroupType)Enum.Parse(typeof(OptionGroupType), p_xelGroup.Attribute("type")!.Value);
 
-      XElement xelOptions = p_xelGroup.Element("plugins");
-      SortOrder sodOptionOrder = ParseSortOrder(xelOptions.Attribute("order").Value);
+      XElement xelOptions = p_xelGroup.Element("plugins")!;
+      SortOrder sodOptionOrder = ParseSortOrder(xelOptions.Attribute("order")!.Value);
 
       OptionGroup pgpGroup = new OptionGroup(strName, gtpType, sodOptionOrder);
       foreach (XElement xelOption in xelOptions.Elements())
@@ -115,38 +115,42 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
     /// </summary>
     /// <param name="p_xelCondition">The node from which to load the condition.</param>
     /// <returns>An <see cref="ICondition"/> representing the condition described in the given node.</returns>
-    protected override ICondition LoadCondition(XElement p_xelCondition)
+    protected override ICondition? LoadCondition(XElement? p_xelCondition)
     {
       if (p_xelCondition == null)
         return null;
-      switch (p_xelCondition.GetSchemaInfo().SchemaType.Name)
+      switch (p_xelCondition.GetSchemaInfo()?.SchemaType?.Name)
       {
         case "compositeDependency":
-          ConditionOperator copOperator = (ConditionOperator)Enum.Parse(typeof(ConditionOperator), p_xelCondition.Attribute("operator").Value);
+          ConditionOperator copOperator = (ConditionOperator)Enum.Parse(typeof(ConditionOperator), p_xelCondition.Attribute("operator")!.Value);
           CompositeCondition cpdCondition = new CompositeCondition(copOperator);
           IEnumerable<XElement> xeeConditions = p_xelCondition.Elements();
           foreach (XElement xelCondition in xeeConditions)
-            cpdCondition.Conditions.Add(LoadCondition(xelCondition));
+          {
+            var cond = LoadCondition(xelCondition);
+            if (cond != null)
+              cpdCondition.Conditions.Add(cond);
+          }
           return cpdCondition;
         case "fileDependency":
-          string strCondition = p_xelCondition.Attribute("file").Value.ToLower();
-          PluginState plsModState = (PluginState)Enum.Parse(typeof(PluginState), p_xelCondition.Attribute("state").Value);
+          string strCondition = p_xelCondition.Attribute("file")!.Value.ToLower();
+          PluginState plsModState = (PluginState)Enum.Parse(typeof(PluginState), p_xelCondition.Attribute("state")!.Value);
           return new PluginCondition(strCondition, plsModState);
         case "flagDependency":
-          string strFlagName = p_xelCondition.Attribute("flag").Value;
-          string strValue = p_xelCondition.Attribute("value").Value;
+          string strFlagName = p_xelCondition.Attribute("flag")!.Value;
+          string strValue = p_xelCondition.Attribute("value")!.Value;
           return new FlagCondition(strFlagName, strValue);
         case "versionDependency":
           switch (p_xelCondition.Name.LocalName)
           {
             case "falloutDependency":
-              Version verMinFalloutVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+              Version verMinFalloutVersion = ParseVersion(p_xelCondition.Attribute("version")!.Value);
               return new GameVersionCondition(verMinFalloutVersion);
             case "fommDependency":
-              Version verMinFommVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+              Version verMinFommVersion = ParseVersion(p_xelCondition.Attribute("version")!.Value);
               return new ModManagerCondition(verMinFommVersion);
             case "foseDependency":
-              Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+              Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version")!.Value);
               return new SEVersionCondition(verMinSEVersion, "fose");
             default:
               throw new ParserException("Invalid plugin condition node: " + p_xelCondition.Name + ". At this point the config file has been validated against the schema, so there's something wrong with the parser.");

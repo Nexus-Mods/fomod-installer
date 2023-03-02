@@ -116,12 +116,12 @@ namespace FomodInstaller.Scripting.XmlScript
         {
             if (installableFile.IsFolder)
             {
-                if (!InstallFolderFromMod(installableFile, ModArchive.Prefix))
+                if (!InstallFolderFromMod(installableFile, ModArchive.Prefix!))
                     return false;
             }
             else
             {
-                string strSource = Path.Combine(ModArchive.Prefix, installableFile.Source);
+                string strSource = Path.Combine(ModArchive.Prefix!, installableFile.Source);
                 int count = ModArchive.GetFileList(strSource, true, false).Count;
                 if (count == 1)
                 {

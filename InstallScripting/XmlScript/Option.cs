@@ -14,7 +14,7 @@ namespace FomodInstaller.Scripting.XmlScript
   {
     private string m_strName;
     private string m_strDesc;
-    private string m_strImagePath;
+    private string? m_strImagePath;
     private IOptionTypeResolver m_otrTypeResolver;
     private List<InstallableFile> m_lstFiles;
     private List<ConditionalFlag> m_lstFlags;
@@ -57,7 +57,7 @@ namespace FomodInstaller.Scripting.XmlScript
     /// Gets or sets the path to the option image.
     /// </summary>
     /// <value>The path to the option image</value>
-    public string ImagePath
+    public string? ImagePath
     {
       get
       {
@@ -116,7 +116,7 @@ namespace FomodInstaller.Scripting.XmlScript
     /// <param name="p_strDesc">The description of the option.</param>
     /// <param name="p_imgImage">The path to the option image.</param>
     /// <param name="p_ptpType">The <see cref="OptionType"/> of the option.</param>
-    public Option(string p_strName, string p_strDesc, string p_strImagePath, IOptionTypeResolver p_ptpType)
+    public Option(string p_strName, string p_strDesc, string? p_strImagePath, IOptionTypeResolver p_ptpType)
     {
       m_strName = p_strName;
       m_lstFiles = new List<InstallableFile>();
@@ -138,7 +138,7 @@ namespace FomodInstaller.Scripting.XmlScript
       return m_otrTypeResolver.ResolveOptionType(csmState, coreDelegates);
     }
 
-    public string GetConditionMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates)
+    public string? GetConditionMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates)
     {
       return m_otrTypeResolver.ResolveConditionMessage(csmState, coreDelegates);
     }

@@ -50,7 +50,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.ModPrerequisites"/>,
 		/// or <c>null</c> if the script doean't have any <see cref="XmlScript.ModPrerequisites"/>.</returns>
-		protected override XElement UnparseModPrerequisites()
+		protected override XElement? UnparseModPrerequisites()
 		{
 			if (Script.ModPrerequisites == null)
 				return null;
@@ -82,9 +82,9 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </remarks>
 		/// <param name="p_ispStep">The <see cref="InstallStep"/> for which to generate XML.</param>
 		/// <returns>The XML representation of the given <see cref="InstallStep"/>.</returns>
-		protected override XElement UnparseInstallStep(InstallStep p_ispStep)
+		protected override XElement? UnparseInstallStep(InstallStep p_ispStep)
 		{
-			XElement xelStep = base.UnparseInstallStep(p_ispStep);
+			XElement? xelStep = base.UnparseInstallStep(p_ispStep);
 			if (xelStep != null)
 				xelStep.Add(new XAttribute("order", UnparseSortOrder(p_ispStep.GroupSortOrder)));
 			return xelStep;
@@ -98,11 +98,14 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </remarks>
 		/// <param name="p_ogpGroup">The <see cref="OptionGroup"/> for which to generate XML.</param>
 		/// <returns>The XML representation of the given <see cref="OptionGroup"/>.</returns>
-		protected override XElement UnparseOptionGroup(OptionGroup p_ogpGroup)
+		protected override XElement? UnparseOptionGroup(OptionGroup p_ogpGroup)
 		{
-			XElement xelGroup = base.UnparseOptionGroup(p_ogpGroup);
-			XElement xelOptions = xelGroup.Element("plugins");
-			xelOptions.Add(new XAttribute("order", UnparseSortOrder(p_ogpGroup.OptionSortOrder)));
+			XElement xelGroup = base.UnparseOptionGroup(p_ogpGroup)!;
+			XElement? xelOptions = xelGroup.Element("plugins");
+			if (xelOptions != null)
+			{
+				xelOptions.Add(new XAttribute("order", UnparseSortOrder(p_ogpGroup.OptionSortOrder)));
+			}
 			return xelGroup;
 		}
 

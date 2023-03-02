@@ -7,8 +7,8 @@ namespace FomodInstaller.Scripting.XmlScript
 	/// </summary>
 	public class FlagCondition : ICondition
 	{
-		private string m_strFlagName = null;
-		private string m_strValue = null;
+		private string m_strFlagName;
+		private string m_strValue;
 
 		#region Properties
 
@@ -55,8 +55,8 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <param name="p_strValue">The value the flag that must have.</param>
 		public FlagCondition(string p_strFlagName, string p_strValue)
 		{
-			FlagName = p_strFlagName;
-			Value = p_strValue;
+			m_strFlagName = p_strFlagName;
+			m_strValue = p_strValue;
 		}
 
         #endregion
@@ -76,7 +76,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <seealso cref="ICondition.GetIsFulfilled(CoreDelegates)"/>
         public bool GetIsFulfilled(ConditionStateManager csmState, ICoreDelegates coreDelegates)
 		{
-			string strValue = null;
+			string? strValue;
 
             csmState.FlagValues.TryGetValue(FlagName, out strValue);
 			if (string.IsNullOrEmpty(Value))

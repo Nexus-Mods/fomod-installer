@@ -32,58 +32,62 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
     /// </summary>
     /// <param name="p_xelCondition">The node from which to load the condition.</param>
     /// <returns>An <see cref="ICondition"/> representing the condition described in the given node.</returns>
-    protected override ICondition LoadCondition(XElement p_xelCondition)
+    protected override ICondition? LoadCondition(XElement? p_xelCondition)
     {
       if (p_xelCondition == null)
         return null;
-      switch (p_xelCondition.GetSchemaInfo().SchemaType.Name)
+      switch (p_xelCondition.GetSchemaInfo()!.SchemaType!.Name)
       {
         case "compositeDependency":
-          ConditionOperator copOperator = (ConditionOperator)Enum.Parse(typeof(ConditionOperator), p_xelCondition.Attribute("operator").Value);
+          ConditionOperator copOperator = (ConditionOperator)Enum.Parse(typeof(ConditionOperator), p_xelCondition.Attribute("operator")!.Value);
           CompositeCondition cpdCondition = new CompositeCondition(copOperator);
           IEnumerable<XElement> xeeConditions = p_xelCondition.Elements();
           foreach (XElement xelCondition in xeeConditions)
-            cpdCondition.Conditions.Add(LoadCondition(xelCondition));
+          {
+            var cond = LoadCondition(xelCondition);
+            if (cond != null)
+              cpdCondition.Conditions.Add(cond);
+          }
           return cpdCondition;
         case "fileDependency":
-          string strCondition = p_xelCondition.Attribute("file").Value.ToLower();
-          PluginState plsModState = (PluginState)Enum.Parse(typeof(PluginState), p_xelCondition.Attribute("state").Value);
+          string strCondition = p_xelCondition.Attribute("file")!.Value.ToLower();
+          PluginState plsModState = (PluginState)Enum.Parse(typeof(PluginState), p_xelCondition.Attribute("state")!.Value);
           return new PluginCondition(strCondition, plsModState);
         case "flagDependency":
-          string strFlagName = p_xelCondition.Attribute("flag").Value;
-          string strValue = p_xelCondition.Attribute("value").Value;
+          string strFlagName = p_xelCondition.Attribute("flag")!.Value;
+          string strValue = p_xelCondition.Attribute("value")!.Value;
           return new FlagCondition(strFlagName, strValue);
         case "versionDependency":
           switch (p_xelCondition.Name.LocalName)
           {
             case "gameDependency":
               {
-                Version verMinFalloutVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+                Version verMinFalloutVersion = ParseVersion(p_xelCondition.Attribute("version")!.Value);
                 return new GameVersionCondition(verMinFalloutVersion);
               }
             case "fommDependency":
               {
-                Version verMinFommVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+                Version verMinFommVersion = ParseVersion(p_xelCondition.Attribute("version")!.Value);
                 return new ModManagerCondition(verMinFommVersion);
               }
             case "foseDependency":
               {
-                Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+                Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version")!.Value);
                 return new SEVersionCondition(verMinSEVersion, "fose");
               }
             case "nvseDependency":
               {
-                Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+                Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version")!.Value);
                 return new SEVersionCondition(verMinSEVersion, "nvse");
               }
             case "f4seDependency":
               {
-                Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+                Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version")!.Value);
                 return new SEVersionCondition(verMinSEVersion, "f4se");
               }
             case "skseDependency":
               {
-                Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+                Version verMinSEVersion = ParseVersion(p_xelCondition.Attribute("version")!.Value);
                 return new SEVersionCondition(verMinSEVersion, "skse");
               }
             default:

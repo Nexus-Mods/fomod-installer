@@ -22,9 +22,9 @@ namespace FomodInstaller.Interface
 
     public class PluginDelegates : IPluginDelegates
     {
-        private Func<object, Task<object>> mGetAll;
-        private Func<object, Task<object>> mIsActive;
-        private Func<object, Task<object>> mIsPresent;
+        private readonly Func<object, Task<object>> mGetAll;
+        private readonly Func<object, Task<object>> mIsActive;
+        private readonly Func<object, Task<object>> mIsPresent;
         private string[]? mActiveCache;
         private string[]? mPresentCache;
 
@@ -72,8 +72,8 @@ namespace FomodInstaller.Interface
 
     public class IniDelegates : IIniDelegates
     {
-        private Func<object[], Task<object>> mGetIniString;
-        private Func<object[], Task<object>> mGetIniInt;
+        private readonly Func<object[], Task<object>> mGetIniString;
+        private readonly Func<object[], Task<object>> mGetIniInt;
 
         public IniDelegates(dynamic source)
         {
@@ -246,11 +246,11 @@ namespace FomodInstaller.Interface
         public struct InstallerStep
         {
             public int id;
-            public string name;
+            public string? name;
             public bool visible;
             public GroupList optionalFileGroups;
 
-            public InstallerStep(int id, string name, bool visible) : this()
+            public InstallerStep(int id, string? name, bool visible) : this()
             {
                 this.id = id;
                 this.name = name;

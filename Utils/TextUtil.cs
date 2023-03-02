@@ -46,7 +46,7 @@ namespace Utils
             {
                 using (StreamReader strReader = new StreamReader(msmFile, true))
                 {
-                    string strLine = null;
+                    string? strLine = null;
                     while ((strLine = strReader.ReadLine()) != null)
                         lstLines.Add(strLine);
                     strReader.Close();

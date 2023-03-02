@@ -19,12 +19,12 @@ namespace FomodInstaller.Scripting.XmlScript
 			/// <summary>
 			/// The value of the flag.
 			/// </summary>
-			public string Value;
+			public string? Value;
 
 			/// <summary>
 			/// The owner of the flag.
 			/// </summary>
-			public Option Owner;
+			public Option? Owner;
 		}
 
 		private Dictionary<string, FlagValue> m_dicFlags = new Dictionary<string, FlagValue>();
@@ -52,11 +52,11 @@ namespace FomodInstaller.Scripting.XmlScript
         /// Gets the current values of the flags that have been set.
         /// </summary>
         /// <value>The current values of the flags that have been set.</value>
-        public Dictionary<string, string> FlagValues
+        public Dictionary<string, string?> FlagValues
 		{
 			get
 			{
-				Dictionary<string, string> dicValues = new Dictionary<string, string>();
+				Dictionary<string, string?> dicValues = new Dictionary<string, string?>();
 				foreach (KeyValuePair<string, FlagValue> kvpValue in m_dicFlags)
 					dicValues[kvpValue.Key] = kvpValue.Value.Value;
 				return dicValues;

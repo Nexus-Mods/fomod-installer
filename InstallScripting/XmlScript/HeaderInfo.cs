@@ -30,7 +30,7 @@ namespace FomodInstaller.Scripting.XmlScript
 	/// </summary>
 	public class HeaderInfo : ObservableObject
 	{
-		private string? m_strTitle = null;
+		private string m_strTitle = "";
 		private Color m_clrColour = SystemColors.ControlText;
 		private TextPosition m_tpsTitlePosition = TextPosition.Right;
 		private string? m_strImagePath = null;
@@ -44,7 +44,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// Gets or sets the title of the form.
 		/// </summary>
 		/// <value>The title of the form.</value>
-		public string? Title
+		public string Title
 		{
 			get
 			{
@@ -173,7 +173,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <param name="p_booShowImage">Whether or not to display the image in the header.</param>
 		/// <param name="p_booShowFade">Whether or not to display the fade effect in the header.</param>
 		/// <param name="p_intHeight">The desired height of the header.</param>
-		public HeaderInfo(string p_strTitle, Color p_clrColour, TextPosition p_tpsTitlePosition, string p_strImagePath, bool p_booShowImage, bool p_booShowFade, Int32 p_intHeight)
+		public HeaderInfo(string p_strTitle, Color p_clrColour, TextPosition p_tpsTitlePosition, string? p_strImagePath, bool p_booShowImage, bool p_booShowFade, Int32 p_intHeight)
 		{
 			m_strTitle = p_strTitle;
 			m_clrColour = p_clrColour;

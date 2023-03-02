@@ -55,6 +55,6 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <param name="csmState">condition state</param>
         /// <param name="coreDelegates">delegates for communicating with the user interface</param>
         /// <returns></returns>
-        string ResolveConditionMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates);
+        string? ResolveConditionMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates);
 	}
 }

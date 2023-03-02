@@ -10,8 +10,8 @@ namespace FomodInstaller.Scripting.XmlScript
 	/// </summary>
 	public class ConditionallyInstalledFileSet : ObservableObject
 	{
-		private ThreadSafeObservableList<InstallableFile> m_lstFiles = null;
-		private ICondition m_cndCondition = null;
+		private ThreadSafeObservableList<InstallableFile> m_lstFiles;
+		private ICondition m_cndCondition;
 
 		#region Properties
 
@@ -61,7 +61,7 @@ namespace FomodInstaller.Scripting.XmlScript
 
 		#endregion
 
-		private void Files_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		private void Files_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			OnPropertyChanged(() => Files);
 		}

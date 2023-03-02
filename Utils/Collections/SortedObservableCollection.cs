@@ -16,7 +16,7 @@ namespace Utils.Collections
 	{
 		private bool m_booSuppressEvents = false;
 		private bool m_booSorting = false;
-		private IComparer<T> m_cmpComparer = null;
+		private IComparer<T>? m_cmpComparer = null;
 
 		#region Properties
 
@@ -24,7 +24,7 @@ namespace Utils.Collections
 		/// Sets the <see cref="IComparer"/> used to sort the items.
 		/// </summary>
 		/// <value>The <see cref="IComparer"/> used to sort the items.</value>
-		public IComparer<T> Comparer
+		public IComparer<T>? Comparer
 		{
 			set
 			{
@@ -93,7 +93,7 @@ namespace Utils.Collections
 		/// </remarks>
 		/// <param name="p_enmItems">The items with which to initialize the list.</param>
 		/// <param name="p_cmpComparer">The comparer to use when determining if an item is already in the sorted list.</param>
-		public SortedThreadSafeObservableCollection(IEnumerable<T> p_enmItems, IComparer<T> p_cmpComparer)
+		public SortedThreadSafeObservableCollection(IEnumerable<T>? p_enmItems, IComparer<T>? p_cmpComparer)
 			: base(p_enmItems)
 		{
 			if (!typeof(IComparable<T>).IsAssignableFrom(typeof(T)) && (p_cmpComparer == null))
@@ -127,7 +127,7 @@ namespace Utils.Collections
 		{
 			if (m_cmpComparer != null)
 				return m_cmpComparer.Compare(p_tItem1, p_tItem2);
-			return ((IComparable<T>)p_tItem1).CompareTo(p_tItem2);
+			return ((IComparable<T>)p_tItem1!).CompareTo(p_tItem2);
 		}
 
 		#region Sorting
@@ -287,7 +287,7 @@ namespace Utils.Collections
 		/// <param name="item">The item to set.</param>
 		/// <exception cref="InvalidOperationException">Thrown always,
 		/// unless the method is being called as the result of an internal sorting call..</exception>
-		protected override void SetItem(int index, T item)
+		protected override void SetItem(int index, T? item)
 		{
 			if (m_booSorting)
 				base.SetItem(index, item);

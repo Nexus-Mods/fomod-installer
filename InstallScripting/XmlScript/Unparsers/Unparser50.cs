@@ -31,7 +31,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// <param name="p_cndCondition">The <see cref="ICondition"/> for which to generate XML.</param>
 		/// <param name="p_strNodeName">The name to give to the generated node.</param>
 		/// <returns>The XML representation of the given <see cref="ICondition"/>.</returns>
-		protected override XElement UnparseCondition(ICondition p_cndCondition, string p_strNodeName)
+		protected override XElement? UnparseCondition(ICondition p_cndCondition, string p_strNodeName)
 		{
 			if (p_cndCondition is GameVersionCondition)
 			{

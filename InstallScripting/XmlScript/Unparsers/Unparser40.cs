@@ -29,9 +29,9 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.InstallSteps"/>,
 		/// or <c>null</c> if the script doean't have any <see cref="XmlScript.InstallSteps"/>.</returns>
-		protected override XElement UnparseInstallSteps()
+		protected override XElement? UnparseInstallSteps()
 		{
-			XElement xelSteps = null;
+			XElement? xelSteps = null;
 			if (Script.InstallSteps.Count > 0)
 			{
 				xelSteps = new XElement("installSteps",
@@ -57,7 +57,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		protected override XElement UnparseInstallStep(InstallStep p_ispStep)
 		{
 			XElement xelStep = new XElement("installStep",
-									new XAttribute("name", p_ispStep.Name));
+									new XAttribute("name", p_ispStep.Name ?? ""));
 			if (p_ispStep.VisibilityCondition != null)
 				xelStep.Add(UnparseCondition(p_ispStep.VisibilityCondition, "visible"));
 			xelStep.Add(base.UnparseInstallStep(p_ispStep));

@@ -18,7 +18,7 @@ namespace Utils.Collections
 		/// <param name="p_prdMatchPredicate">The <see cref="Predicate{T}"/> against which to match the list
 		/// items.</param>
 		/// <returns>The first instance in the list that matches the given predicate.</returns>
-		public static T Find<T>(this IList<T> p_lstList, Predicate<T> p_prdMatchPredicate)
+		public static T? Find<T>(this IList<T> p_lstList, Predicate<T> p_prdMatchPredicate)
 		{
 			foreach (T tItem in p_lstList)
 				if (p_prdMatchPredicate.Invoke(tItem))

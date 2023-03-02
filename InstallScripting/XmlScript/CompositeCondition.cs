@@ -74,7 +74,7 @@ namespace FomodInstaller.Scripting.XmlScript
 			m_lstConditions.CollectionChanged += new NotifyCollectionChangedEventHandler(ListConditions_CollectionChanged);
 		}
 
-		void ListConditions_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		void ListConditions_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			OnPropertyChanged(() => Conditions);
 		}
@@ -127,31 +127,31 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <returns>A message describing whether or not the condition is fulfilled.</returns>
 		/// <seealso cref="ICondition.GetMessage(ICoreDelegates)"/>
 		public string GetMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates, bool invert)
-		{
-			bool booAllFulfilled = (Operator == ConditionOperator.And) ? true : false;
-			bool booThisFulfilled = true;
-			ICondition conCondition = null;
+        {
+            bool booAllFulfilled = (Operator == ConditionOperator.And) ? true : false;
+            bool booThisFulfilled = true;
+            ICondition? conCondition = null;
 
-      List<string> lines = new List<string>();
+            List<string> lines = new List<string>();
 
-			for (Int32 i = 0; i < m_lstConditions.Count; i++)
-			{
-				conCondition = m_lstConditions[i];
-				booThisFulfilled = conCondition.GetIsFulfilled(csmState, coreDelegates);
-				if (!booThisFulfilled)
-          lines.Add(conCondition.GetMessage(csmState, coreDelegates, invert));
+            for (Int32 i = 0; i < m_lstConditions.Count; i++)
+            {
+                conCondition = m_lstConditions[i];
+                booThisFulfilled = conCondition.GetIsFulfilled(csmState, coreDelegates);
+                if (!booThisFulfilled)
+                    lines.Add(conCondition.GetMessage(csmState, coreDelegates, invert));
 
-        booAllFulfilled = Operator == ConditionOperator.And
-          ? booAllFulfilled & booThisFulfilled
-          : booAllFulfilled | booThisFulfilled;
-			}
+                booAllFulfilled = Operator == ConditionOperator.And
+                  ? booAllFulfilled & booThisFulfilled
+                  : booAllFulfilled | booThisFulfilled;
+            }
 
-      string sep = (Operator == ConditionOperator.Or) ? " OR\n" : "\n";
-      string message = string.Join(sep, lines);
+            string sep = (Operator == ConditionOperator.Or) ? " OR\n" : "\n";
+            string message = string.Join(sep, lines);
 
-			return booAllFulfilled && !invert ? "Passed" : message;
-		}
+            return booAllFulfilled && !invert ? "Passed" : message;
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

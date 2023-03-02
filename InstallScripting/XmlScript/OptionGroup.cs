@@ -47,15 +47,15 @@ namespace FomodInstaller.Scripting.XmlScript
 			{
 			}
 
-			public override int Compare(Option x, Option y)
+			public override int Compare(Option? x, Option? y)
 			{
-				return StringCompare(x.Name, y.Name);
+				return StringCompare(x?.Name, y?.Name);
 			}
 		}
 
 		private ThreadSafeObservableList<Option> m_lstOptions = new ThreadSafeObservableList<Option>();
 		private SortOrder m_srtOptionOrder = SortOrder.Explicit;
-		private string m_strName = null;
+		private string m_strName;
 		private OptionGroupType m_gtpType = OptionGroupType.SelectAtLeastOne;
 
 		#region Properties
@@ -142,7 +142,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <param name="p_srtOptionOrder">the order by which to sort the options in this group.</param>
 		public OptionGroup(string p_strName, OptionGroupType p_gtpType, SortOrder p_srtOptionOrder)
 		{
-			Name = p_strName;
+			m_strName = p_strName;
 			Type = p_gtpType;
 			OptionSortOrder = p_srtOptionOrder;
 			m_lstOptions.CollectionChanged += new NotifyCollectionChangedEventHandler(Options_CollectionChanged);
@@ -160,7 +160,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// </remarks>
 		/// <param name="sender">The object that raised the event.</param>
 		/// <param name="e">A <see cref="NotifyCollectionChangedEventArgs"/> describing the event arguments.</param>
-		private void Options_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		private void Options_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			OnPropertyChanged(() => Options);
 		}

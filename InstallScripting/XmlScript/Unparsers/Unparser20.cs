@@ -29,7 +29,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.ModPrerequisites"/>,
 		/// or <c>null</c> if the script doean't have any <see cref="XmlScript.ModPrerequisites"/>.</returns>
-		protected override XElement UnparseModPrerequisites()
+		protected override XElement? UnparseModPrerequisites()
 		{
 			if (Script.ModPrerequisites == null)
 				return null;
@@ -39,14 +39,14 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 			{
 				foreach (ICondition cndCondition in ((CompositeCondition)Script.ModPrerequisites).Conditions)
 				{
-					XElement xelCondition = UnparsePrerequisiteCondition(cndCondition);
+					XElement? xelCondition = UnparsePrerequisiteCondition(cndCondition);
 					if (xelCondition != null)
 						xelPrerequisites.Add(xelCondition);
 				}
 			}
 			else
 			{
-				XElement xelCondition = UnparsePrerequisiteCondition(Script.ModPrerequisites);
+				XElement? xelCondition = UnparsePrerequisiteCondition(Script.ModPrerequisites);
 				if (xelCondition != null)
 					xelPrerequisites.Add(xelCondition);
 			}
@@ -58,7 +58,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.ConditionallyInstalledFileSets"/>,
 		/// or <c>null</c> if the script doean't have any <see cref="XmlScript.ConditionallyInstalledFileSets"/>.</returns>
-		protected override XElement UnparseConditionallyInstalledFileSets()
+		protected override XElement? UnparseConditionallyInstalledFileSets()
 		{
 			if (Script.ConditionallyInstalledFileSets.IsNullOrEmpty())
 				return null;
@@ -82,12 +82,12 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </remarks>
 		/// <param name="p_cndCondition">The <see cref="ICondition"/> for which to generate XML.</param>
 		/// <returns>The XML representation of the given <see cref="ICondition"/>.</returns>
-		protected override XElement UnparsePrerequisiteCondition(ICondition p_cndCondition)
+		protected override XElement? UnparsePrerequisiteCondition(ICondition p_cndCondition)
 		{
 			if (p_cndCondition is PluginCondition)
 			{
 				XElement xelPlugin = new XElement("fileDependency",
-													new XAttribute("file", ((PluginCondition)p_cndCondition).PluginPath));
+													new XAttribute("file", ((PluginCondition)p_cndCondition).PluginPath!));
 				return xelPlugin;
 			}
 			return UnparseCondition(p_cndCondition);
@@ -101,7 +101,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </remarks>
 		/// <param name="p_cndCondition">The <see cref="ICondition"/> for which to generate XML.</param>
 		/// <returns>The XML representation of the given <see cref="ICondition"/>.</returns>
-		protected override XElement UnparseCondition(ICondition p_cndCondition)
+		protected override XElement? UnparseCondition(ICondition p_cndCondition)
 		{
 			return UnparseCondition(p_cndCondition, "dependencies");
 		}
@@ -115,7 +115,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// <param name="p_cndCondition">The <see cref="ICondition"/> for which to generate XML.</param>
 		/// <param name="p_strNodeName">The name to give to the generated node.</param>
 		/// <returns>The XML representation of the given <see cref="ICondition"/>.</returns>
-		protected virtual XElement UnparseCondition(ICondition p_cndCondition, string p_strNodeName)
+		protected virtual XElement? UnparseCondition(ICondition p_cndCondition, string p_strNodeName)
 		{
 			if (p_cndCondition is CompositeCondition)
 			{
@@ -123,7 +123,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 																new XAttribute("operator", UnparseConditionOperator(((CompositeCondition)p_cndCondition).Operator)));
 				foreach (ICondition cndCondition in ((CompositeCondition)p_cndCondition).Conditions)
 				{
-					XElement xelCondition = UnparseCondition(cndCondition);
+					XElement? xelCondition = UnparseCondition(cndCondition);
 					if (xelCondition != null)
 						xelCompositeCondition.Add(xelCondition);
 				}

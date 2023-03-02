@@ -32,6 +32,6 @@ namespace FomodInstaller.Scripting
 		/// <param name="p_strScriptTypeId">The id of the <see cref="IScriptType"/> to retrieve.</param>
 		/// <returns>The <see cref="IScriptType"/> whose id matches the given id. <c>null</c> is returned
 		/// if no <see cref="IScriptType"/> with the given id is in the registry.</returns>
-		IScriptType GetType(string p_strScriptTypeId);
+		IScriptType? GetType(string p_strScriptTypeId);
 	}
 }

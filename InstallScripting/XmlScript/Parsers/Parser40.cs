@@ -33,7 +33,7 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		/// or <c>null</c> if the script doesn't describe any <see cref="XmlScript.InstallSteps"/>.</returns>
 		protected override List<InstallStep> GetInstallSteps()
 		{
-			XElement xelSteps = Script.Element("installSteps");
+			XElement? xelSteps = Script.Element("installSteps");
 			List<InstallStep> lstStep = new List<InstallStep>();
 			if (xelSteps != null)
 				foreach (XElement xelStep in xelSteps.Elements())
@@ -47,9 +47,9 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		/// <returns>The order of the <see cref="Script"/>'s <see cref="XmlScript.InstallSteps"/>.</returns>
 		protected override SortOrder GetInstallStepSortOrder()
 		{
-			XElement xelSteps = Script.Element("installSteps");
+			XElement? xelSteps = Script.Element("installSteps");
 			if (xelSteps != null)
-				return ParseSortOrder(xelSteps.Attribute("order").Value);
+				return ParseSortOrder(xelSteps.Attribute("order")!.Value);
 			return SortOrder.Explicit;
 		}
 
@@ -64,11 +64,11 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		/// <returns>The added install step.</returns>
 		protected virtual InstallStep ParseInstallStep(XElement p_xelStep)
 		{
-			string strName = p_xelStep.Attribute("name").Value;
-			ICondition cndVisibility = LoadCondition(p_xelStep.Element("visible"));
+			string strName = p_xelStep.Attribute("name")!.Value;
+			ICondition? cndVisibility = LoadCondition(p_xelStep.Element("visible"));
 
-			XElement xelGroups = p_xelStep.Element("optionalFileGroups");
-			SortOrder sodGroupOrder = ParseSortOrder(xelGroups.Attribute("order").Value);
+			XElement xelGroups = p_xelStep.Element("optionalFileGroups")!;
+			SortOrder sodGroupOrder = ParseSortOrder(xelGroups.Attribute("order")!.Value);
 			
 			InstallStep stpStep = new InstallStep(strName, cndVisibility, sodGroupOrder);
 			foreach (XElement xelGroup in xelGroups.Elements())

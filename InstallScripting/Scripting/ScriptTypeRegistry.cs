@@ -83,8 +83,8 @@ namespace FomodInstaller.Scripting
                                        Trace.TraceInformation("Initializing: {0}", type.FullName);
                                        Trace.Indent();
 
-                                       IScriptType ScriptType = null;
-                                       ConstructorInfo Constructor = type.GetConstructor(new Type[] { });
+                                       IScriptType? ScriptType = null;
+                                       ConstructorInfo? Constructor = type.GetConstructor(new Type[] { });
                                        if (Constructor != null)
                                            ScriptType = (IScriptType)Constructor.Invoke(null);
                                        if (ScriptType != null)
@@ -117,7 +117,7 @@ namespace FomodInstaller.Scripting
 		/// <param name="args">A <see cref="ResolveEventArgs"/> describing the event arguments.</param>
 		/// <returns>The assembly being looked for, or <c>null</c> if the assembly cannot
 		/// be found.</returns>
-		private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+		private static Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)
 		{
 			foreach (Assembly loadedAssembly in AppDomain.CurrentDomain.GetAssemblies())
 				if (loadedAssembly.FullName == args.Name)
@@ -174,9 +174,9 @@ namespace FomodInstaller.Scripting
         /// <param name="scriptTypeId">The id of the <see cref="IScriptType"/> to retrieve.</param>
         /// <returns>The <see cref="IScriptType"/> whose id matches the given id. <c>null</c> is returned
         /// if no <see cref="IScriptType"/> with the given id is in the registry.</returns>
-        public IScriptType GetType(string scriptTypeId)
+        public IScriptType? GetType(string scriptTypeId)
 		{
-			IScriptType Type = null;
+			IScriptType? Type = null;
 			ScriptTypes.TryGetValue(scriptTypeId, out Type);
 			return Type;
 		}

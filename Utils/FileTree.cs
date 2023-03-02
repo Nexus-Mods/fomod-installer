@@ -7,8 +7,8 @@ namespace Utils
 {
     public class FileTree
     {
-        public IEnumerable<FileTree> SubDirectories { get; private set; }
-        public IEnumerable<string> Files { get; private set; }
+        public IEnumerable<FileTree>? SubDirectories { get; private set; }
+        public IEnumerable<string>? Files { get; private set; }
         public string Name { get; private set; }
 
         public FileTree(IEnumerable<string> paths)
@@ -24,7 +24,7 @@ namespace Utils
             InsertPaths(paths);
         }
 
-        public FileTree SelectDirectory(string path)
+        public FileTree? SelectDirectory(string path)
         {
             return SelectDirectory(path.Split(PathSeparators, StringSplitOptions.RemoveEmptyEntries));
         }
@@ -44,7 +44,7 @@ namespace Utils
                 .Select(group => new FileTree(group.Key, group.Select(path => path.Skip(1).ToArray())));
         }
 
-        private FileTree SelectDirectory(string[] path)
+        private FileTree? SelectDirectory(string[] path)
         {
             // make the top level directory selectable by passing an empty path
             //if ((path.Length == 0) || ((path.Length == 1) && (path[0].Length == 1) && (PathSeparators.Contains(path[0][0]))))
@@ -53,7 +53,7 @@ namespace Utils
                 return this;
             }
 
-            FileTree sub = SubDirectories.First(subDir => subDir.Name == path[0]);
+            FileTree sub = SubDirectories!.First(subDir => subDir.Name == path[0]);
             if ((sub != null) && (path.Length > 1))
             {
                 return sub.SelectDirectory(path.Skip(1).ToArray());

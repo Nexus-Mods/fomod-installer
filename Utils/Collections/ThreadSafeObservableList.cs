@@ -34,7 +34,7 @@ namespace Utils.Collections
 		/// A constructor that initializs the items of the list.
 		/// </summary>
 		/// <param name="p_enmItems">The items with which to initialize the list.</param>
-		public ThreadSafeObservableList(IEnumerable<T> p_enmItems)
+		public ThreadSafeObservableList(IEnumerable<T>? p_enmItems)
 			: this(p_enmItems, null)
 		{
 		}

@@ -38,7 +38,7 @@ namespace FomodInstaller.Scripting.XmlScript
     /// <seealso cref="ICondition.GetIsFulfilled(ConditionStateManager)"/>
     public override bool GetIsFulfilled(ConditionStateManager p_csmStateManager, ICoreDelegates coreDelegates)
     {
-      Version verInstalledVersion = null;
+      Version? verInstalledVersion = null;
 
       Task.Run(async () =>
       {
@@ -68,7 +68,7 @@ namespace FomodInstaller.Scripting.XmlScript
     /// <seealso cref="ICondition.GetMessage(ConditionStateManager)"/>
     public override string GetMessage(ConditionStateManager p_csmStateManager, ICoreDelegates coreDelegates, bool invert)
     {
-      Version verInstalledVersion = null;
+      Version? verInstalledVersion = null;
 
       Task.Run(async () =>
       {

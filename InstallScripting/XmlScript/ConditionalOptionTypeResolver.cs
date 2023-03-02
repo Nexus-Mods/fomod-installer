@@ -17,7 +17,7 @@ namespace FomodInstaller.Scripting.XmlScript
     public class ConditionalTypePattern
     {
       private OptionType m_ptpType = OptionType.NotUsable;
-      private ICondition m_cndCondition = null;
+      private ICondition m_cndCondition;
 
       #region Properties
 
@@ -164,7 +164,7 @@ namespace FomodInstaller.Scripting.XmlScript
       return m_ptpDefaultType;
     }
 
-    public string ResolveConditionMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates)
+    public string? ResolveConditionMessage(ConditionStateManager csmState, ICoreDelegates coreDelegates)
     {
       List<string> unmatched = new List<string>();
 

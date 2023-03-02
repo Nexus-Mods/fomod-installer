@@ -22,7 +22,7 @@ namespace FomodInstaller.Interface
             Regex skipExpression = new Regex(string.Join("|", m_lstIgnore), RegexOptions.IgnoreCase);
             Regex matchExpression = new Regex(string.Join("|", expressions), RegexOptions.IgnoreCase);
             int index = 0;
-            string res = fileList.FirstOrDefault(filePath => {
+            string? res = fileList.FirstOrDefault(filePath => {
                 if (skipExpression.IsMatch(filePath))
                 {
                     return false;
@@ -65,8 +65,8 @@ namespace FomodInstaller.Interface
             {
                 string strSourcePath = stkPaths.Pop();
 
-                FileTree node = m_ftFiles.SelectDirectory(strSourcePath);
-                string[] directories = node.SubDirectories
+                FileTree node = m_ftFiles.SelectDirectory(strSourcePath)!;
+                string[] directories = node.SubDirectories!
                     .Select(dir => dir.Name)
                     .Where(name => !m_setIgnore.Contains(name, StringComparer.InvariantCultureIgnoreCase))
                     .ToArray();
@@ -80,7 +80,7 @@ namespace FomodInstaller.Interface
                     }
                 }
 
-                foreach (string strFile in node.Files)
+                foreach (string strFile in node.Files!)
                 {
                     if (fileExpression.IsMatch(strFile))
                     {

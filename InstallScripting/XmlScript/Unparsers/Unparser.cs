@@ -45,19 +45,19 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 			foreach (XElement xelHeaderInfo in lstHeaderInfo)
 				xelScript.Add(xelHeaderInfo);
 
-			XElement xelPrerequisites = UnparseModPrerequisites();
+			XElement? xelPrerequisites = UnparseModPrerequisites();
 			if (xelPrerequisites != null)
 				xelScript.Add(xelPrerequisites);
 
-			XElement xelRequiredInstallFiles = UnparseRequiredInstallFiles();
+			XElement? xelRequiredInstallFiles = UnparseRequiredInstallFiles();
 			if (xelRequiredInstallFiles != null)
 				xelScript.Add(xelRequiredInstallFiles);
 
-			XElement xelInstallSteps = UnparseInstallSteps();
+			XElement? xelInstallSteps = UnparseInstallSteps();
 			if (xelInstallSteps != null)
 				xelScript.Add(xelInstallSteps);
 
-			XElement xelConditionallyInstalledFileSets = UnparseConditionallyInstalledFileSets();
+			XElement? xelConditionallyInstalledFileSets = UnparseConditionallyInstalledFileSets();
 			if (xelConditionallyInstalledFileSets != null)
 				xelScript.Add(xelConditionallyInstalledFileSets);
 
@@ -77,28 +77,28 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.ModPrerequisites"/>,
 		/// or <c>null</c> if the script doesn't have any <see cref="XmlScript.ModPrerequisites"/>.</returns>
-		protected abstract XElement UnparseModPrerequisites();
+		protected abstract XElement? UnparseModPrerequisites();
 
 		/// <summary>
 		/// Unparses <see cref="XmlScript.RequiredInstallFiles"/>.
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.RequiredInstallFiles"/>,
 		/// or <c>null</c> if the script doesn't have any <see cref="XmlScript.RequiredInstallFiles"/>.</returns>
-		protected abstract XElement UnparseRequiredInstallFiles();
+		protected abstract XElement? UnparseRequiredInstallFiles();
 
 		/// <summary>
 		/// Unparses <see cref="XmlScript.InstallSteps"/>.
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.InstallSteps"/>,
 		/// or <c>null</c> if the script doesn't have any <see cref="XmlScript.InstallSteps"/>.</returns>
-		protected abstract XElement UnparseInstallSteps();
+		protected abstract XElement? UnparseInstallSteps();
 
 		/// <summary>
 		/// Unparses <see cref="XmlScript.ConditionallyInstalledFileSets"/>.
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.ConditionallyInstalledFileSets"/>,
 		/// or <c>null</c> if the script doesn't have any <see cref="XmlScript.ConditionallyInstalledFileSets"/>.</returns>
-		protected abstract XElement UnparseConditionallyInstalledFileSets();
+		protected abstract XElement? UnparseConditionallyInstalledFileSets();
 
 		#endregion
 

@@ -35,12 +35,18 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		/// </summary>
 		/// <returns>The script's <see cref="XmlScript.ModPrerequisites"/>, based on the XML,
 		/// or <c>null</c> if the XML doesn't describe any <see cref="XmlScript.ModPrerequisites"/>.</returns>
-		protected override ICondition GetModPrerequisites()
+		protected override ICondition? GetModPrerequisites()
 		{
 			CompositeCondition cpcCondition = new CompositeCondition(ConditionOperator.And);
 			IEnumerable<XElement> xeeDependencies = Script.XPathSelectElements("moduleDependancies/*");
 			foreach (XElement xelCondition in xeeDependencies)
-				cpcCondition.Conditions.Add(LoadCondition(xelCondition));
+			{
+				var cond = LoadCondition(xelCondition);
+				if (cond != null)
+				{
+					cpcCondition.Conditions.Add(cond);
+				}
+			}
 			return cpcCondition;
 		}
 
@@ -52,7 +58,7 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		protected override List<InstallStep> GetInstallSteps()
 		{
 			InstallStep stpStep = new InstallStep(null, null, SortOrder.Explicit);
-			XElement xelGroups = Script.Element("optionalFileGroups");
+			XElement? xelGroups = Script.Element("optionalFileGroups");
 			if (xelGroups != null)
 				foreach (XElement xelGroup in xelGroups.Elements())
 					stpStep.OptionGroups.Add(ParseGroup(xelGroup));
@@ -98,7 +104,7 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		/// <returns>A <see cref="XmlScript.HeaderInfo"/> based on the XML.</returns>
 		protected override HeaderInfo GetHeaderInfo()
 		{
-			return new HeaderInfo(Script.Element("moduleName").Value, Color.FromKnownColor(KnownColor.ControlText), TextPosition.Left, null, true, true, -1);
+			return new HeaderInfo(Script.Element("moduleName")!.Value, Color.FromKnownColor(KnownColor.ControlText), TextPosition.Left, null, true, true, -1);
 		}
 
 		#endregion
@@ -112,10 +118,10 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		/// <returns>The added group.</returns>
 		protected virtual OptionGroup ParseGroup(XElement p_xelGroup)
 		{
-			string strName = p_xelGroup.Attribute("name").Value;
-			OptionGroupType gtpType = (OptionGroupType)Enum.Parse(typeof(OptionGroupType), p_xelGroup.Attribute("type").Value);
+			string strName = p_xelGroup.Attribute("name")!.Value;
+			OptionGroupType gtpType = (OptionGroupType)Enum.Parse(typeof(OptionGroupType), p_xelGroup.Attribute("type")!.Value);
 
-			XElement xelOptions = p_xelGroup.Element("plugins");
+			XElement xelOptions = p_xelGroup.Element("plugins")!;
 
 			OptionGroup pgpGroup = new OptionGroup(strName, gtpType, SortOrder.Ascending);
 			foreach (XElement xelOption in xelOptions.Elements())
@@ -130,35 +136,35 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		/// <returns>The option information.</returns>
 		protected virtual Option ParseOption(XElement p_xelOption)
 		{
-			string strName = p_xelOption.Attribute("name").Value;
-			string strDesc = p_xelOption.Element("description").Value.Trim();
-			IOptionTypeResolver iptType = null;
-			XElement xelTypeDescriptor = p_xelOption.Element("typeDescriptor").Elements().First();
+			string strName = p_xelOption.Attribute("name")!.Value;
+			string strDesc = p_xelOption.Element("description")!.Value.Trim();
+			IOptionTypeResolver? iptType = null;
+			XElement xelTypeDescriptor = p_xelOption.Element("typeDescriptor")!.Elements().First();
 			switch (xelTypeDescriptor.Name.LocalName)
 			{
 				case "type":
-					iptType = new StaticOptionTypeResolver((OptionType)Enum.Parse(typeof(OptionType), xelTypeDescriptor.Attribute("name").Value));
+					iptType = new StaticOptionTypeResolver((OptionType)Enum.Parse(typeof(OptionType), xelTypeDescriptor.Attribute("name")!.Value));
 					break;
 				case "dependancyType":
-					OptionType ptpDefaultType = (OptionType)Enum.Parse(typeof(OptionType), xelTypeDescriptor.Element("defaultType").Attribute("name").Value);
+					OptionType ptpDefaultType = (OptionType)Enum.Parse(typeof(OptionType), xelTypeDescriptor.Element("defaultType")!.Attribute("name")!.Value);
 					iptType = new ConditionalOptionTypeResolver(ptpDefaultType);
 					ConditionalOptionTypeResolver cotConditionalType = (ConditionalOptionTypeResolver)iptType;
 
 					IEnumerable<XElement> xeePatterns = xelTypeDescriptor.XPathSelectElements("patterns/*");
 					foreach (XElement xelPattern in xeePatterns)
 					{
-						OptionType ptpType = (OptionType)Enum.Parse(typeof(OptionType), xelPattern.Element("type").Attribute("name").Value);
-						ICondition cpcCondition = LoadCondition(xelPattern.Element("dependancies"));
-						cotConditionalType.AddPattern(ptpType, cpcCondition);
+						OptionType ptpType = (OptionType)Enum.Parse(typeof(OptionType), xelPattern.Element("type")!.Attribute("name")!.Value);
+						ICondition? cpcCondition = LoadCondition(xelPattern.Element("dependancies"));
+						cotConditionalType.AddPattern(ptpType, cpcCondition!);
 					}
 					break;
 				default:
 					throw new ParserException("Invalid option type descriptor node: " + xelTypeDescriptor.Name + ". At this point the config file has been validated against the schema, so there's something wrong with the parser.");
 			}
-			XElement xelImage = p_xelOption.Element("image");
-			string strImageFilePath = null;
+			XElement? xelImage = p_xelOption.Element("image");
+			string? strImageFilePath = null;
 			if (xelImage != null)
-				strImageFilePath = xelImage.Attribute("path").Value;
+				strImageFilePath = xelImage.Attribute("path")!.Value;
 			Option optOption = new Option(strName, strDesc, strImageFilePath, iptType);
 
 			IEnumerable<XElement> xeeOptionFiles = p_xelOption.XPathSelectElements("files/*");
@@ -171,33 +177,39 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		/// </summary>
 		/// <param name="p_xelCondition">The node from which to load the condition.</param>
 		/// <returns>An <see cref="ICondition"/> representing the condition described in the given node.</returns>
-		protected virtual ICondition LoadCondition(XElement p_xelCondition)
+		protected virtual ICondition? LoadCondition(XElement? p_xelCondition)
 		{
 			if (p_xelCondition == null)
 				return null;
-			switch (p_xelCondition.GetSchemaInfo().SchemaType.Name)
+			switch (p_xelCondition.GetSchemaInfo()?.SchemaType?.Name)
 			{
 				case "compositeDependancy":
-					ConditionOperator copOperator = (ConditionOperator)Enum.Parse(typeof(ConditionOperator), p_xelCondition.Attribute("operator").Value);
+					ConditionOperator copOperator = (ConditionOperator)Enum.Parse(typeof(ConditionOperator), p_xelCondition.Attribute("operator")!.Value);
 					CompositeCondition cpdCondition = new CompositeCondition(copOperator);
 					foreach (XElement xelCondition in p_xelCondition.Elements())
-						cpdCondition.Conditions.Add(LoadCondition(xelCondition));
+					{
+						var cond = LoadCondition(xelCondition);
+						if (cond != null)
+						{
+							cpdCondition.Conditions.Add(cond);
+						}
+					}
 					return cpdCondition;
 				case "dependancy":
-					string strCondition = p_xelCondition.Attribute("file").Value.ToLower();
-					PluginState plsModState = (PluginState)Enum.Parse(typeof(PluginState), p_xelCondition.Attribute("state").Value);
+					string strCondition = p_xelCondition.Attribute("file")!.Value.ToLower();
+					PluginState plsModState = (PluginState)Enum.Parse(typeof(PluginState), p_xelCondition.Attribute("state")!.Value);
 					return new PluginCondition(strCondition, plsModState);
 				case "moduleFileDependancy":
-					string strFileCondition = p_xelCondition.Attribute("file").Value.ToLower();
+					string strFileCondition = p_xelCondition.Attribute("file")!.Value.ToLower();
 					return new PluginCondition(strFileCondition, PluginState.Active);
 				case "moduleVersionDependancy":
 					switch (p_xelCondition.Name.LocalName)
 					{
 						case "falloutDependancy":
-							Version verMinFalloutVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+							Version verMinFalloutVersion = ParseVersion(p_xelCondition.Attribute("version")?.Value);
 							return new GameVersionCondition(verMinFalloutVersion);
 						case "fommDependancy":
-							Version verMinFommVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
+							Version verMinFommVersion = ParseVersion(p_xelCondition.Attribute("version")?.Value);
 							return new ModManagerCondition(verMinFommVersion);
 						default:
 							throw new ParserException("Invalid dependency node: " + p_xelCondition.Name + ". At this point the config file has been validated against the schema, so there's something wrong with the parser.");
@@ -217,12 +229,12 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 			List<InstallableFile> lstFiles = new List<InstallableFile>();
 			foreach (XElement xelFile in p_xeeFiles)
 			{
-				string strSource = xelFile.Attribute("source").Value;
-				string strDest = (xelFile.Attribute("destination") == null) ? strSource : xelFile.Attribute("destination").Value;
-				bool booAlwaysInstall = Boolean.Parse(xelFile.Attribute("alwaysInstall").Value);
-				bool booInstallIfUsable = Boolean.Parse(xelFile.Attribute("installIfUsable").Value);
+				string strSource = xelFile.Attribute("source")!.Value;
+				string strDest = (xelFile.Attribute("destination") == null) ? strSource : xelFile.Attribute("destination")!.Value;
+				bool booAlwaysInstall = Boolean.Parse(xelFile.Attribute("alwaysInstall")!.Value);
+				bool booInstallIfUsable = Boolean.Parse(xelFile.Attribute("installIfUsable")!.Value);
 
-				decimal dcmPriority = Decimal.Parse(xelFile.Attribute("priority").Value);
+				decimal dcmPriority = Decimal.Parse(xelFile.Attribute("priority")!.Value);
 				if (dcmPriority > Int32.MaxValue)
 					dcmPriority = Int32.MaxValue;
 				else if (dcmPriority < Int32.MinValue)

@@ -26,10 +26,10 @@ namespace FomodInstaller.Interface
         private IList<string> ModFiles;
         private IList<string> StopPatterns;
         private string ScreenshotFilesPath = string.Empty;
-        private string InstallScriptPath = null;
-        private string PathPrefix = null;
-        private IScriptType InstallScriptType = null;
-        private IScript ModInstallScript = null;
+        private string? InstallScriptPath = null;
+        private string? PathPrefix = null;
+        private IScriptType? InstallScriptType = null;
+        private IScript? ModInstallScript = null;
         #endregion
 
         #region Properties
@@ -42,7 +42,7 @@ namespace FomodInstaller.Interface
             }
         }
 
-        public string Prefix
+        public string? Prefix
         {
             get
             {
@@ -80,7 +80,7 @@ namespace FomodInstaller.Interface
         /// Gets or sets the mod's install script.
         /// </summary>
         /// <value>The mod's install script.</value>
-        public IScript InstallScript
+        public IScript? InstallScript
         {
             get
             {
@@ -136,13 +136,11 @@ namespace FomodInstaller.Interface
 
         private async Task GetScriptFile(bool validate)
         {
-            byte[] scriptData = null;
-
-            if (!string.IsNullOrEmpty(InstallScriptPath))
+            if (!string.IsNullOrEmpty(InstallScriptPath) && InstallScriptType != null)
             {
                 await Task.Run(() =>
                 {
-                    scriptData = FileSystem.ReadAllBytes(Path.Combine(TempPath, InstallScriptPath));
+                    byte[] scriptData = FileSystem.ReadAllBytes(Path.Combine(TempPath, InstallScriptPath));
                     ModInstallScript = InstallScriptType.LoadScript(TextUtil.ByteToString(scriptData), validate);
                     // when we have an install script, do we really assume that this script uses paths relative
                     // to what our heuristics assumes is the top level directory?
@@ -208,7 +206,7 @@ namespace FomodInstaller.Interface
  
             if (dropPrefix)
             {
-                string prefix = PathPrefix;
+                string prefix = PathPrefix ?? "";
                 if ((prefix.Length > 0) && (prefix.Last() != Path.DirectorySeparatorChar))
                 {
                     prefix = prefix + Path.DirectorySeparatorChar;
@@ -291,8 +289,8 @@ namespace FomodInstaller.Interface
                     return 1;
                 else
                 {
-                    string xDir = Path.GetDirectoryName(x);
-                    string yDir = Path.GetDirectoryName(y);
+                    string? xDir = Path.GetDirectoryName(x);
+                    string? yDir = Path.GetDirectoryName(y);
 
                     if (string.IsNullOrEmpty(xDir))
                     {

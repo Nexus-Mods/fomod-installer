@@ -7,8 +7,8 @@ namespace FomodInstaller.Scripting.XmlScript
 	/// </summary>
 	public class ConditionalFlag
 	{
-		private string m_strName = null;
-		private string m_strValue = null;
+		private string m_strName;
+		private string m_strValue;
 
 		#region Properties
 
@@ -55,8 +55,8 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// <param name="p_strValue">The name of the flag to set.</param>
 		public ConditionalFlag(string p_strName, string p_strValue)
 		{
-			Name = p_strName;
-			ConditionalValue = p_strValue;
+			m_strName = p_strName;
+			m_strValue = p_strValue;
 		}
 
 		#endregion

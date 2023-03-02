@@ -97,7 +97,7 @@ namespace FomodInstaller.Scripting.XmlScript
 
             HeaderInfo hifHeaderInfo = xscScript.HeaderInfo;
             if (string.IsNullOrEmpty(hifHeaderInfo.ImagePath))
-                hifHeaderInfo.ImagePath = string.IsNullOrEmpty(ModArchive.ScreenshotPath) ? null : Path.Combine(ModArchive.Prefix, ModArchive.ScreenshotPath);
+                hifHeaderInfo.ImagePath = string.IsNullOrEmpty(ModArchive.ScreenshotPath) ? null : Path.Combine(ModArchive.Prefix!, ModArchive.ScreenshotPath);
             if ((hifHeaderInfo.Height < 0) && hifHeaderInfo.ShowImage)
                 hifHeaderInfo.Height = 75;
 
@@ -122,7 +122,7 @@ namespace FomodInstaller.Scripting.XmlScript
                     }
 
                     fixSelected(lstSteps[stepIdx]);
-                    sendState(lstSteps, ModArchive.Prefix, stepIdx);
+                    sendState(lstSteps, ModArchive.Prefix!, stepIdx);
                 });
             };
 
@@ -156,7 +156,7 @@ namespace FomodInstaller.Scripting.XmlScript
 
             string? bannerPath = string.IsNullOrEmpty(hifHeaderInfo.ImagePath)
                 ? null
-                : Path.Combine(ModArchive.Prefix, hifHeaderInfo.ImagePath);
+                : Path.Combine(ModArchive.Prefix ?? "", hifHeaderInfo.ImagePath);
             m_Delegates.ui.StartDialog(hifHeaderInfo.Title,
                 new HeaderImage(bannerPath, hifHeaderInfo.ShowFade, hifHeaderInfo.Height),
                 select, cont, cancel);
@@ -203,7 +203,7 @@ namespace FomodInstaller.Scripting.XmlScript
             else
             {
                 preselectOptions(lstSteps[stepIdx]);
-                sendState(lstSteps, ModArchive.Prefix, stepIdx);
+                sendState(lstSteps, ModArchive.Prefix!, stepIdx);
             }
         }
 
@@ -421,7 +421,7 @@ namespace FomodInstaller.Scripting.XmlScript
         {
             for (int i = currentIdx + 1; i < lstSteps.Count; ++i) {
                 if ((lstSteps[i].VisibilityCondition == null) ||
-                    lstSteps[i].VisibilityCondition.GetIsFulfilled(m_csmState!, m_Delegates))
+                    lstSteps[i].VisibilityCondition!.GetIsFulfilled(m_csmState!, m_Delegates))
                 {
                     return i;
                 }
@@ -433,7 +433,7 @@ namespace FomodInstaller.Scripting.XmlScript
         {
             for (int i = currentIdx - 1; i >= 0; --i) {
                 if ((lstSteps[i].VisibilityCondition == null) ||
-                    lstSteps[i].VisibilityCondition.GetIsFulfilled(m_csmState!, m_Delegates))
+                    lstSteps[i].VisibilityCondition!.GetIsFulfilled(m_csmState!, m_Delegates))
                 {
                     return i;
                 }

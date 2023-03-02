@@ -24,7 +24,7 @@ namespace FomodInstaller.Scripting.XmlScript
 			}
 		}
 
-		private string m_strName;
+		private string? m_strName;
 		private ThreadSafeObservableList<OptionGroup> m_lstGroupedOptions = new ThreadSafeObservableList<OptionGroup>();
 		private SortOrder m_srtGroupOrder = SortOrder.Explicit;
 
@@ -37,13 +37,13 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// This condition determines whether or not the install step is display in the setup wizard.
 		/// </remarks>
 		/// <value>The visibility condition.</value>
-		public ICondition VisibilityCondition { get; set; }
+		public ICondition? VisibilityCondition { get; set; }
 
 		/// <summary>
 		/// Gets the name of the step.
 		/// </summary>
 		/// <value>The name of the step.</value>
-		public string Name
+		public string? Name
 		{
 			get
 			{
@@ -102,7 +102,7 @@ namespace FomodInstaller.Scripting.XmlScript
 		/// </summary>
 		/// <param name="p_strName">The name of the install step.</param>
 		/// <param name="p_cpcVisibilityDependency">The <see cref="ICondition"/> that determines the visibility of this step.</param>
-		public InstallStep(string p_strName, ICondition p_cndVisibilityCondition, SortOrder p_srtGroupOrder)
+		public InstallStep(string? p_strName, ICondition? p_cndVisibilityCondition, SortOrder p_srtGroupOrder)
 		{
 			m_strName = p_strName;
 			VisibilityCondition = p_cndVisibilityCondition;

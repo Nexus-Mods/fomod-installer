@@ -31,7 +31,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		protected override List<XElement> UnparseHeaderInfo()
 		{
 			XElement xelHeader = new XElement("moduleName");
-			xelHeader.Value = Script.HeaderInfo.Title;
+			xelHeader.Value = Script.HeaderInfo.Title!;
 			return new List<XElement>() { xelHeader };
 		}
 
@@ -40,7 +40,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.ModPrerequisites"/>,
 		/// or <c>null</c> if the script doean't have any <see cref="XmlScript.ModPrerequisites"/>.</returns>
-		protected override XElement UnparseModPrerequisites()
+		protected override XElement? UnparseModPrerequisites()
 		{
 			if (Script.ModPrerequisites == null)
 				return null;
@@ -50,14 +50,14 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 			{
 				foreach (ICondition cndCondition in ((CompositeCondition)Script.ModPrerequisites).Conditions)
 				{
-					XElement xelCondition = UnparsePrerequisiteCondition(cndCondition);
+					XElement? xelCondition = UnparsePrerequisiteCondition(cndCondition);
 					if (xelCondition != null)
 						xelPrerequisites.Add(xelCondition);
 				}
 			}
 			else
 			{
-				XElement xelCondition = UnparsePrerequisiteCondition(Script.ModPrerequisites);
+				XElement? xelCondition = UnparsePrerequisiteCondition(Script.ModPrerequisites);
 				if (xelCondition != null)
 					xelPrerequisites.Add(xelCondition);
 			}
@@ -69,15 +69,15 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.RequiredInstallFiles"/>,
 		/// or <c>null</c> if the script doean't have any <see cref="XmlScript.RequiredInstallFiles"/>.</returns>
-		protected override XElement UnparseRequiredInstallFiles()
+		protected override XElement? UnparseRequiredInstallFiles()
 		{
-			XElement xelRequiredFiles = null;
+			XElement? xelRequiredFiles = default;
 			if (Script.RequiredInstallFiles.Count > 0)
 			{
 				xelRequiredFiles = new XElement("requiredInstallFiles");
 				foreach (InstallableFile iflFile in Script.RequiredInstallFiles)
 				{
-					XElement xelFile = UnparseInstallableFile(iflFile);
+					XElement? xelFile = UnparseInstallableFile(iflFile);
 					xelRequiredFiles.Add(xelFile);
 				}
 			}
@@ -89,7 +89,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.InstallSteps"/>,
 		/// or <c>null</c> if the script doean't have any <see cref="XmlScript.InstallSteps"/>.</returns>
-		protected override XElement UnparseInstallSteps()
+		protected override XElement? UnparseInstallSteps()
 		{
 			if (Script.InstallSteps.Count > 0)
 				return UnparseInstallStep(Script.InstallSteps[0]);
@@ -101,7 +101,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </summary>
 		/// <returns>An XML representation of the <see cref="Script"/>'s <see cref="XmlScript.ConditionallyInstalledFileSets"/>,
 		/// or <c>null</c> if the script doean't have any <see cref="XmlScript.ConditionallyInstalledFileSets"/>.</returns>
-		protected override XElement UnparseConditionallyInstalledFileSets()
+		protected override XElement? UnparseConditionallyInstalledFileSets()
 		{
 			return null;
 		}
@@ -118,12 +118,12 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </remarks>
 		/// <param name="p_cndCondition">The <see cref="ICondition"/> for which to generate XML.</param>
 		/// <returns>The XML representation of the given <see cref="ICondition"/>.</returns>
-		protected virtual XElement UnparsePrerequisiteCondition(ICondition p_cndCondition)
+		protected virtual XElement? UnparsePrerequisiteCondition(ICondition p_cndCondition)
 		{
 			if (p_cndCondition is PluginCondition)
 			{
 				XElement xelPlugin = new XElement("fileDependancy",
-													new XAttribute("file",((PluginCondition)p_cndCondition).PluginPath));
+													new XAttribute("file",((PluginCondition)p_cndCondition).PluginPath!));
 				return xelPlugin;
 			}
 			return UnparseCondition(p_cndCondition);
@@ -137,7 +137,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </remarks>
 		/// <param name="p_cndCondition">The <see cref="ICondition"/> for which to generate XML.</param>
 		/// <returns>The XML representation of the given <see cref="ICondition"/>.</returns>
-		protected virtual XElement UnparseCondition(ICondition p_cndCondition)
+		protected virtual XElement? UnparseCondition(ICondition p_cndCondition)
 		{
 			if (p_cndCondition is CompositeCondition)
 			{
@@ -145,7 +145,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 																new XAttribute("operator", UnparseConditionOperator(((CompositeCondition)p_cndCondition).Operator)));
 				foreach (ICondition cndCondition in ((CompositeCondition)p_cndCondition).Conditions)
 				{
-					XElement xelCondition = UnparseCondition(cndCondition);
+					XElement? xelCondition = UnparseCondition(cndCondition);
 					if (xelCondition != null)
 						xelCompositeCondition.Add(xelCondition);
 				}
@@ -166,7 +166,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 			if (p_cndCondition is PluginCondition)
 			{
 				XElement xelPlugin = new XElement("dependancy",
-													new XAttribute("file", ((PluginCondition)p_cndCondition).PluginPath),
+													new XAttribute("file", ((PluginCondition)p_cndCondition).PluginPath!),
 													new XAttribute("state", UnparsePluginState(((PluginCondition)p_cndCondition).State)));
 				return xelPlugin;
 			}
@@ -181,9 +181,9 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </remarks>
 		/// <param name="p_iflFile">The <see cref="InstallableFile"/> for which to generate XML.</param>
 		/// <returns>The XML representation of the given <see cref="InstallableFile"/>.</returns>
-		protected virtual XElement UnparseInstallableFile(InstallableFile p_iflFile)
+		protected virtual XElement? UnparseInstallableFile(InstallableFile p_iflFile)
 		{
-			XElement xelFile = null;
+			XElement? xelFile = null;
 			if (p_iflFile.IsFolder)
 				xelFile = new XElement("folder");
 			else
@@ -206,9 +206,9 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </remarks>
 		/// <param name="p_ispStep">The <see cref="InstallStep"/> for which to generate XML.</param>
 		/// <returns>The XML representation of the given <see cref="InstallStep"/>.</returns>
-		protected virtual XElement UnparseInstallStep(InstallStep p_ispStep)
+		protected virtual XElement? UnparseInstallStep(InstallStep p_ispStep)
 		{
-			XElement xelStep = null;
+			XElement? xelStep = null;
 			if (p_ispStep.OptionGroups.Count > 0)
 			{
 				xelStep = new XElement("optionalFileGroups");
@@ -226,7 +226,7 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 		/// </remarks>
 		/// <param name="p_ogpGroup">The <see cref="OptionGroup"/> for which to generate XML.</param>
 		/// <returns>The XML representation of the given <see cref="OptionGroup"/>.</returns>
-		protected virtual XElement UnparseOptionGroup(OptionGroup p_ogpGroup)
+		protected virtual XElement? UnparseOptionGroup(OptionGroup p_ogpGroup)
 		{
 			XElement xelGroup = new XElement("group",
 											new XAttribute("name", p_ogpGroup.Name),

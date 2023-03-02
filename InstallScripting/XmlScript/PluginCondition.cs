@@ -29,7 +29,7 @@ namespace FomodInstaller.Scripting.XmlScript
 	/// </summary>
 	public class PluginCondition : ICondition
 	{
-		private string m_strPluginPath = null;
+		private string m_strPluginPath;
 		private PluginState m_pnsState = PluginState.Active;
 
 		#region Properties

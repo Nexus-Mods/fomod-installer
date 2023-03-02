@@ -40,7 +40,7 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		{
 			Script = p_xelScript;
 			ScriptType = p_xstXmlScriptType;
-			if ((p_xelScript.GetSchemaInfo() == null) || (p_xelScript.GetSchemaInfo().Validity != XmlSchemaValidity.Valid))
+			if ((p_xelScript.GetSchemaInfo() == null) || (p_xelScript.GetSchemaInfo()?.Validity != XmlSchemaValidity.Valid))
 				p_xstXmlScriptType.ValidateXmlScript(p_xelScript);
 		}
 
@@ -59,7 +59,7 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		/// </summary>
 		/// <returns>The script's <see cref="XmlScript.ModPrerequisites"/>, based on the XML,
 		/// or <c>null</c> if the XML doesn't describe any <see cref="XmlScript.ModPrerequisites"/>.</returns>
-		protected abstract ICondition GetModPrerequisites();
+		protected abstract ICondition? GetModPrerequisites();
 
 		/// <summary>
 		/// Parses <see cref="XmlScript.InstallSteps"/>.
@@ -99,7 +99,7 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		public XmlScript Parse()
 		{
 			HeaderInfo hdrHeader = GetHeaderInfo();
-			ICondition cndModPrerequisites = GetModPrerequisites();
+			ICondition? cndModPrerequisites = GetModPrerequisites();
 			List<InstallableFile> lstRequiredInstallFiles = GetRequiredInstallFiles();
 			List<InstallStep> lstInstallSteps = GetInstallSteps();
 			List<ConditionallyInstalledFileSet> lstConditionallyInstalledFileSets = GetConditionallyInstalledFileSets();
@@ -137,12 +137,12 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 		/// <returns>A <see cref="Version"/> whose value is represented by the given string. If the
 		/// string does not represent a valid version, then a <see cref="Version"/> representing
 		/// 0.0.0.0 is returned.</returns>
-		public static Version ParseVersion(string p_strVersion)
+		public static Version ParseVersion(string? p_strVersion)
 		{
-			Version verVersion = null;
+			Version? verVersion = null;
 			try
 			{
-				verVersion = new Version(p_strVersion);
+				verVersion = new Version(p_strVersion ?? "0.0.0.0");
 			}
 			catch
 			{
