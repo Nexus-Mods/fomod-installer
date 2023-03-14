@@ -66,11 +66,8 @@ function sign(filePath) {
 async function main() {
   try {
     const buildType = debugBuild ? 'Debug' : 'Release';
-    // await dotnet(['restore']);
-    // await dotnet(['build', '-c', buildType]);
     await fsExtra.remove(path.join(__dirname, 'dist'));
-    // const args = ['publish', '-c', buildType, '--self-contained', '-r', 'win-x64', '-o', 'dist'];
-    const args = ['publish', '-c', buildType, '--no-self-contained', '-r', 'win-x64', '-o', 'dist'];
+    const args = ['publish', 'ModInstallerIPC', '-c', buildType, '--no-self-contained', '-r', 'win-x64', '-o', 'dist'];
     if (!debugBuild) {
       args.push('/p:DebugType=None', '/p:DebugSymbols=false');
     }
@@ -81,7 +78,6 @@ async function main() {
       await new Promise((resolve) => setTimeout(resolve, 500));
       await dotnet(args);
     }
-    // await dotnet(['publish', '-c', 'Release', '-a', 'x64', '-o', 'dist']);
     await sign('dist\\ModInstallerIPC.exe');
   } catch (err) {
     const error = ERROR_CODE_HANDLER[err?.code] !== undefined

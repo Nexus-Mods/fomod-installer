@@ -12,9 +12,27 @@ namespace FomodInstaller.Interface
     using ContinueCB = Action<bool, int>;
     using CancelCB = Action;
 
-    struct Defaults
+    struct Shared
     {
-        public static int TIMEOUT_MS = 30000;
+        public const int TIMEOUT_MS = 30000;
+        public const int TIMEOUT_RETRIES = 1;
+        public static async Task<T> TimeoutRetry<T>(Func<Task<T>> cb, int tries = TIMEOUT_RETRIES)
+        {
+            try
+            {
+                return await cb().WaitAsync(TimeSpan.FromMilliseconds(TIMEOUT_MS));
+            }
+            catch (TimeoutException)
+            {
+                if (tries > 0)
+                {
+                    return await TimeoutRetry(cb, tries - 1);
+                } else
+                {
+                    throw;
+                }
+            }
+        }
     }
 
     #region Plugin
@@ -36,7 +54,7 @@ namespace FomodInstaller.Interface
 
         public async Task<string[]> GetAll(bool activeOnly)
         {
-            dynamic res = await Task.Run(() => mGetAll(activeOnly)).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+            dynamic res = await Shared.TimeoutRetry(() => Task.Run(() => mGetAll(activeOnly)));
             if (res != null)
             {
                 IEnumerable enu = res;
@@ -52,7 +70,7 @@ namespace FomodInstaller.Interface
             {
                 mActiveCache = await GetAll(true);
             }
-            return mActiveCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default(string);
+            return mActiveCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default;
         }
 
         public async Task<bool> IsPresent(string pluginName)
@@ -61,7 +79,7 @@ namespace FomodInstaller.Interface
             {
                 mPresentCache = await GetAll(false);
             }
-            return mPresentCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default(string);
+            return mPresentCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default;
         }
     }
 
@@ -83,7 +101,7 @@ namespace FomodInstaller.Interface
         public async Task<string> GetIniString(string iniFileName, string iniSection, string iniKey)
         {
             string[] Params = new string[] { iniFileName, iniSection, iniKey };
-            object res = await mGetIniString(Params).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+            object res = await mGetIniString(Params).WaitAsync(TimeSpan.FromMilliseconds(Shared.TIMEOUT_MS));
             if (res != null)
             {
                 return res.ToString();
@@ -95,7 +113,7 @@ namespace FomodInstaller.Interface
         public async Task<int> GetIniInt(string iniFileName, string iniSection, string iniKey)
         {
             string[] Params = new string[] { iniFileName, iniSection, iniKey };
-            object res = await mGetIniInt(Params).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+            object res = await mGetIniInt(Params).WaitAsync(TimeSpan.FromMilliseconds(Shared.TIMEOUT_MS));
             if (res != null)
             {
                 return (int)res;
@@ -132,46 +150,44 @@ namespace FomodInstaller.Interface
 
         public async Task<string> GetAppVersion()
         {
-            object res = await mGetAppVersion(null).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+            object res = await Shared.TimeoutRetry(() => mGetAppVersion(null));
             return (string)res;
         }
 
         public async Task<string> GetCurrentGameVersion()
         {
-            object res = await mGetCurrentGameVersion(null).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+            object res = await Shared.TimeoutRetry(() => mGetCurrentGameVersion(null));
             return (string)res;
         }
 
         public async Task<string> GetExtenderVersion(string extender)
         {
-            object res = await mGetExtenderVersion(extender);
+            object res = await Shared.TimeoutRetry(() => mGetExtenderVersion(extender));
             return (string)res;
-            // .WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS)));
-            // return (string)res;
         }
 
         public async Task<bool> IsExtenderPresent()
         {
-            object res = await mIsExtenderPresent(null);
+            object res = await Shared.TimeoutRetry(() => mIsExtenderPresent(null));
             return (bool)res;
         }
 
         public async Task<bool> CheckIfFileExists(string fileName)
         {
-            object res = await mCheckIfFileExists(fileName).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+            object res = await Shared.TimeoutRetry(() => mCheckIfFileExists(fileName));
             return (bool)res;
         }
 
         public async Task<byte[]> GetExistingDataFile(string dataFile)
         {
-            object res = await mGetExistingDataFile(dataFile).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+            object res = await Shared.TimeoutRetry(() => mGetExistingDataFile(dataFile));
             return (byte[])res;
         }
 
         public async Task<string[]> GetExistingDataFileList(string folderPath, string searchFilter, bool isRecursive)
         {
             object[] Params = new object[] { folderPath, searchFilter, isRecursive };
-            object res = await mGetExistingDataFileList(Params).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+            object res = await Shared.TimeoutRetry(() => mGetExistingDataFileList(Params));
             return ((object[])res).Select(iter => (string)iter).ToArray();
         }
     }
@@ -332,7 +348,7 @@ namespace FomodInstaller.Interface
             {
                 try
                 {
-                    await mStartDialog(new StartParameters(moduleName, image, select, cont, cancel)).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+                    await Shared.TimeoutRetry(() => mStartDialog(new StartParameters(moduleName, image, select, cont, cancel)));
                 } catch (Exception e)
                 {
                     Console.WriteLine("exception in start dialog: {0}", e);
@@ -343,7 +359,7 @@ namespace FomodInstaller.Interface
             {
                 try
                 {
-                    await mEndDialog(null).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+                    await Shared.TimeoutRetry(() => mEndDialog(null));
                 } catch (Exception e)
                 {
                     Console.WriteLine("exception in end dialog: {0}", e);
@@ -354,7 +370,7 @@ namespace FomodInstaller.Interface
             {
                 try
                 {
-                    await mUpdateState(new UpdateParameters(installSteps, currentStep)).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+                    await Shared.TimeoutRetry(() => mUpdateState(new UpdateParameters(installSteps, currentStep)));
                 } catch (Exception e)
                 {
                     Console.WriteLine("exception in update state: {0}", e);
@@ -365,11 +381,11 @@ namespace FomodInstaller.Interface
             {
                 try
                 {
-                    await mReportError(new Dictionary<string, dynamic> {
+                    await Shared.TimeoutRetry(() => mReportError(new Dictionary<string, dynamic> {
                         { "title", title },
                         { "message", message },
                         { "details", details }
-                    }).WaitAsync(TimeSpan.FromMilliseconds(Defaults.TIMEOUT_MS));
+                    }));
                 }
                 catch (Exception e)
                 {
