@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-namespace Utils
+﻿namespace Utils
 {
     public class FileTree
     {
