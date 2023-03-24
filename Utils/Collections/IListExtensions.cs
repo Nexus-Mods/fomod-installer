@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace Utils.Collections
+namespace FomodInstaller.Utils.Collections
 {
 	/// <summary>
 	/// Extension methods for the <see cref="IList"/> interface.

@@ -1,4 +1,4 @@
-﻿namespace Utils
+﻿namespace FomodInstaller.Utils.Interfaces
 {
 
 

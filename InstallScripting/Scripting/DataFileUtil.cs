@@ -1,4 +1,4 @@
-﻿using Utils;
+﻿using FomodInstaller.Utils;
 
 namespace FomodInstaller.Scripting
 {

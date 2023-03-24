@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
-using Utils;
+using FomodInstaller.Utils;
 
 namespace FomodInstaller.Scripting
 {

@@ -1,5 +1,5 @@
 ﻿using System.Xml.Linq;
-using Utils.Collections;
+using FomodInstaller.Utils.Collections;
 
 namespace FomodInstaller.Scripting.XmlScript.Unparsers
 {

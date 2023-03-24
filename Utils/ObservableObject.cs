@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Linq.Expressions;
 
-namespace Utils
+namespace FomodInstaller.Utils
 {
 	public class ObservableObject : INotifyPropertyChanged
 	{

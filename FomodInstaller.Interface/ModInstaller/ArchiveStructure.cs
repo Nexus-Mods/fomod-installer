@@ -1,5 +1,5 @@
 ﻿using System.Text.RegularExpressions;
-using Utils;
+using FomodInstaller.Utils;
 
 namespace FomodInstaller.Interface
 {

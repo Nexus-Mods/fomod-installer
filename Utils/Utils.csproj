@@ -5,6 +5,8 @@
   
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>FomodInstaller.Utils</AssemblyName>
+    <RootNamespace>FomodInstaller.Utils</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>

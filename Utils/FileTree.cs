@@ -1,4 +1,4 @@
-﻿namespace Utils
+﻿namespace FomodInstaller.Utils
 {
     public class FileTree
     {

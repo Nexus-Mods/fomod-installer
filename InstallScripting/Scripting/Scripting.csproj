@@ -8,6 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>FomodInstaller.Scripting</RootNamespace>
+    <AssemblyName>FomodInstaller.Scripting</AssemblyName>
   </PropertyGroup>
   
   <ItemGroup>

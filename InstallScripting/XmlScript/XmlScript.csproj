@@ -8,6 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>FomodInstaller.Scripting.XmlScript</RootNamespace>
+    <AssemblyName>FomodInstaller.Scripting.XmlScript</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
   

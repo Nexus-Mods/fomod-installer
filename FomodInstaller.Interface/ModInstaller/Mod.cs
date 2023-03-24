@@ -1,5 +1,5 @@
 ﻿using FomodInstaller.Scripting;
-using Utils;
+using FomodInstaller.Utils;
 
 namespace FomodInstaller.Interface
 {

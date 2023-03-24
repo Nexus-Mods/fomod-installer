@@ -1,4 +1,4 @@
-﻿namespace Utils
+﻿namespace FomodInstaller.Utils.Interfaces
 {
 	public abstract class FileSystemBase: IFileSystem
 	{

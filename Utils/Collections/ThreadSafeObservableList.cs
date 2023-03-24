@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 
-namespace Utils.Collections
+namespace FomodInstaller.Utils.Collections
 {
 	/// <summary>
 	/// This is a list whose operations are thread safe, and that notifes listeners about changes to the list.

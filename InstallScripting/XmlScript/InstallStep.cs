@@ -1,7 +1,7 @@
 ﻿using System.Collections.Specialized;
-using Utils;
-using Utils.Collections;
 using FomodInstaller.Interface;
+using FomodInstaller.Utils;
+using FomodInstaller.Utils.Collections;
 
 namespace FomodInstaller.Scripting.XmlScript
 {

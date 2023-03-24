@@ -1,4 +1,4 @@
-﻿namespace Utils
+﻿namespace FomodInstaller.Utils
 {
     /// <summary>
     /// Utility functions to work with text.
