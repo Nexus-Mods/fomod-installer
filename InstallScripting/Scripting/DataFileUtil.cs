@@ -67,9 +67,6 @@ namespace FomodInstaller.Scripting
 		{
 			AssertFilePathIsSafe(filePath);
 			string DataPath = Path.Combine(GameInstallationPath, filePath);
-#if DEBUG
-			new System.Security.Permissions.FileIOPermission(System.Security.Permissions.FileIOPermissionAccess.Read, DataPath).Demand();
-#endif
 			return FileSystem.FileExists(DataPath);
 		}
 
