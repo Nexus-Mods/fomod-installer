@@ -1,24 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <!-- NuGet Package Shared Details -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('NuGet.Build.props', '$(MSBuildThisFileDirectory)../../'))" />
+
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>FomodInstaller.Scripting.XmlScript</RootNamespace>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Update="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Update="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\FomodInstaller.Interface\FomodInstaller.Interface.csproj" />
     <ProjectReference Include="..\..\Utils\Utils.csproj" />
     <ProjectReference Include="..\Scripting\Scripting.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
     <EmbeddedResource Include="Schemas\XmlScript1.0.xsd" />
     <EmbeddedResource Include="Schemas\XmlScript2.0.xsd" />

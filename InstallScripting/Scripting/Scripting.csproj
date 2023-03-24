@@ -1,17 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <!-- NuGet Package Shared Details -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('NuGet.Build.props', '$(MSBuildThisFileDirectory)../../'))" />
+  
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>FomodInstaller.Scripting</RootNamespace>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DocumentationFile>..\..\Build\bin\Debug\Scripting.XML</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DocumentationFile>..\..\Build\bin\Release\Scripting.XML</DocumentationFile>
-  </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\FomodInstaller.Interface\FomodInstaller.Interface.csproj" />
     <ProjectReference Include="..\..\Utils\Utils.csproj" />
