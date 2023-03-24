@@ -9,6 +9,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>FomodInstaller.Scripting</RootNamespace>
     <AssemblyName>FomodInstaller.Scripting</AssemblyName>
+    <Description>Contains the common code used for helping run FOMOD scripts powered by C#.</Description>
   </PropertyGroup>
   
   <ItemGroup>

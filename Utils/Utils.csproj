@@ -10,5 +10,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <Title>FOMOD Installer Utils</Title>
+    <Description>Utility functions used in the FOMOD Installer Solution.</Description>
   </PropertyGroup>
 </Project>

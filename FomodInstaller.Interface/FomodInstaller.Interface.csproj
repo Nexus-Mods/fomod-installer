@@ -8,6 +8,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+    <Title>FOMOD Installer Library</Title>
+    <Description>Front-end interface for Nexus Mods' FOMOD installer implementation.</Description>
   </PropertyGroup>
   
   <ItemGroup>

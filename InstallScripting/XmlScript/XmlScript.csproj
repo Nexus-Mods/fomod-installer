@@ -10,6 +10,8 @@
     <RootNamespace>FomodInstaller.Scripting.XmlScript</RootNamespace>
     <AssemblyName>FomodInstaller.Scripting.XmlScript</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Title>XML Support for FOMOD Installer Library</Title>
+    <Description>Contains the code responsible for supporting the FOMOD XML Format</Description>
   </PropertyGroup>
   
   <ItemGroup>
