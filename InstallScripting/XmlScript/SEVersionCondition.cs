@@ -1,6 +1,4 @@
 ﻿using FomodInstaller.Interface;
-using System;
-using System.Threading.Tasks;
 
 namespace FomodInstaller.Scripting.XmlScript
 {

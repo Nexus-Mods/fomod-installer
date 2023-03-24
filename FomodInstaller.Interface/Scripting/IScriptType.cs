@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using FomodInstaller.Interface;
+﻿using FomodInstaller.Interface;
 
 namespace FomodInstaller.Scripting
 {

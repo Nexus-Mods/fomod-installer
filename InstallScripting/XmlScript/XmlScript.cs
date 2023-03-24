@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using FomodInstaller.Scripting;
+﻿using System.Collections.Specialized;
 using Utils;
 using Utils.Collections;
 

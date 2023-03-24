@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace FomodInstaller.Scripting
+﻿namespace FomodInstaller.Scripting
 {
 	/// <summary>
 	/// Describes the properties and methods of a script type registry.

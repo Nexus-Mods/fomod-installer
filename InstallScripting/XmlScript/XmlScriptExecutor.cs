@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using FomodInstaller.Interface;
-using System.Linq;
+﻿using FomodInstaller.Interface;
 using FomodInstaller.Interface.ui;
-using System.IO;
 
 namespace FomodInstaller.Scripting.XmlScript
 {

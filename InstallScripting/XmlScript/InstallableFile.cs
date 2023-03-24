@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace FomodInstaller.Scripting.XmlScript
+﻿namespace FomodInstaller.Scripting.XmlScript
 {
 	/// <summary>
 	/// A file or folder that can be installed from a mod.

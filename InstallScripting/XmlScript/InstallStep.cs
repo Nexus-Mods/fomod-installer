@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using Utils;
 using Utils.Collections;
 using FomodInstaller.Interface;

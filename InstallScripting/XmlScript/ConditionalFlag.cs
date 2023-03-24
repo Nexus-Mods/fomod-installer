@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace FomodInstaller.Scripting.XmlScript
+﻿namespace FomodInstaller.Scripting.XmlScript
 {
 	/// <summary>
 	/// Describes the value to which to set a given flag.

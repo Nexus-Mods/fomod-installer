@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Utils;
+﻿using Utils;
 using Utils.Collections;
 
 namespace FomodInstaller.Scripting.XmlScript

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Xml.Linq;
-using System.Xml.XPath;
+﻿using System.Xml.Linq;
 
 namespace FomodInstaller.Scripting.XmlScript.Parsers
 {

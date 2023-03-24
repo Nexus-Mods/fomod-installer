@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace FomodInstaller.Scripting.XmlScript.Parsers
+﻿namespace FomodInstaller.Scripting.XmlScript.Parsers
 {
 	/// <summary>
 	/// The exception that is thrown if there is a problem parsing a config file.

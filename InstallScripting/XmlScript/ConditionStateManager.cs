@@ -1,10 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-
-namespace FomodInstaller.Scripting.XmlScript
+﻿namespace FomodInstaller.Scripting.XmlScript
 {
 	/// <summary>
 	/// This class manages the state of the installation.

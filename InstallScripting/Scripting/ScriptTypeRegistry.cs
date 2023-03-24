@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Diagnostics;
 using System.Reflection;
-using System.Threading.Tasks;
-using FomodInstaller.Extensions;
 using Utils;
 
 namespace FomodInstaller.Scripting

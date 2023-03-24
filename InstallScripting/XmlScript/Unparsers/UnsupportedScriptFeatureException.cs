@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace FomodInstaller.Scripting.XmlScript.Unparsers
+﻿namespace FomodInstaller.Scripting.XmlScript.Unparsers
 {
 	/// <summary>
 	/// The exception that is thrown if a feature of an XML Script cannot be unparsed to the

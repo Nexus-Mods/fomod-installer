@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-
-namespace FomodInstaller.Interface
+﻿namespace FomodInstaller.Interface
 {
     public struct Instruction
     {
