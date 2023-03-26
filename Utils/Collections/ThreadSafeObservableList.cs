@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Threading;
 
-namespace Utils.Collections
+namespace FomodInstaller.Utils.Collections
 {
 	/// <summary>
 	/// This is a list whose operations are thread safe, and that notifes listeners about changes to the list.

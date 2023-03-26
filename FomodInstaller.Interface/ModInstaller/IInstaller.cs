@@ -1,6 +1,4 @@
 ﻿using FomodInstaller.Interface;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace FomodInstaller.ModInstaller
 {

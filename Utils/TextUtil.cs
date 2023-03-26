@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-
-namespace Utils
+﻿namespace FomodInstaller.Utils
 {
     /// <summary>
     /// Utility functions to work with text.

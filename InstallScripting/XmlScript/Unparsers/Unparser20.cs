@@ -1,6 +1,5 @@
-﻿using System;
-using System.Xml.Linq;
-using Utils.Collections;
+﻿using System.Xml.Linq;
+using FomodInstaller.Utils.Collections;
 
 namespace FomodInstaller.Scripting.XmlScript.Unparsers
 {

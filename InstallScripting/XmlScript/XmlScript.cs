@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using FomodInstaller.Scripting;
-using Utils;
-using Utils.Collections;
+﻿using System.Collections.Specialized;
+using FomodInstaller.Utils;
+using FomodInstaller.Utils.Collections;
 
 namespace FomodInstaller.Scripting.XmlScript
 {

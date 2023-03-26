@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Utils
+﻿namespace FomodInstaller.Utils
 {
 	/// <summary>
 	/// Describes the arguments passed to an event.

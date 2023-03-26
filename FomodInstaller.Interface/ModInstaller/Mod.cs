@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using FomodInstaller.Extensions;
-using FomodInstaller.Scripting;
-using Utils;
+﻿using FomodInstaller.Scripting;
+using FomodInstaller.Utils;
 
 namespace FomodInstaller.Interface
 {

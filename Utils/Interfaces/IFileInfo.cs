@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Utils
+﻿namespace FomodInstaller.Utils.Interfaces
 {
 	public interface IFileInfo
 	{

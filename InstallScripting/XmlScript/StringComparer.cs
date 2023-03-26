@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace FomodInstaller.Scripting.XmlScript
+﻿namespace FomodInstaller.Scripting.XmlScript
 {
 	public abstract class StringComparer<T> : IComparer<T>
 		{

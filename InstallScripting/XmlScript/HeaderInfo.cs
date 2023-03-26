@@ -1,6 +1,5 @@
-﻿using System;
-using System.Drawing;
-using Utils;
+﻿using System.Drawing;
+using FomodInstaller.Utils;
 
 namespace FomodInstaller.Scripting.XmlScript
 {

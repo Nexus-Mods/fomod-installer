@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Utils
+﻿namespace FomodInstaller.Utils
 {
     public static class TaskHelper
     {

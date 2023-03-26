@@ -1,7 +1,6 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
-namespace Utils
+namespace FomodInstaller.Utils
 {
 	public static class ObjectHelper
 	{

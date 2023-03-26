@@ -1,8 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Xml;
+﻿using System.Xml;
 using System.Reflection;
-using System.IO;
 
 namespace FomodInstaller.Scripting.XmlScript.Xml
 {
