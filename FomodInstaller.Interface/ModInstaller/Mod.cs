@@ -98,7 +98,7 @@ namespace FomodInstaller.Interface
         #endregion
 
         #region Constructor
-        
+
         /// <summary>
         /// This provides interaction with the mod files.
         /// </summary>
@@ -124,17 +124,33 @@ namespace FomodInstaller.Interface
         public async Task Initialize(bool validate)
         {
             await Task.Run(() => GetScreenshotPath(ModFiles));
-            await GetScriptFile(validate);
+            await GetScriptFile(validate, true);
         }
 
-        private async Task GetScriptFile(bool validate)
+        /// <summary>
+        /// Initializes the, mod without loading the script under the hood;
+        /// which in turn will allow for partial support of FOMODs ran
+        /// from memory.
+        /// </summary>
+        /// <param name="validate"></param>
+        public async Task InitializeWithoutLoadingScript()
+        {
+            await Task.Run(() => GetScreenshotPath(ModFiles));
+            await GetScriptFile(false, false);
+        }
+
+        private async Task GetScriptFile(bool validate, bool loadScript)
         {
             if (!string.IsNullOrEmpty(InstallScriptPath) && InstallScriptType != null)
             {
                 await Task.Run(() =>
                 {
-                    byte[] scriptData = FileSystem.ReadAllBytes(Path.Combine(TempPath, InstallScriptPath));
-                    ModInstallScript = InstallScriptType.LoadScript(TextUtil.ByteToString(scriptData), validate);
+                    if (loadScript)
+                    {
+                        byte[] scriptData = FileSystem.ReadAllBytes(Path.Combine(TempPath, InstallScriptPath));
+                        ModInstallScript = InstallScriptType.LoadScript(TextUtil.ByteToString(scriptData), validate);
+                    }
+
                     // when we have an install script, do we really assume that this script uses paths relative
                     // to what our heuristics assumes is the top level directory?
                     int offset = InstallScriptPath.IndexOf(Path.Combine("fomod", "ModuleConfig.xml"),
@@ -196,7 +212,7 @@ namespace FomodInstaller.Interface
             IList<string> RequestedFiles = string.IsNullOrEmpty(targetDirectory)
                 ? ModFiles.Where(DropFomod).ToList()
                 : GetFiles(targetDirectory, isRecursive);
- 
+
             if (dropPrefix)
             {
                 string prefix = PathPrefix ?? "";
