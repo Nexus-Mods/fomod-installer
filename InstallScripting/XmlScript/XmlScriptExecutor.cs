@@ -77,8 +77,11 @@ namespace FomodInstaller.Scripting.XmlScript
 
             m_csmState = new ConditionStateManager();
 
-            m_Preset = convertPreset(preset);
-            
+            if (preset is OptionsPreset preConverted)
+                m_Preset = preConverted;
+            else
+                m_Preset = convertPreset(preset);
+
             if (!(scpScript is XmlScript))
                 throw new ArgumentException("The given script must be of type XmlScript.", scpScript.Type.TypeName);
 
