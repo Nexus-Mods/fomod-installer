@@ -1,7 +1,7 @@
 //const cp = require('child_process');
 const path = require('path');
 const fs = require('fs-extra');
-const dotnet = require('dotnet');
+const dotnet = require('node-api-dotnet');
 
 const initAssemblyResolver = async () => {
   dotnet.addListener('resolving', (name, version, resolve) => {
