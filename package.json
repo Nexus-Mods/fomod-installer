@@ -19,7 +19,9 @@
   "dependencies": {
     "async": "^3.2.2",
     "copyfiles": "*",
-    "fs-extra": "^10.1.0"
+    "fs-extra": "^10.1.0",
+    "node-api-dotnet": "^0.8.16",
+    "semver": "^7.6.3"
   },
   "packageManager": "yarn@1.22.19"
 }
