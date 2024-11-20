@@ -1,31 +1,35 @@
-//const cp = require('child_process');
 const path = require('path');
 const fs = require('fs-extra');
-const dotnet = require('node-api-dotnet');
 
-const initAssemblyResolver = async () => {
-  dotnet.addListener('resolving', (name, version, resolve) => {
-    // Lets try to keep this event listener as light, static and synchronous
-    //  as possible for the sake of our future selves.
-    const recursiveRead = (directory) => {
-      const files = fs.readdirSync(directory)
-        .map(file => path.join(directory, file))
-        .filter(file => fs.statSync(file).isFile() && path.extname(file) === '.dll');
-    
-      return files.concat(
-        ...files.map(file => recursiveRead(file))
-          .flatMap(files => files)
-      );
+const relevantAssemblies = [
+  'fomodinstaller.interface.dll', 'antlrutil.dll', 'modinstaller.dll', 'utils.dll', 'modscript.dll'
+];
+
+const recursiveRead = (directory) => {
+  const entries = fs.readdirSync(directory);
+  return entries.reduce((accum, entry) => {
+    const fullPath = path.join(directory, entry);
+    if (fs.statSync(fullPath).isDirectory()) {
+      return accum.concat(recursiveRead(fullPath));
+    } else if (relevantAssemblies.includes(entry.toLowerCase())) {
+      accum.push(fullPath);
     }
-    const assemblies = recursiveRead(__dirname);
-    const potentialMatch = assemblies.find(file => path.basename(file).toLowerCase() === name.toLowerCase());
-    if (potentialMatch) {
-      resolve(potentialMatch)
-    }
-  });
+    return accum;
+  }, []);
+};
+
+// Main function to find assemblies
+const findAssemblies = () => {
+  try {
+    const assemblies = recursiveRead(__dirname); // Call the recursive function
+    return assemblies;
+  } catch (error) {
+    console.error('Error reading assemblies:', error);
+    return [];
+  }
 };
 
 module.exports = {
   __esModule: true,
-  initAssemblyResolver,
+  findAssemblies,
 };
