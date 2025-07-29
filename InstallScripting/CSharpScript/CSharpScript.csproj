@@ -15,11 +15,6 @@
     <DocumentationFile>..\..\Build\bin\Release\CSharpScript.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Update="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\FomodInstaller.Interface\FomodInstaller.Interface.csproj" />
     <ProjectReference Include="..\..\Utils\Utils.csproj" />
     <ProjectReference Include="..\Scripting\Scripting.csproj" />

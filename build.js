@@ -7,7 +7,7 @@ const debugBuild = false;
 
 class MissingDotNetSDKException extends Error {
   constructor() {
-    super('Missing .NET SDK - Install a .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/6.0');
+    super('Missing .NET SDK - Install a .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/9.0');
     this.name = 'MissingDotNetSDKException';
   }
 }
