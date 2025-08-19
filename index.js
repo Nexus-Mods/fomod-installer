@@ -43,15 +43,25 @@ async function startRegular(exePath, args, onExit, onStdout) {
   });
 }
 
+// Keep track of containers that already have exit listeners
+const containersWithListeners = new Set();
+
 async function startSandboxed(containerName, id, exePath, cwd, args, onExit, onStdout) {
   return new Promise((resolve, reject) => {
     // in case the container wasn't cleaned up before
     try {
       winapi.DeleteAppContainer(containerName);
       winapi.CreateAppContainer(containerName, 'FOMOD', 'Container for fomod installers');
-      process.on('exit', () => {
-        winapi.DeleteAppContainer(containerName);
-      });
+      
+      // Only add exit listener if we haven't already added one for this container
+      if (!containersWithListeners.has(containerName)) {
+        const exitHandler = () => {
+          winapi.DeleteAppContainer(containerName);
+          containersWithListeners.delete(containerName);
+        };
+        process.on('exit', exitHandler);
+        containersWithListeners.add(containerName);
+      }
 
       winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}`, 'named_pipe', ['all_access']);
       winapi.GrantAppContainer(containerName, `\\\\?\\pipe\\${id}_reply`, 'named_pipe', ['all_access']);
