@@ -324,91 +324,142 @@ namespace ModInstallerIPC
             var enc = new UTF8Encoding(false);
             Stream streamIn = null;
             Stream streamOut = null;
-            if (mUsePipe) {
-                var pipeIn = new NamedPipeClientStream(".", mId, PipeDirection.In);
-                Console.Out.WriteLine("in pipe ready: " + mId);
-                pipeIn.Connect(30000);
-                Console.Out.WriteLine("in pipe connected");
+            TcpClient client = null;
+            NamedPipeClientStream pipeIn = null;
+            NamedPipeClientStream pipeOut = null;
+            BlockingCollection<OutMessage> outgoing = null;
+            CancellationTokenSource cancelSignal = null;
 
-                // In an appcontainer we can't host the pipe,
-                // in a low integrity process we can't create a client stream with direction out.
-
-                var pipeOut = new NamedPipeClientStream(".", mId + "_reply", PipeDirection.Out);
-                Console.Out.WriteLine("out pipe ready: " + mId + "_reply");
-                pipeOut.Connect(30000);
-                Console.Out.WriteLine("out pipe connected");
-
-                streamIn = pipeIn;
-                streamOut = pipeOut;
-            } else
-            {
-                // use a single network socket
-                TcpClient client = new TcpClient();
-                try
-                {
-                    client.Connect("localhost", Int32.Parse(mId));
-                } catch (Exception e)
-                {
-                    Console.Error.WriteLine("failed to connect to local port {0}: {1}", mId, e.Message);
-                    throw;
-                }
-                NetworkStream stream = client.GetStream();
-                streamIn = streamOut = stream;
-            }
-            // writer.AutoFlush = true;
-
-            // a queue where dequeuing blocks while the queue is empty
-            BlockingCollection<OutMessage> outgoing = new BlockingCollection<OutMessage>();
-
-            mEnqueue = msg => outgoing.Add(msg);
-
-            byte[] input = System.Text.Encoding.UTF8.GetBytes("connected");
-            streamOut.Write(input, 0, input.Length);
-
-            CancellationTokenSource cancelSignal = new CancellationTokenSource();
-
-            Exception cancelEx = null;
-
-            Task readerTask = Task.Run(() => {
-                Thread.CurrentThread.Name = "reader loop";
-                try
-                {
-                    ReaderLoop(streamIn, mEnqueue);
-                    outgoing.CompleteAdding();
-                }
-                catch (Exception e)
-                {
-                    Console.Error.WriteLine("read loop failed: {0}", e.Message);
-                    cancelSignal.Cancel();
-                    cancelEx = e;
-                };
-            });
-            Task writerTask = Task.Run(() => {
-                Thread.CurrentThread.Name = "writer loop";
-                try
-                {
-                    WriterLoop(streamOut, outgoing);
-                }
-                catch (Exception e)
-                {
-                    Console.Error.WriteLine("write loop failed: {0}", e.Message);
-                    cancelSignal.Cancel();
-                    cancelEx = e;
-                }
-            });
-
-            // run until either reader or writer signal for termination
             try
             {
-                Task.WaitAll(new Task[] { readerTask, writerTask }, cancelSignal.Token);
-            } catch (Exception err)
-            {
-                throw cancelEx ?? err;
+                if (mUsePipe) {
+                    pipeIn = new NamedPipeClientStream(".", mId, PipeDirection.In);
+                    Console.Out.WriteLine("in pipe ready: " + mId);
+                    pipeIn.Connect(30000);
+                    Console.Out.WriteLine("in pipe connected");
+
+                    // In an appcontainer we can't host the pipe,
+                    // in a low integrity process we can't create a client stream with direction out.
+
+                    pipeOut = new NamedPipeClientStream(".", mId + "_reply", PipeDirection.Out);
+                    Console.Out.WriteLine("out pipe ready: " + mId + "_reply");
+                    pipeOut.Connect(30000);
+                    Console.Out.WriteLine("out pipe connected");
+
+                    streamIn = pipeIn;
+                    streamOut = pipeOut;
+                } else
+                {
+                    // use a single network socket
+                    client = new TcpClient();
+                    try
+                    {
+                        client.Connect("localhost", Int32.Parse(mId));
+                    } catch (Exception e)
+                    {
+                        Console.Error.WriteLine("failed to connect to local port {0}: {1}", mId, e.Message);
+                        throw;
+                    }
+                    NetworkStream stream = client.GetStream();
+                    streamIn = streamOut = stream;
+                }
+                // writer.AutoFlush = true;
+
+                // a queue where dequeuing blocks while the queue is empty
+                outgoing = new BlockingCollection<OutMessage>();
+
+                mEnqueue = msg => outgoing.Add(msg);
+
+                byte[] input = System.Text.Encoding.UTF8.GetBytes("connected");
+                streamOut.Write(input, 0, input.Length);
+
+                cancelSignal = new CancellationTokenSource();
+
+                Exception cancelEx = null;
+
+                Task readerTask = Task.Run(() => {
+                    Thread.CurrentThread.Name = "reader loop";
+                    try
+                    {
+                        ReaderLoop(streamIn, mEnqueue);
+                        outgoing.CompleteAdding();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.Error.WriteLine("read loop failed: {0}", e.Message);
+                        cancelSignal.Cancel();
+                        cancelEx = e;
+                    };
+                });
+                Task writerTask = Task.Run(() => {
+                    Thread.CurrentThread.Name = "writer loop";
+                    try
+                    {
+                        WriterLoop(streamOut, outgoing);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.Error.WriteLine("write loop failed: {0}", e.Message);
+                        cancelSignal.Cancel();
+                        cancelEx = e;
+                    }
+                });
+
+                // run until either reader or writer signal for termination
+                try
+                {
+                    Task.WaitAll(new Task[] { readerTask, writerTask }, cancelSignal.Token);
+                } catch (Exception err)
+                {
+                    throw cancelEx ?? err;
+                }
             }
             finally
             {
-                cancelSignal.Dispose();
+                // Proper cleanup of all resources
+                try
+                {
+                    CleanupAwaitedReplies();
+
+                    cancelSignal?.Dispose();
+                    outgoing?.Dispose();
+
+                    // Close streams
+                    if (streamIn != streamOut)
+                    {
+                        streamIn?.Close();
+                        streamOut?.Close();
+                    }
+                    else
+                    {
+                        streamIn?.Close();
+                    }
+
+                    // Dispose pipes
+                    pipeIn?.Dispose();
+                    pipeOut?.Dispose();
+
+                    // Close TCP client
+                    client?.Close();
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Error during cleanup: {0}", ex.Message);
+                }
             }
+        }
+
+        private void CleanupAwaitedReplies()
+        {
+            // Cancel any pending awaited replies to prevent hanging
+            foreach (var reply in mAwaitedReplies.Values)
+            {
+                if (!reply.Task.IsCompleted)
+                {
+                    reply.SetCanceled();
+                }
+            }
+            mAwaitedReplies.Clear();
         }
 
         private void ReaderLoop(Stream stream, Action<OutMessage> onSend)
@@ -463,19 +514,26 @@ namespace ModInstallerIPC
 
         private void WriterLoop(Stream writer, BlockingCollection<OutMessage> outgoing)
         {
-            bool running = true;
-
             try
             {
-                while (running)
+                while (!outgoing.IsCompleted)
                 {
-                    OutMessage msg = outgoing.Take();
-                    SendResponse(writer, msg);
+                    OutMessage msg;
+                    if (outgoing.TryTake(out msg, 100))
+                    {
+                        SendResponse(writer, msg);
+                    }
                 }
-            } catch (InvalidOperationException)
+            }
+            catch (InvalidOperationException)
             {
                 // queue was closed by the producer
                 return;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("WriterLoop error: {0}", ex.Message);
+                throw;
             }
         }
 
@@ -518,12 +576,22 @@ namespace ModInstallerIPC
 
         private void SendResponse(Stream writer, OutMessage resp)
         {
-            FunctionSerializer funcSer = new FunctionSerializer();
-            BufferSerializer buffSer = new BufferSerializer();
-            string serialized = JsonConvert.SerializeObject(new { resp.id, resp.callback, resp.data, resp.error }, funcSer, buffSer);
-            mCallbacks[resp.id] = funcSer.callbacks;
-            var input = System.Text.Encoding.UTF8.GetBytes(serialized + "\uFFFF");
-            writer.Write(input, 0, input.Length);
+            try
+            {
+                FunctionSerializer funcSer = new FunctionSerializer();
+                BufferSerializer buffSer = new BufferSerializer();
+                string serialized = JsonConvert.SerializeObject(new { resp.id, resp.callback, resp.data, resp.error }, funcSer, buffSer);
+                mCallbacks[resp.id] = funcSer.callbacks;
+                var input = System.Text.Encoding.UTF8.GetBytes(serialized + "\uFFFF");
+
+                writer.Write(input, 0, input.Length);
+                writer.Flush();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Failed to send response for message {0}: {1}", resp.id, ex.Message);
+                throw; // Re-throw to let WriterLoop handle the failure properly
+            }
         }
 
         private async Task<object> DispatchTestSupported(JObject data)

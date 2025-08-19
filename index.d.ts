@@ -1,7 +1,5 @@
 /// <reference types="node" />
 
-import { ChildProcess } from 'child_process';
-
 declare module "fomod-installer" {
   /**
    * start the peer server
@@ -12,5 +10,11 @@ declare module "fomod-installer" {
    * @param containerName name of the container. Only relevant on windows 8+. If set, the process will run in an app container
    */
   export function createIPC(usePipe: boolean, id: string, onExit: (code: number) => void, onStdOut: (msg: string) => void, containerName: string, lowIntegrityProcess: boolean): Promise<number>;
+
+  /**
+   * Kill a specific process by PID
+   * @param pid the process ID to kill
+   */
+  export function killProcess(pid: number): void;
 }
 
