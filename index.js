@@ -283,13 +283,14 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName, lowIntegr
     throw new Error(`ModInstallerIPC executable not found at: ${exePath}`);
   });
 
-  if (winapi !== undefined) {
-    if ((winapi?.SupportsAppContainer?.() === true) && (containerName !== undefined)) {
-      return await startSandboxed(containerName, id, exePath, cwd, args, onExit, enhancedOnStdout);
-    } else if (lowIntegrity) {
-      return await startLowIntegrity(exePath, cwd, args, onExit, enhancedOnStdout);
-    }
-  }
+  // AppContainer and Low Integrity are currently in a broken state.
+  // if (winapi !== undefined) {
+  //   if ((winapi?.SupportsAppContainer?.() === true) && (containerName !== undefined)) {
+  //     return await startSandboxed(containerName, id, exePath, cwd, args, onExit, enhancedOnStdout);
+  //   } else if (lowIntegrity) {
+  //     return await startLowIntegrity(exePath, cwd, args, onExit, enhancedOnStdout);
+  //   }
+  // }
   // fallback for other OSes and if the above solutions are disabled
   return await startRegular(exePath, cwd, args, onExit, enhancedOnStdout);
 }
