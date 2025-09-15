@@ -1,6 +1,6 @@
 {
   "name": "fomod-installer",
-  "version": "0.7.23",
+  "version": "0.8.1",
   "description": "Installer for xml and c# fomods",
   "repository": {
     "type": "git",
@@ -9,7 +9,9 @@
   "scripts": {
     "buildDev": "node build.js Debug && copyfiles -f Build/bin/Debug/*.dll dist/ && copyfiles -f Build/bin/Debug/*.pdb dist/ && copyfiles -f Build/bin/Release/*.exe dist/",
     "build": "node build.js",
-    "postinstall": "npm run build"
+    "postinstall": "npm run build",
+    "cleanup": "node cleanup-processes.js --force",
+    "list-processes": "node cleanup-processes.js"
   },
   "author": "Black Tree Gaming Ltd.",
   "license": "GPL-3.0",
