@@ -357,18 +357,6 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName, lowIntegr
   return await startRegular(exePath, cwd, args, onExit, enhancedOnStdout);
 }
 
-function removeExitHandlersByPid(pid) {
-  if (pidToContainer.has(pid)) {
-    const containerName = pidToContainer.get(pid);
-    if (exitHandlersByContainer.has(containerName)) {
-      process.removeListener('exit', exitHandlersByContainer.get(containerName));
-      exitHandlersByContainer.delete(containerName);
-    }
-    containersWithListeners.delete(containerName);
-    pidToContainer.delete(pid);
-  }
-}
-
 // Function to manually kill a specific process by PID
 // This is kept for external use by index.ts process management (i.e. fomod_installer extension in the main repo)
 function killProcess(pid) {
@@ -381,14 +369,12 @@ function killProcess(pid) {
         // no-op
       }
     }, 2000);
-    removeExitHandlersByPid(pid);
     return true;
   } catch (err) {
     // Try Windows API if available
     if (winapi?.TerminateProcess) {
       try {
         winapi.TerminateProcess(pid);
-        removeExitHandlersByPid(pid);
         return true;
       } catch (winapiErr) {
         console.warn(`Failed to kill process ${pid} via WinAPI:`, winapiErr.message);
@@ -402,7 +388,6 @@ function killProcess(pid) {
           console.warn(`Failed to kill process ${pid} via taskkill:`, error.message);
         }
       });
-      removeExitHandlersByPid(pid);
       return true;
     } catch (fallbackErr) {
       console.warn(`All methods failed to kill process ${pid}:`, err.message);
