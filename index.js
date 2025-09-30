@@ -76,6 +76,12 @@ async function startRegular(exePath, cwd, args, onExit, onStdout) {
         PATH: process.env.PATH,
         TEMP: process.env.TEMP || process.env.TMP || os.tmpdir(),
         TMP: process.env.TMP || process.env.TEMP || os.tmpdir(),
+        USERPROFILE: process.env.USERPROFILE,
+        APPDATA: process.env.APPDATA,
+        LOCALAPPDATA: process.env.LOCALAPPDATA,
+        // Add .NET specific environment variables to help with path resolution
+        DOTNET_BUNDLE_EXTRACT_BASE_DIR: cwd || path.dirname(exePath),
+        COMPlus_EnableDiagnostics: '0', // Disable diagnostics which can cause issues
         // Add .NET specific environment variables if they exist
         ...(process.env.DOTNET_ROOT && { DOTNET_ROOT: process.env.DOTNET_ROOT }),
         ...(process.env.DOTNET_HOST_PATH && { DOTNET_HOST_PATH: process.env.DOTNET_HOST_PATH }),
@@ -83,7 +89,7 @@ async function startRegular(exePath, cwd, args, onExit, onStdout) {
           DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: process.env.DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
         }),
       },
-      cwd,
+      cwd: cwd || path.dirname(exePath),
     };
 
     const proc = cp.spawn(exePath, args, spawnOptions)
@@ -132,119 +138,139 @@ async function startRegular(exePath, cwd, args, onExit, onStdout) {
   });
 }
 
+// Keep track of containers that already have exit listeners
 const containersWithListeners = new Set();
-const exitHandlersByContainer = new Map();
-const pidToContainer = new Map();
 async function startSandboxed(containerName, id, exePath, cwd, args, onExit, onStdout) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      await new Promise((resolveStep) => {
-        let deleted = false;
-        try {
-          winapi.DeleteAppContainer(containerName);
-          deleted = true;
-        } catch (err) {
-          if (err.nativeCode !== 0 && !err.message?.includes('does not exist')) {
-            console.warn(`Could not delete existing app container:`, err.message);
-          }
-        }
-        // Remove exit handler if it exists for this container
-        if (deleted && exitHandlersByContainer.has(containerName)) {
-          process.removeListener('exit', exitHandlersByContainer.get(containerName));
-          exitHandlersByContainer.delete(containerName);
-          containersWithListeners.delete(containerName);
-        }
-        resolveStep();
-      });
-
-      await new Promise((resolveStep) => {
-        try {
-          winapi.CreateAppContainer(containerName, 'FOMOD', 'Container for fomod installers');
-        } catch (err) {
-          if (err.nativeCode !== 0) {
-            console.warn(`Could not create app container:`, err.message);
-            throw err;
-          }
-        }
-        resolveStep();
-      });
-
-      
-      const permissions = [
-        { path: `\\\\?\\pipe\\${id}`, type: 'named_pipe', access: ['all_access'] },
-        { path: `\\\\?\\pipe\\${id}_reply`, type: 'named_pipe', access: ['all_access'] },
-        { path: `\\\\?\\${cwd}`, type: 'file_object', access: ['all_access'] },
-        { path: `\\\\?\\${exePath}`, type: 'file_object', access: ['all_access'] },
-      ];
-      
-      // Only add exit listener if we haven't already added one for this container,
-      //  and only after all permissions are successfully granted
-      let permissionsGranted = true;
-      for (const perm of permissions) {
+  return new Promise((resolve, reject) => {
+    // Use setImmediate to move blocking Windows API calls off the main event loop
+    setImmediate(async () => {
+      try {
         await new Promise((resolveStep) => {
-          try {
-            winapi.GrantAppContainer(containerName, perm.path, perm.type, perm.access);
-          } catch (err) {
-            permissionsGranted = false;
-          }
-          resolveStep();
-        });
-      }
-
-      if (!containersWithListeners.has(containerName) && permissionsGranted) {
-        const exitHandler = () => {
-          try {
-            winapi.DeleteAppContainer(containerName);
-          } catch (err) {
-            // Silent cleanup - errors during shutdown are not critical
-          }
-          containersWithListeners.delete(containerName);
-          exitHandlersByContainer.delete(containerName);
-        };
-        process.on('exit', exitHandler);
-        containersWithListeners.add(containerName);
-        exitHandlersByContainer.set(containerName, exitHandler);
-      }
-
-      const command = `"${exePath}" ${args.join(' ')}`;
-      let resolvedPid;
-      await new Promise((resolveStep, rejectStep) => {
-        try {
-          resolvedPid = winapi.RunInContainer(containerName, command, cwd, onExit, onStdout);
-          pidToContainer.set(resolvedPid, containerName);
-          resolveStep();
-        } catch (err) {
-          // I think this may be caused by an AV scanning the files after we copied them
-          setTimeout(() => {
+          setImmediate(() => {
             try {
-              resolvedPid = winapi.RunInContainer(containerName, command, cwd, onExit, onStdout);
-              pidToContainer.set(resolvedPid, containerName);
-              resolveStep();
-            } catch (retryErr) {
-              rejectStep(retryErr);
+              winapi.DeleteAppContainer(containerName);
+            } catch (err) {
+              if (err.nativeCode !== 0 && !err.message?.includes('does not exist')) {
+                console.warn(`Could not delete existing app container:`, err.message);
+              }
             }
-          }, 100);
-        }
-      });
+            resolveStep();
+          });
+        });
 
-      resolve(resolvedPid);
-    } catch (err) {
-      reject(err);
-    }
+        await new Promise((resolveStep) => {
+          setImmediate(() => {
+            try {
+              winapi.CreateAppContainer(containerName, 'FOMOD', 'Container for fomod installers');
+            } catch (err) {
+              if (err.nativeCode !== 0) {
+                console.warn(`Could not create app container:`, err.message);
+                throw err;
+              }
+            }
+            resolveStep();
+          });
+        });
+
+        // Only add exit listener if we haven't already added one for this container
+        if (!containersWithListeners.has(containerName)) {
+          const exitHandler = () => {
+            setImmediate(() => {
+              try {
+                winapi.DeleteAppContainer(containerName);
+              } catch (err) {
+                // Silent cleanup - errors during shutdown are not critical
+              }
+            });
+            containersWithListeners.delete(containerName);
+          };
+          process.on('exit', exitHandler);
+          containersWithListeners.add(containerName);
+        }
+
+        // Ensure the executable path uses proper Windows format first
+        const windowsExePath = exePath.replace(/\//g, '\\');
+        const windowsCwd = cwd.replace(/\//g, '\\');
+
+        const permissions = [
+          { path: `\\\\?\\pipe\\${id}`, type: 'named_pipe', access: ['all_access'] },
+          { path: `\\\\?\\pipe\\${id}_reply`, type: 'named_pipe', access: ['all_access'] },
+          // Add permissions for the executable and its directory
+          { path: windowsExePath, type: 'file_object', access: ['read_execute'] },
+          { path: windowsCwd, type: 'file_object', access: ['read_execute'] },
+          // Add temp directory access for .NET runtime
+          { path: process.env.TEMP || process.env.TMP, type: 'file_object', access: ['all_access'] },
+        ];
+
+        // Grant permissions in batches to avoid blocking
+        for (const perm of permissions) {
+          if (!perm.path) continue; // Skip if path is undefined
+          await new Promise((resolveStep) => {
+            setImmediate(() => {
+              try {
+                winapi.GrantAppContainer(containerName, perm.path, perm.type, perm.access);
+              } catch (err) {
+                if (err.nativeCode !== 0) {
+                  console.warn(`Could not grant ${perm.type} access for ${perm.path}:`, err.message);
+                }
+              }
+              resolveStep();
+            });
+          });
+        }
+
+        // Build command with properly escaped path (windowsExePath already defined above)
+        const command = `"${windowsExePath}" ${args.join(' ')}`;
+
+        let resolvedPid;
+        await new Promise((resolveStep, rejectStep) => {
+          setImmediate(() => {
+            try {
+              resolvedPid = winapi.RunInContainer(containerName, command, windowsCwd, onExit, onStdout);
+              resolveStep();
+            } catch (err) {
+              // I think this may be caused by an AV scanning the files after we copied them
+              setTimeout(() => {
+                setImmediate(() => {
+                  try {
+                    resolvedPid = winapi.RunInContainer(containerName, command, cwd, onExit, onStdout);
+                    resolveStep();
+                  } catch (retryErr) {
+                    rejectStep(retryErr);
+                  }
+                });
+              }, 1000);
+            }
+          });
+        });
+
+        resolve(resolvedPid);
+      } catch (err) {
+        reject(err);
+      }
+    });
   });
 }
 
 async function startLowIntegrity(exePath, cwd, args, onExit, onStdout) {
   return new Promise((resolve, reject) => {
+    // Use setImmediate to move blocking Windows API call off the main event loop
+    setImmediate(() => {
       try {
-        // Prepare command with proper path quoting for security
-        const command = `"${exePath}" ${args.join(' ')}`;
+        // Ensure Windows path format
+        const windowsExePath = exePath.replace(/\//g, '\\');
+        const windowsCwd = cwd.replace(/\//g, '\\');
 
-        const pid = winapi.CreateProcessWithIntegrity(command, cwd, 'low', onExit, onStdout);
+        // Prepare command with proper path quoting for security
+        const command = `"${windowsExePath}" ${args.join(' ')}`;
+
+        // This is a potentially blocking operation, so we've moved it to setImmediate
+        const pid = winapi.CreateProcessWithIntegrity(command, windowsCwd, 'low', onExit, onStdout);
         resolve(pid);
       } catch (err) {
         reject(err);
       }
+    });
   });
 }
 
@@ -252,8 +278,41 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName, lowIntegr
   // it does actually get named .exe on linux as well
   const exeName = 'ModInstallerIPC.exe';
 
-  let cwd = path.join(__dirname.replace('app.asar', 'app.asar.unpacked'), 'dist');
+  // Better path resolution for development and production
+  let baseDir = __dirname;
+  if (baseDir.includes('app.asar')) {
+    baseDir = baseDir.replace('app.asar', 'app.asar.unpacked');
+  }
+
+  let cwd = path.join(baseDir, 'dist');
   let exePath = path.join(cwd, exeName);
+
+  // Ensure absolute paths on Windows
+  if (process.platform === 'win32') {
+    exePath = path.resolve(exePath);
+    cwd = path.resolve(cwd);
+
+    // Normalize path separators for Windows
+    exePath = exePath.replace(/\//g, '\\');
+    cwd = cwd.replace(/\//g, '\\');
+  }
+
+  // Verify the executable exists
+  const fs = require('fs');
+  if (!fs.existsSync(exePath)) {
+    const alternativePath = path.join(process.cwd(), 'node_modules', 'fomod-installer', 'dist', exeName);
+    if (fs.existsSync(alternativePath)) {
+      console.warn(`Using alternative path for ModInstallerIPC.exe: ${alternativePath}`);
+      exePath = alternativePath;
+      cwd = path.dirname(exePath);
+    } else {
+      console.error(`ModInstallerIPC.exe not found at expected paths:`);
+      console.error(`  Primary: ${exePath}`);
+      console.error(`  Alternative: ${alternativePath}`);
+      console.error(`  __dirname: ${__dirname}`);
+      console.error(`  process.cwd(): ${process.cwd()}`);
+    }
+  }
 
   const args = [id];
   if (usePipe) {
@@ -277,34 +336,25 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName, lowIntegr
     onStdout(data.toString());
   };
 
-  // Check if the executable exists before launching
-  const fs = require('fs');
-  await fs.promises.stat(exePath).catch(() => {
-    throw new Error(`ModInstallerIPC executable not found at: ${exePath}`);
-  });
-
-  // AppContainer and Low Integrity are currently in a broken state.
-  // if (winapi !== undefined) {
-  //   if ((winapi?.SupportsAppContainer?.() === true) && (containerName !== undefined)) {
-  //     return await startSandboxed(containerName, id, exePath, cwd, args, onExit, enhancedOnStdout);
-  //   } else if (lowIntegrity) {
-  //     return await startLowIntegrity(exePath, cwd, args, onExit, enhancedOnStdout);
-  //   }
-  // }
+  if (winapi !== undefined) {
+    if ((winapi?.SupportsAppContainer?.() === true) && (containerName !== undefined)) {
+      try {
+        return await startSandboxed(containerName, id, exePath, cwd, args, onExit, enhancedOnStdout);
+      } catch (err) {
+        console.warn('Failed to start in sandbox mode, falling back to regular mode:', err.message);
+        // Fall through to regular mode
+      }
+    } else if (lowIntegrity) {
+      try {
+        return await startLowIntegrity(exePath, cwd, args, onExit, enhancedOnStdout);
+      } catch (err) {
+        console.warn('Failed to start with low integrity, falling back to regular mode:', err.message);
+        // Fall through to regular mode
+      }
+    }
+  }
   // fallback for other OSes and if the above solutions are disabled
   return await startRegular(exePath, cwd, args, onExit, enhancedOnStdout);
-}
-
-function removeExitHandlersByPid(pid) {
-  if (pidToContainer.has(pid)) {
-    const containerName = pidToContainer.get(pid);
-    if (exitHandlersByContainer.has(containerName)) {
-      process.removeListener('exit', exitHandlersByContainer.get(containerName));
-      exitHandlersByContainer.delete(containerName);
-    }
-    containersWithListeners.delete(containerName);
-    pidToContainer.delete(pid);
-  }
 }
 
 // Function to manually kill a specific process by PID
@@ -319,14 +369,12 @@ function killProcess(pid) {
         // no-op
       }
     }, 2000);
-    removeExitHandlersByPid(pid);
     return true;
   } catch (err) {
     // Try Windows API if available
     if (winapi?.TerminateProcess) {
       try {
         winapi.TerminateProcess(pid);
-        removeExitHandlersByPid(pid);
         return true;
       } catch (winapiErr) {
         console.warn(`Failed to kill process ${pid} via WinAPI:`, winapiErr.message);
@@ -340,7 +388,6 @@ function killProcess(pid) {
           console.warn(`Failed to kill process ${pid} via taskkill:`, error.message);
         }
       });
-      removeExitHandlersByPid(pid);
       return true;
     } catch (fallbackErr) {
       console.warn(`All methods failed to kill process ${pid}:`, err.message);
