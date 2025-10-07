@@ -1,6 +1,6 @@
 {
   "name": "fomod-installer",
-  "version": "0.8.1-r1",
+  "version": "0.9.0",
   "description": "Installer for xml and c# fomods",
   "repository": {
     "type": "git",
