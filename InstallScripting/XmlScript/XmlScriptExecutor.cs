@@ -95,8 +95,26 @@ namespace FomodInstaller.Scripting.XmlScript
                 return await Source.Task;
             }
 
+            m_SelectedOptions = new HashSet<Option>();
+
             IList<InstallStep> lstSteps = xscScript.InstallSteps;
             fixSteps(lstSteps);
+
+            // If a preset is provided, run headless and avoid all UI IPC
+            if (m_Preset.HasValue)
+            {
+                // Preselect options for every step according to the preset (or recommended/default rules).
+                foreach (var step in lstSteps)
+                {
+                    preselectOptions(step);
+                    // Ensure required/not-usable flags are applied after preselection.
+                    fixSelected(step);
+                }
+
+                var instructions = collectInstructions(lstSteps, xscScript, PluginsToActivate);
+                Source.SetResult(instructions);
+                return await Source.Task;
+            }
 
             HeaderInfo hifHeaderInfo = xscScript.HeaderInfo;
             if (string.IsNullOrEmpty(hifHeaderInfo.ImagePath))
@@ -104,10 +122,9 @@ namespace FomodInstaller.Scripting.XmlScript
             if ((hifHeaderInfo.Height < 0) && hifHeaderInfo.ShowImage)
                 hifHeaderInfo.Height = 75;
 
-            m_SelectedOptions = new HashSet<Option>();
-
             int stepIdx = findNextIdx(lstSteps, -1);
 
+            // Otherwise use the UI flow
             Action<int, int, int[]> select = (int stepId, int groupId, int[] optionIds) =>
             {
                 // this needs to happen asynchronously so that this call returns to javascript and js can
@@ -176,38 +193,46 @@ namespace FomodInstaller.Scripting.XmlScript
             {
                 m_Delegates.ui.EndDialog();
 
-                XmlScriptInstaller xsiInstaller = new XmlScriptInstaller(ModArchive);
-                IEnumerable<InstallableFile> FilesToInstall = new List<InstallableFile>();
-                foreach (InstallStep step in lstSteps)
-                {
-                    foreach (OptionGroup group in step.OptionGroups)
-                    {
-                        foreach (Option option in group.Options)
-                        {
-                            if (m_SelectedOptions.Contains(option))
-                            {
-                                FilesToInstall = FilesToInstall.Union(option.Files);
-                            } else
-                            {
-                                IEnumerable<InstallableFile> installAnyway = option.Files.Where(
-                                  file => file.AlwaysInstall ||
-                                  (file.InstallIfUsable && option.GetOptionType(m_csmState, m_Delegates) != OptionType.NotUsable));
-                                if (installAnyway.Count() > 0)
-                                {
-                                    FilesToInstall = FilesToInstall.Union(installAnyway);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Source.SetResult(xsiInstaller.Install(xscScript, m_csmState, m_Delegates, FilesToInstall, PluginsToActivate));
+                var instructions = collectInstructions(lstSteps, xscScript, PluginsToActivate);
+                Source.SetResult(instructions);
             }
             else
             {
                 preselectOptions(lstSteps[stepIdx]);
                 sendState(lstSteps, ModArchive.Prefix, stepIdx);
             }
+        }
+
+        private IList<Instruction> collectInstructions(IList<InstallStep> lstSteps, XmlScript xscScript, List<InstallableFile> PluginsToActivate)
+        {
+            XmlScriptInstaller xsiInstaller = new XmlScriptInstaller(ModArchive);
+            IEnumerable<InstallableFile> FilesToInstall = new List<InstallableFile>();
+            foreach (InstallStep step in lstSteps)
+            {
+                foreach (OptionGroup group in step.OptionGroups)
+                {
+                    foreach (Option option in group.Options)
+                    {
+                        if (m_SelectedOptions.Contains(option))
+                        {
+                            FilesToInstall = FilesToInstall.Union(option.Files);
+                        }
+                        else
+                        {
+                            IEnumerable<InstallableFile> installAnyway = option.Files.Where(file => file.AlwaysInstall ||
+                                                                                                    (file.InstallIfUsable && option.GetOptionType(m_csmState, m_Delegates) !=
+                                                                                                        OptionType.NotUsable));
+                            if (installAnyway.Any())
+                            {
+                                FilesToInstall = FilesToInstall.Union(installAnyway);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // We can return an empty instruction list here, handle this later
+            return xsiInstaller.Install(xscScript, m_csmState, m_Delegates, FilesToInstall, PluginsToActivate);
         }
 
         private void enableOption(Option option)
