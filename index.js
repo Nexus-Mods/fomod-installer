@@ -336,23 +336,23 @@ async function createIPC(usePipe, id, onExit, onStdout, containerName, lowIntegr
     onStdout(data.toString());
   };
 
-  if (winapi !== undefined) {
-    if ((winapi?.SupportsAppContainer?.() === true) && (containerName !== undefined)) {
-      try {
-        return await startSandboxed(containerName, id, exePath, cwd, args, onExit, enhancedOnStdout);
-      } catch (err) {
-        console.warn('Failed to start in sandbox mode, falling back to regular mode:', err.message);
-        // Fall through to regular mode
-      }
-    } else if (lowIntegrity) {
-      try {
-        return await startLowIntegrity(exePath, cwd, args, onExit, enhancedOnStdout);
-      } catch (err) {
-        console.warn('Failed to start with low integrity, falling back to regular mode:', err.message);
-        // Fall through to regular mode
-      }
-    }
-  }
+  // if (winapi !== undefined) {
+  //   if ((winapi?.SupportsAppContainer?.() === true) && (containerName !== undefined)) {
+  //     try {
+  //       return await startSandboxed(containerName, id, exePath, cwd, args, onExit, enhancedOnStdout);
+  //     } catch (err) {
+  //       console.warn('Failed to start in sandbox mode, falling back to regular mode:', err.message);
+  //       // Fall through to regular mode
+  //     }
+  //   } else if (lowIntegrity) {
+  //     try {
+  //       return await startLowIntegrity(exePath, cwd, args, onExit, enhancedOnStdout);
+  //     } catch (err) {
+  //       console.warn('Failed to start with low integrity, falling back to regular mode:', err.message);
+  //       // Fall through to regular mode
+  //     }
+  //   }
+  // }
   // fallback for other OSes and if the above solutions are disabled
   return await startRegular(exePath, cwd, args, onExit, enhancedOnStdout);
 }
