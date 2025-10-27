@@ -17,7 +17,7 @@
     "url": "https://github.com/Nexus-Mods/fomod-installer/issues"
   },
   "scripts": {
-    "postinstall": "npm run build",
+    "postinstall": "node postinstall.js",
     "clean": "pwsh ./commands.ps1 clean",
     "native": "pwsh ./commands.ps1 build-native",
     "build": "pwsh ./commands.ps1 build",
@@ -74,6 +74,7 @@
     "dist/module/lib",
     "dist/ModInstaller.Native.dll",
     "dist/modinstaller.node",
+    "postinstall.js",
     "CHANGELOG.md",
     "LICENSE",
     "README.md"

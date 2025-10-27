@@ -14,9 +14,9 @@
     "url": "https://github.com/Nexus-Mods/fomod-installer/issues"
   },
   "scripts": {
+    "postinstall": "node postinstall.js",
     "buildDev": "node build.js Debug",
     "build": "node build.js",
-    "postinstall": "npm run build",
     "cleanup": "node cleanup-processes.js --force",
     "list-processes": "node cleanup-processes.js"
   },
@@ -28,5 +28,14 @@
     "copyfiles": "*",
     "fs-extra": "^10.1.0"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "files": [
+    "dist/**/*",
+    "index.js",
+    "index.d.ts",
+    "build.js",
+    "cleanup-processes.js",
+    "dummy.js",
+    "postinstall.js"
+  ]
 }
