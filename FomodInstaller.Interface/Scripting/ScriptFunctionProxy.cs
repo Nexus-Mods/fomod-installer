@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Security;
-using System.Security.Permissions;
 using System.Threading.Tasks;
 using Utils;
-using System.Windows.Forms;
 using System.Linq;
-using Nito.AsyncEx;
 
 namespace FomodInstaller.Interface
 {
@@ -317,54 +312,6 @@ namespace FomodInstaller.Interface
         #endregion
 
         #region UI
-
-        #region MessageBox
-
-        /// <summary>
-        /// Shows a message box with the given message.
-        /// </summary>
-        /// <param name="p_strMessage">The message to display in the message box.</param>
-        public virtual DialogResult MessageBox(string p_strMessage)
-        {
-            // ??? This stuff should be handled by the user interaction delegate
-            return DialogResult.OK;
-        }
-
-        /// <summary>
-        /// Shows a message box with the given message and title.
-        /// </summary>
-        /// <param name="p_strMessage">The message to display in the message box.</param>
-        /// <param name="p_strTitle">The message box's title, display in the title bar.</param>
-        //public void MessageBox(string p_strMessage, string p_strTitle)
-        //{
-        //     ??? This stuff should be handled by the user interaction delegate
-        //}
-
-        /// <summary>
-        /// Shows a message box with the given message, title, and buttons.
-        /// </summary>
-        /// <param name="p_strMessage">The message to display in the message box.</param>
-        /// <param name="p_strTitle">The message box's title, display in the title bar.</param>
-        /// <param name="p_mbbButtons">The buttons to show in the message box.</param>
-        public virtual DialogResult MessageBox(string p_strMessage, string p_strTitle)
-        {
-            // ??? This stuff should be handled by the user interaction delegate
-            return DialogResult.OK;
-        }
-
-        ///// <summary>
-        ///// Shows a message box with the given message, title, buttons, and icon.
-        ///// </summary>
-        ///// <param name="p_strMessage">The message to display in the message box.</param>
-        ///// <param name="p_strTitle">The message box's title, display in the title bar.</param>
-        ///// <param name="p_mbbButtons">The buttons to show in the message box.</param>
-        ///// <param name="p_mdiIcon">The icon to display in the message box.</param>
-        //public DialogResult MessageBox(string p_strMessage, string p_strTitle)
-        //{
-        //    // ??? This stuff should be handled by the user interaction delegate
-        //}
-
-        #endregion
 
         #region ExtendedMessageBox
 

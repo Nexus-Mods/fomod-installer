@@ -1,26 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
     <RootNamespace>Nexus.Client.Util.Antlr</RootNamespace>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    
+    <Title>Vortex - ANTLR Util</Title>
+    <Description>The ANTLR support Util library for the official Mod Manager of the Nexus network.</Description>
+    <Company>Black Tree Gaming</Company>
+    <Copyright>Copyright © Black Tree Gaming 2017</Copyright>
   </PropertyGroup>
+  
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>..\Build\bin\Debug\</OutputPath>
     <DocumentationFile>..\Build\bin\Debug\AntlrUtil.XML</DocumentationFile>
   </PropertyGroup>
+  
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>..\Build\bin\Release\</OutputPath>
   </PropertyGroup>
+  
   <ItemGroup>
     <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\lib\Antlr\Antlr3.Runtime.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.421302">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
+  
 </Project>

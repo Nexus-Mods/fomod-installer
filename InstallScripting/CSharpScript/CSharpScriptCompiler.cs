@@ -50,7 +50,6 @@ namespace FomodInstaller.Scripting.CSharpScript
           Assembly.Load(new AssemblyName("System.Windows.Forms.Primitives")),
       };
 
-      List<string> setAssemblies = new List<string>();
       Type tpeReference = p_tpeBaseScriptType;
       while (tpeReference != null)
       {

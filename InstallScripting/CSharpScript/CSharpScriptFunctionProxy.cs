@@ -52,7 +52,7 @@ namespace FomodInstaller.Scripting.CSharpScript
         /// Shows a message box with the given message.
         /// </summary>
         /// <param name="p_strMessage">The message to display in the message box.</param>
-        public override DialogResult MessageBox(string p_strMessage)
+        public DialogResult MessageBox(string p_strMessage)
         {
             return ShowMessageBox(p_strMessage, string.Empty, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
@@ -62,7 +62,7 @@ namespace FomodInstaller.Scripting.CSharpScript
         /// </summary>
         /// <param name="p_strMessage">The message to display in the message box.</param>
         /// <param name="p_strTitle">The message box's title, display in the title bar.</param>
-        public override DialogResult MessageBox(string p_strMessage, string p_strTitle)
+        public DialogResult MessageBox(string p_strMessage, string p_strTitle)
         {
             return ShowMessageBox(p_strMessage, p_strTitle, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }

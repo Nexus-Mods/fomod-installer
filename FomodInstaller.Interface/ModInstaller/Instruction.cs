@@ -1,13 +1,14 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace FomodInstaller.Interface
 {
-    public struct Instruction
+    public record Instruction
     {
         public static Instruction CreateCopy(string source, string destination, int priority)
         {
-            return new Instruction()
+            return new Instruction
             {
                 type = "copy",
                 source = source,
@@ -75,7 +76,7 @@ namespace FomodInstaller.Interface
 
         public static Instruction InstallError(string severity, string message)
         {
-            return new Instruction()
+            return new Instruction
             {
                 type = "error",
                 source = message,
@@ -83,14 +84,19 @@ namespace FomodInstaller.Interface
             };
         }
 
-        public string type;
-        public string source;
-        public string destination;
-        public string section;
-        public string key;
-        public string value;
-        public byte[] data;
-        public int priority;
+        public static List<Instruction> InstallErrorList(string severity, string message)
+        {
+            return [InstallError(severity, message)];
+        }
+
+        public string type { get; set; }
+        public string source { get; set; }
+        public string destination { get; set; }
+        public string section { get; set; }
+        public string key { get; set; }
+        public string value { get; set; }
+        public byte[] data { get; set; }
+        public int priority { get; set; }
 
         private static int sepspn(string input)
         {

@@ -1,66 +1,55 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.InteropServices;
+using System.Linq;
+using System.Text;
 
 namespace Utils
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1049:TypesThatOwnNativeResourcesShouldBeDisposable")]
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode, Pack = 1)]
-    public struct SHFILEOPSTRUCT
+    public interface IFileSystem
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible")]
-        public IntPtr hwnd;   // Window handle to the dialog box to display 
-                              // information about the status of the file 
-                              // operation. 
-        public UInt32 wFunc;   // Value that indicates which operation to 
-                               // perform.
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible")]
-        public IntPtr pFrom;   // Address of a buffer to specify one or more 
-                               // source file names. These names must be
-                               // fully qualified paths. Standard Microsoft®   
-                               // MS-DOS® wild cards, such as "*", are 
-                               // permitted in the file-name position. 
-                               // Although this member is declared as a 
-                               // null-terminated string, it is used as a 
-                               // buffer to hold multiple file names. Each 
-                               // file name must be terminated by a single 
-                               // NULL character. An additional NULL 
-                               // character must be appended to the end of 
-                               // the final name to indicate the end of pFrom. 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible")]
-        public IntPtr pTo;   // Address of a buffer to contain the name of 
-                             // the destination file or directory. This 
-                             // parameter must be set to NULL if it is not 
-                             // used. Like pFrom, the pTo member is also a 
-                             // double-null terminated string and is handled 
-                             // in much the same way. 
-        public UInt16 fFlags;   // Flags that control the file operation. 
-
-        public Int32 fAnyOperationsAborted;
-
-        // Value that receives TRUE if the user aborted 
-        // any file operations before they were 
-        // completed, or FALSE otherwise. 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2111:PointersShouldNotBeVisible")]
-        public IntPtr hNameMappings;
-
-        // A handle to a name mapping object containing 
-        // the old and new names of the renamed files. 
-        // This member is used only if the 
-        // fFlags member includes the 
-        // FOF_WANTMAPPINGHANDLE flag.
-
-        [MarshalAs(UnmanagedType.LPWStr)]
-        public String lpszProgressTitle;
-
-        // Address of a string to use as the title of 
-        // a progress dialog box. This member is used 
-        // only if fFlags includes the 
-        // FOF_SIMPLEPROGRESS flag.
+	    byte[]? ReadFileContent(string filePath, int offset, int length);
+	    string[]? ReadDirectoryFileList(string directoryPath, string pattern, SearchOption searchOption);
+	    string[]? ReadDirectoryList(string directoryPath);
     }
+    
+    public class DefaultFileSystem : IFileSystem
+	{
+		public byte[] ReadFileContent(string filePath, int offset, int length)
+		{
+			if (!File.Exists(filePath)) return null;
+			using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+			if (offset < 0 || offset > fs.Length) throw new ArgumentOutOfRangeException(nameof(offset));
+			if (length < -1) throw new ArgumentOutOfRangeException(nameof(length));
+			if (length == -1) length = (int)(fs.Length - offset);
+			if (offset + length > fs.Length) throw new ArgumentOutOfRangeException(nameof(length));
 
+			var buffer = new byte[length];
+			fs.Seek(offset, SeekOrigin.Begin);
+			var read = fs.Read(buffer, 0, length);
+			if (read < length)
+			{
+				Array.Resize(ref buffer, read);
+			}
+			return buffer;
+		}
+
+		public string[] ReadDirectoryFileList(string directoryPath, string pattern, SearchOption searchOption)
+		{
+			if (!Directory.Exists(directoryPath)) return null;
+			return Directory.GetFiles(directoryPath, pattern, searchOption);
+		}
+
+		public string[] ReadDirectoryList(string directoryPath)
+		{
+			if (!Directory.Exists(directoryPath)) return null;
+			return Directory.GetDirectories(directoryPath);
+		}
+	}
+    
     public static class FileSystem
 	{
+		public static IFileSystem Instance { get; set; } = new DefaultFileSystem();
+		
 		/// <summary>
 		/// Test if a file exists
 		/// </summary>
@@ -68,7 +57,7 @@ namespace Utils
 		/// <returns></returns>
 		public static bool FileExists(string filePath)
 		{
-			return File.Exists(filePath);
+			return Instance.ReadFileContent(filePath, 0, 1) != null;
 		}
 
         /// <summary>
@@ -78,7 +67,9 @@ namespace Utils
         /// <returns></returns>
         public static bool DirectoryExists(string directoryPath)
         {
-            return Directory.Exists(directoryPath);
+	        var parentDir = Path.GetDirectoryName(directoryPath);
+	        if (parentDir == null) return false;
+	        return Instance.ReadDirectoryList(parentDir)?.Contains(directoryPath) == true;
         }
 
         /// <summary>
@@ -88,7 +79,9 @@ namespace Utils
         /// <returns></returns>
         public static string[] ReadAllLines(string filePath)
 		{
-			return File.ReadAllLines(filePath);
+			var data = Instance.ReadFileContent(filePath, 0, -1) ??
+			           throw new FileNotFoundException($"File not found: {filePath}");;
+			return Encoding.UTF8.GetString(data ?? []).Split(["\r\n", "\n"], StringSplitOptions.None);
 		}
 
         /// <summary>
@@ -98,7 +91,8 @@ namespace Utils
         /// <returns></returns>
         public static byte[] ReadAllBytes(string filePath)
 		{
-			return File.ReadAllBytes(filePath);
+			return Instance.ReadFileContent(filePath, 0, -1) ??
+			       throw new FileNotFoundException($"File not found: {filePath}");
 		}
 
         /// <summary>
@@ -109,7 +103,9 @@ namespace Utils
         /// <returns></returns>
         public static Stream Open(string filePath, FileMode fileMode)
 		{
-			return File.Open(filePath, fileMode);
+			var data = Instance.ReadFileContent(filePath, 0, -1) ??
+			           (fileMode == FileMode.Open ? throw new FileNotFoundException($"File not found: {filePath}") : null);
+			return new MemoryStream(data ?? []);
 		}
 
         /// <summary>
@@ -155,7 +151,7 @@ namespace Utils
         /// <returns></returns>
         public static string[] GetFiles(string searchPath, string pattern, SearchOption searchOption)
         {
-            return Directory.GetFiles(searchPath, pattern, searchOption);
+	        return Instance.ReadDirectoryFileList(searchPath, pattern, searchOption);
         }
     }
 }

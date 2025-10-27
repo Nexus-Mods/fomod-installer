@@ -1,9 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <IntermediateOutputPath>$(SolutionDir)Build\obj\$(Configuration)\$(MSBuildProjectName)\</IntermediateOutputPath>
-    <OutputPath>$(SolutionDir)Build\bin\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
-    <OutDir>$(OutputPath)</OutDir>
-    <MSBuildProjectExtensionsPath>$(SolutionDir)Build\ext\$(Configuration)\$(MSBuildProjectName)\</MSBuildProjectExtensionsPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-  </PropertyGroup>
-</Project>

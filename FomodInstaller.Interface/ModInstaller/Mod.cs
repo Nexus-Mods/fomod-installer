@@ -12,6 +12,19 @@ namespace FomodInstaller.Interface
 {
     public class Mod
     {
+        private static readonly byte[] TransparentPng1x1 =
+        {
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+            0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+            0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+            0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4,
+            0x89, 0x00, 0x00, 0x00, 0x0A, 0x49, 0x44, 0x41,
+            0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+            0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00,
+            0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE,
+            0x42, 0x60, 0x82,
+        };
+        
         private static readonly HashSet<string> imageExtensions = new HashSet<string>()
         {
             "png",
@@ -181,11 +194,10 @@ namespace FomodInstaller.Interface
             IList<string> NormalizedModFile = NormalizePathList(ModFiles);
             if (!NormalizedModFile.Any(x => x.Contains(file, StringComparison.InvariantCultureIgnoreCase)))
             {
-                if (IsImageFile(Path.GetFileName(file)) && OperatingSystem.IsWindows())
-                    // TODO: This has to be ported to more modern libraries that support non-windows OSes
-                    return (byte[])(new ImageConverter().ConvertTo(new Bitmap(1, 1), typeof(byte[])));
-                else
-                    throw new FileNotFoundException("File doesn't exist in FOMod", file);
+                if (IsImageFile(Path.GetFileName(file)))
+                    return TransparentPng1x1;
+                
+                throw new FileNotFoundException("File doesn't exist in FOMod", file);
             }
 
             string filePath = Path.Combine(TempPath, file);

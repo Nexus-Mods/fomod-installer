@@ -28,7 +28,6 @@ namespace FomodInstaller.Scripting.XmlScript
 		}
 
 		private Dictionary<string, FlagValue> m_dicFlags = new Dictionary<string, FlagValue>();
-		private Dictionary<string, Image> m_dicImageCache;
 
 		#region Properties
 
@@ -65,25 +64,6 @@ namespace FomodInstaller.Scripting.XmlScript
 
 		#endregion
 
-		#region Constructors
-
-		/// <summary>
-		/// A simple constructor that initializes the object with the given values.
-		/// </summary>
-		/// <param name="p_modMod">The mod being installed.</param>
-		/// <param name="p_gmdGameMode">The game mode currently bieng managed.</param>
-		/// <param name="p_pmgPluginManager">The plugin manager.</param>
-		/// <param name="p_eifEnvironmentInfo">The application's envrionment info.</param>
-		public ConditionStateManager()
-		{
-			if (OperatingSystem.IsWindows())
-			{
-				m_dicImageCache = new Dictionary<string, Image>();
-			}
-		}
-
-		#endregion
-
 		/// <summary>
 		/// Sets the value of a conditional flag.
 		/// </summary>
@@ -108,31 +88,6 @@ namespace FomodInstaller.Scripting.XmlScript
 			foreach (string strFlag in lstFlags)
 				if (m_dicFlags[strFlag].Owner == p_pifPlugin)
 					m_dicFlags.Remove(strFlag);
-		}
-
-		/// <summary>
-		/// Gets the specified image from the mod against which the script is running.
-		/// </summary>
-		/// <param name="p_strPath">The path to the image in the mod to retrieve.</param>
-		/// <returns>The specified image from the mod against which the script is running.</returns>
-		public Image GetImage(string p_strPath)
-		{
-			if (string.IsNullOrEmpty(p_strPath) || !OperatingSystem.IsWindows())
-				return null;
-			if (!m_dicImageCache.ContainsKey(p_strPath))
-			{
-				try
-				{
-                    // ??? Where is this used? Do we need it
-                    //m_dicImageCache[p_strPath] = new ExtendedImage(Mod.GetFile(p_strPath));
-                    return null;
-                }
-				catch (FileNotFoundException)
-				{
-					return null;
-				}
-			}
-			return m_dicImageCache[p_strPath];
 		}
 	}
 }

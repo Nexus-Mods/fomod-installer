@@ -55,7 +55,7 @@ namespace FomodInstaller.Scripting.CSharpScript
         /// <c>false</c> otherwise.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="p_scpScript"/> is not a
         /// <see cref="CSharpScript"/>.</exception>
-        public override Task<IList<Instruction>> DoExecute(IScript p_scpScript, string p_strDataPath, dynamic p_dynPreset)
+        public override Task<IList<Instruction>> DoExecute(IScript p_scpScript, string p_strDataPath, object? p_dynPreset)
         {
             if (!(p_scpScript is CSharpScript))
                 throw new ArgumentException("The given script must be of type CSharpScript.", "p_scpScript");

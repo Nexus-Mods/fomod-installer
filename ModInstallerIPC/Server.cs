@@ -629,7 +629,7 @@ namespace ModInstallerIPC
             }
 
             DeferContext context = new DeferContext(id, (targetId, targetType, name, args) => ContextIPC(targetId, targetType, name, args));
-            CoreDelegates coreDelegates = new CoreDelegates(ToExpando(context));
+            CoreDelegates coreDelegates = new DynamicCoreDelegates(ToExpando(context));
 
             return await mInstaller.Install(files, stopPatterns, pluginPath, scriptPath, choices, validate, (ProgressDelegate)((int progress) => { }), coreDelegates);
         }

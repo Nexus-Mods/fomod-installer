@@ -15,6 +15,6 @@ namespace FomodInstaller.Scripting
 		/// </summary>
 		/// <returns><c>true</c> if the script completed
 		/// successfully; <c>false</c> otherwise.</returns>
-		Task<IList<Instruction>> Execute(IScript p_scpScript, string p_strDataPath, dynamic preset);
+		Task<IList<Instruction>> Execute(IScript p_scpScript, string p_strDataPath, object? preset);
 	}
 }
