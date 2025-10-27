@@ -3,26 +3,22 @@
  *
  * This package provides access to both:
  * - Native bindings (fomod-installer-native)
- * - IPC-based installer (fomod-installer)
+ * - IPC-based installer (fomod-installer-ipc)
  */
 
-const path = require('path');
-
-// Export the native bindings package
-const nativePath = path.join(__dirname, 'src', 'ModInstaller.Native.TypeScript');
+// Try to load the native bindings package
 let native;
 try {
-  native = require(nativePath);
+  native = require('fomod-installer-native');
 } catch (err) {
   console.warn('Native bindings not available:', err.message);
   native = null;
 }
 
-// Export the IPC package
-const ipcPath = path.join(__dirname, 'src', 'ModInstaller.IPC.TypeScript');
+// Try to load the IPC package
 let ipc;
 try {
-  ipc = require(ipcPath);
+  ipc = require('fomod-installer-ipc');
 } catch (err) {
   console.warn('IPC package not available:', err.message);
   ipc = null;
@@ -37,7 +33,7 @@ module.exports = {
   ipc: ipc,
 
   // For backward compatibility, default export is IPC
-  ...ipc,
+  ...(ipc || {}),
 };
 
 // Also allow destructured imports

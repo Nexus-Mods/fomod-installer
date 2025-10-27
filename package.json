@@ -15,10 +15,8 @@
     "url": "https://github.com/Nexus-Mods/fomod-installer/issues"
   },
   "scripts": {
-    "postinstall": "node install.js",
-    "build": "node install.js",
-    "buildDev": "node install.js Debug",
-    "clean": "node cleanup.js"
+    "cleanup": "cd node_modules/fomod-installer-ipc && npm run cleanup",
+    "list-processes": "cd node_modules/fomod-installer-ipc && npm run list-processes"
   },
   "engines": {
     "node": ">=22"
@@ -26,23 +24,8 @@
   "files": [
     "index.js",
     "index.d.ts",
-    "install.js",
-    "cleanup.js",
-    "dist/**/*",
-    "src/ModInstaller.Native.TypeScript/dist/**/*",
-    "src/ModInstaller.Native.TypeScript/package.json",
-    "src/ModInstaller.Native.TypeScript/postinstall.js",
-    "src/ModInstaller.IPC.TypeScript/dist/**/*",
-    "src/ModInstaller.IPC.TypeScript/package.json",
-    "src/ModInstaller.IPC.TypeScript/index.js",
-    "src/ModInstaller.IPC.TypeScript/index.d.ts",
-    "src/ModInstaller.IPC.TypeScript/build.js",
-    "src/ModInstaller.IPC.TypeScript/cleanup-processes.js",
-    "src/ModInstaller.IPC.TypeScript/dummy.js",
-    "src/ModInstaller.IPC.TypeScript/postinstall.js",
-    "CHANGELOG.md",
-    "LICENSE.md",
-    "README.md"
+    "README.md",
+    "LICENSE.md"
   ],
   "keywords": [
     "fomod",
@@ -55,10 +38,8 @@
     "ipc"
   ],
   "dependencies": {
-    "async": "^3.2.2",
-    "copyfiles": "*",
-    "fs-extra": "^10.1.0",
-    "winapi-bindings": "Nexus-Mods/node-winapi-bindings"
+    "fomod-installer-ipc": "file:./src/ModInstaller.IPC.TypeScript",
+    "fomod-installer-native": "file:./src/ModInstaller.Native.TypeScript"
   },
   "packageManager": "yarn@1.22.19"
 }

@@ -75,6 +75,8 @@
     "dist/ModInstaller.Native.dll",
     "dist/modinstaller.node",
     "postinstall.js",
+    "commands.ps1",
+    "binding.gyp",
     "CHANGELOG.md",
     "LICENSE",
     "README.md"
