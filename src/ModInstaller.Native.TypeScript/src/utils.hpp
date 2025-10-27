@@ -188,7 +188,7 @@ namespace Utils
         return conv.from_bytes(e.Message());
     }
 
-    Napi::Value ReturnAndHandleReject(const Env env, return_value_async *const result, const Napi::Promise::Deferred &deferred, const Napi::ThreadSafeFunction &tsfn)
+    Napi::Value ReturnAndHandleReject(const Env env, return_value_async *const result, const Napi::Promise::Deferred &deferred, Napi::ThreadSafeFunction tsfn)
     {
         LoggerScope logger(__FUNCTION__);
         const del_async del{result};
@@ -317,7 +317,7 @@ namespace Utils
         auto *cbData = static_cast<ResultCallbackData *>(handler);
         del_rcbd delCb{cbData};
 
-        const auto tsfn = cbData->tsfn;
+        auto tsfn = cbData->tsfn;
 
         const auto lambda = [functionName](Napi::Env env, Napi::Function jsCallback, return_value_void *returnData)
         {
@@ -350,7 +350,7 @@ namespace Utils
 
         auto *cbData = static_cast<ResultCallbackData *>(handler);
         del_rcbd delCb{cbData};
-        const auto tsfn = cbData->tsfn;
+        auto tsfn = cbData->tsfn;
 
         const auto lambda = [functionName](Napi::Env env, Napi::Function jsCallback, return_value_json *returnData)
         {
@@ -396,7 +396,7 @@ namespace Utils
         del_rcbd delCb{cbData};
 
         const auto deferred = cbData->deferred;
-        const auto tsfn = cbData->tsfn;
+        auto tsfn = cbData->tsfn;
 
         const auto lambda = [functionName](Napi::Env env, Napi::Function jsCallback, return_value_string *returnData)
         {
@@ -438,7 +438,7 @@ namespace Utils
         LoggerScope logger(functionName);
         auto *cbData = static_cast<ResultCallbackData *>(handler);
         del_rcbd del{cbData};
-        const auto tsfn = cbData->tsfn;
+        auto tsfn = cbData->tsfn;
 
         const auto lambda = [functionName](Napi::Env env, Napi::Function jsCallback, return_value_bool *returnData)
         {
