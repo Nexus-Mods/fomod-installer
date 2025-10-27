@@ -1,5 +1,5 @@
 {
-  "name": "fomod-installer",
+  "name": "fomod-installer-ipc",
   "version": "0.10.0",
   "description": "Installer for xml and c# fomods",
   "typings": "index.d.ts",

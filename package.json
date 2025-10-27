@@ -1,0 +1,60 @@
+{
+  "name": "fomod-installer",
+  "version": "0.10.0",
+  "description": "Complete FOMOD installer suite with native bindings and IPC support",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nexus-Mods/fomod-installer.git"
+  },
+  "author": "Nexus-Mods",
+  "license": "GPL-3.0",
+  "homepage": "https://github.com/Nexus-Mods/fomod-installer#readme",
+  "bugs": {
+    "url": "https://github.com/Nexus-Mods/fomod-installer/issues"
+  },
+  "scripts": {
+    "postinstall": "node install.js",
+    "build": "node install.js",
+    "buildDev": "node install.js Debug",
+    "clean": "node cleanup.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "install.js",
+    "cleanup.js",
+    "src/ModInstaller.Native.TypeScript/dist",
+    "src/ModInstaller.Native.TypeScript/package.json",
+    "src/ModInstaller.IPC.TypeScript/dist",
+    "src/ModInstaller.IPC.TypeScript/package.json",
+    "src/ModInstaller.IPC.TypeScript/index.js",
+    "src/ModInstaller.IPC.TypeScript/index.d.ts",
+    "CHANGELOG.md",
+    "LICENSE.md",
+    "README.md"
+  ],
+  "keywords": [
+    "fomod",
+    "mod",
+    "installer",
+    "fallout",
+    "skyrim",
+    "nexusmods",
+    "native",
+    "ipc"
+  ],
+  "peerDependencies": {
+    "winapi-bindings": "*"
+  },
+  "dependencies": {
+    "async": "^3.2.2",
+    "copyfiles": "*",
+    "fs-extra": "^10.1.0"
+  },
+  "packageManager": "yarn@1.22.19"
+}
