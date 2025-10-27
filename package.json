@@ -54,13 +54,13 @@
     "native",
     "ipc"
   ],
-  "peerDependencies": {
-    "winapi-bindings": "*"
-  },
   "dependencies": {
     "async": "^3.2.2",
     "copyfiles": "*",
     "fs-extra": "^10.1.0"
+  },
+  "optionalDependencies": {
+    "winapi-bindings": "*"
   },
   "packageManager": "yarn@1.22.19"
 }

@@ -71,11 +71,11 @@ function installDependencies(dir, packageName) {
 
     console.log(`\n📦 ${`Install ${packageName} dependencies`}...`);
     console.log(`   Directory: ${path.relative(__dirname, dir)}`);
-    console.log(`   Command: npm install\n`);
+    console.log(`   Command: npm install --legacy-peer-deps\n`);
 
     try {
       const { execSync } = require('child_process');
-      execSync('npm install', {
+      execSync('npm install --legacy-peer-deps', {
         cwd: dir,
         stdio: 'inherit',
         shell: true,
