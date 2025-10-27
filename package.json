@@ -1,5 +1,5 @@
 {
-  "name": "fomod-installer",
+  "name": "fomod-installer-meta",
   "version": "0.10.0",
   "description": "Complete FOMOD installer suite with native bindings and IPC support",
   "main": "index.js",
