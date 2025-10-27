@@ -57,10 +57,8 @@
   "dependencies": {
     "async": "^3.2.2",
     "copyfiles": "*",
-    "fs-extra": "^10.1.0"
-  },
-  "optionalDependencies": {
-    "winapi-bindings": "*"
+    "fs-extra": "^10.1.0",
+    "winapi-bindings": "Nexus-Mods/node-winapi-bindings"
   },
   "packageManager": "yarn@1.22.19"
 }
