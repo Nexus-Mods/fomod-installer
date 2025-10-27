@@ -46,7 +46,7 @@ namespace Bindings::Common
         return Number::New(env, result);
     }
 
-    Object Init(const Env env, const Object exports)
+    Object Init(const Env env, Object exports)
     {
         exports.Set("allocWithOwnership", Function::New(env, AllocWithOwnership));
         exports.Set("allocWithoutOwnership", Function::New(env, AllocWithoutOwnership));

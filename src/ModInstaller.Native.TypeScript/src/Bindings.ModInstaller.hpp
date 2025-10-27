@@ -83,7 +83,7 @@ namespace Bindings::ModInstaller
         return ModInstaller::Init(env, exports);
     }
 
-    Object ModInstaller::Init(const Napi::Env env, const Object exports)
+    Object ModInstaller::Init(const Napi::Env env, Object exports)
     {
         // This method is used to hook the accessor and method callbacks
         const auto func = DefineClass(env, "ModInstaller",
@@ -108,7 +108,7 @@ namespace Bindings::ModInstaller
         // By default, the value set on the environment here will be destroyed when
         // the add-on is unloaded using the `delete` operator, but it is also
         // possible to supply a custom deleter.
-        env.SetInstanceData<FunctionReference>(constructor);
+        const_cast<Napi::Env&>(env).SetInstanceData<FunctionReference>(constructor);
 
         return exports;
     }
