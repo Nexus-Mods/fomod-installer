@@ -50,7 +50,7 @@
   "devDependencies": {
     "@ava/typescript": "^1.1.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@types/node": "^18.7.9",
+    "@types/node": "^22.0.0",
     "ava": "^3.15.0",
     "codecov": "^3.8.2",
     "cspell": "^6.19.2",
@@ -62,7 +62,7 @@
     "shx": "^0.3.4",
     "ts-node": "^10.9.1",
     "typedoc": "^0.23.7",
-    "typescript": "^5.7.3"
+    "typescript": "^5.0.0"
   },
   "overrides": {
     "got": "^11.8.5"
