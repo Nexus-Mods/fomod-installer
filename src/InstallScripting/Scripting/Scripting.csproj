@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Nexus.Client.ModManagement.Scripting</RootNamespace>
+    
+    <Title>Scripting Module</Title>
+    <Copyright>Copyright ©  2016</Copyright>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\FomodInstaller.Interface\FomodInstaller.Interface.csproj" />
+    <ProjectReference Include="..\..\Utils\Utils.csproj" />
+  </ItemGroup>
+</Project>

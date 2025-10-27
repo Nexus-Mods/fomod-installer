@@ -3,45 +3,45 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModInstaller.Adaptor.Dynamic", "ModInstaller.Adaptor.Dynamic\ModInstaller.Adaptor.Dynamic.csproj", "{B7659B4B-F4EF-468A-9D97-3FA2822243D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModInstaller.Adaptor.Dynamic", "src\ModInstaller.Adaptor.Dynamic\ModInstaller.Adaptor.Dynamic.csproj", "{B7659B4B-F4EF-468A-9D97-3FA2822243D8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FomodInstaller.Interface", "FomodInstaller.Interface\FomodInstaller.Interface.csproj", "{494C3E44-8A35-46AE-82E5-1C1A7221803B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FomodInstaller.Interface", "src\FomodInstaller.Interface\FomodInstaller.Interface.csproj", "{494C3E44-8A35-46AE-82E5-1C1A7221803B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils", "Utils\Utils.csproj", "{5B9AD297-9D49-4593-A795-BDBD309B3313}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils", "src\Utils\Utils.csproj", "{5B9AD297-9D49-4593-A795-BDBD309B3313}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InstallScripting", "InstallScripting", "{3453ABBE-7DA9-4946-ACC0-D55BD4BDB5D4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InstallScripting", "src\InstallScripting", "{3453ABBE-7DA9-4946-ACC0-D55BD4BDB5D4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scripting", "InstallScripting\Scripting\Scripting.csproj", "{66DC8748-2DC2-4E6E-B645-080E0CFDC831}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scripting", "src\InstallScripting\Scripting\Scripting.csproj", "{66DC8748-2DC2-4E6E-B645-080E0CFDC831}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlScript", "InstallScripting\XmlScript\XmlScript.csproj", "{B0F526DB-967B-4A57-9EC9-2E4950E54F26}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlScript", "src\InstallScripting\XmlScript\XmlScript.csproj", "{B0F526DB-967B-4A57-9EC9-2E4950E54F26}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharpScript", "InstallScripting\CSharpScript\CSharpScript.csproj", "{6C3901C6-BFCA-47FC-929B-0CD030325FBD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharpScript", "src\InstallScripting\CSharpScript\CSharpScript.csproj", "{6C3901C6-BFCA-47FC-929B-0CD030325FBD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModInstaller.Adaptor.Dynamic.TestsOld", "ModInstaller.Adaptor.Dynamic.TestsOld\ModInstaller.Adaptor.Dynamic.TestsOld.csproj", "{493549E4-5E9A-4F4B-8421-983DF255F02E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModInstaller.Adaptor.Dynamic.TestsOld", "test\ModInstaller.Adaptor.Dynamic.TestsOld\ModInstaller.Adaptor.Dynamic.TestsOld.csproj", "{493549E4-5E9A-4F4B-8421-983DF255F02E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils.Tests", "Utils.Tests\Utils.Tests.csproj", "{DECB195F-A137-4545-AFB9-CFF6CCE00F6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils.Tests", "test\Utils.Tests\Utils.Tests.csproj", "{DECB195F-A137-4545-AFB9-CFF6CCE00F6D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntlrUtil", "AntlrUtil\AntlrUtil.csproj", "{8B2AD10B-4E22-4559-A784-648179225ADC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntlrUtil", "src\AntlrUtil\AntlrUtil.csproj", "{8B2AD10B-4E22-4559-A784-648179225ADC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModInstallerIPC", "ModInstallerIPC\ModInstallerIPC.csproj", "{9BE95551-D82A-420C-A516-0792CF5577C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModInstaller.IPC", "src\ModInstaller.IPC\ModInstaller.IPC.csproj", "{9BE95551-D82A-420C-A516-0792CF5577C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.Native", "ModInstaller.Native\ModInstaller.Native.csproj", "{A10B882B-CEE2-4C70-BCBE-C9D7F95434C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.Native", "src\ModInstaller.Native\ModInstaller.Native.csproj", "{A10B882B-CEE2-4C70-BCBE-C9D7F95434C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.Adaptor.Typed", "ModInstaller.Adaptor.Typed\ModInstaller.Adaptor.Typed.csproj", "{8D3BE7E5-826E-43F1-90B8-CCE6EC044889}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.Adaptor.Typed", "src\ModInstaller.Adaptor.Typed\ModInstaller.Adaptor.Typed.csproj", "{8D3BE7E5-826E-43F1-90B8-CCE6EC044889}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.Adaptor.Typed.Tests", "ModInstaller.Adaptor.Typed.Tests\ModInstaller.Adaptor.Typed.Tests.csproj", "{CDAEBF89-CCC9-43CA-AEDF-9D3554DF1410}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.Adaptor.Typed.Tests", "test\ModInstaller.Adaptor.Typed.Tests\ModInstaller.Adaptor.Typed.Tests.csproj", "{CDAEBF89-CCC9-43CA-AEDF-9D3554DF1410}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.Native.Tests", "ModInstaller.Native.Tests\ModInstaller.Native.Tests.csproj", "{91B00765-AE51-4141-956F-09E0F9E08E8D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.Native.Tests", "test\ModInstaller.Native.Tests\ModInstaller.Native.Tests.csproj", "{91B00765-AE51-4141-956F-09E0F9E08E8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestData", "TestData\TestData.csproj", "{2E6CE4AC-D2A9-4258-9E08-728525A97C5B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestData", "test\TestData\TestData.csproj", "{2E6CE4AC-D2A9-4258-9E08-728525A97C5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.Adaptor.Dynamic.Tests", "ModInstaller.Adaptor.Dynamic.Tests\ModInstaller.Adaptor.Dynamic.Tests.csproj", "{6C1E97C4-7B3E-47FF-8894-D26601320C2B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.Adaptor.Dynamic.Tests", "test\ModInstaller.Adaptor.Dynamic.Tests\ModInstaller.Adaptor.Dynamic.Tests.csproj", "{6C1E97C4-7B3E-47FF-8894-D26601320C2B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FE91A891-457A-4D4C-BC9E-B2913EEDF70F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{B3B75719-9775-411B-A30D-D985DCE4956E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstallerIPC.Tests", "ModInstallerIPC.Tests\ModInstallerIPC.Tests.csproj", "{4FC16E52-1961-4441-BF79-84847987D696}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.IPC.Tests", "test\ModInstaller.IPC.Tests\ModInstaller.IPC.Tests.csproj", "{4FC16E52-1961-4441-BF79-84847987D696}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
