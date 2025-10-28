@@ -16,7 +16,6 @@
   "scripts": {
     "buildDev": "node build.js Debug",
     "build": "node build.js",
-    "postinstall": "npm run build",
     "cleanup": "node cleanup-processes.js --force",
     "list-processes": "node cleanup-processes.js"
   },

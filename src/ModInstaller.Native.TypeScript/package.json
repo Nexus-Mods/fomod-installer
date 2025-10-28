@@ -17,7 +17,6 @@
     "url": "https://github.com/Nexus-Mods/fomod-installer/issues"
   },
   "scripts": {
-    "postinstall": "npm run build",
     "clean": "pwsh ./commands.ps1 clean",
     "native": "pwsh ./commands.ps1 build-native",
     "build": "pwsh ./commands.ps1 build",
