@@ -32,3 +32,6 @@ public unsafe delegate return_value_json* ReadDirectoryFileListDelegate(param_pt
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 public unsafe delegate return_value_json* ReadDirectoryListDelegate(param_ptr* handler, param_string* pDirectoryPath);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+public unsafe delegate void InstallCallbackDelegate(param_ptr* owner, return_value_json* result);

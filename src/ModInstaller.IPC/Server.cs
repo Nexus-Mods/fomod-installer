@@ -370,7 +370,7 @@ namespace ModInstallerIPC
 
                 mEnqueue = msg => outgoing.Add(msg);
 
-                byte[] input = System.Text.Encoding.UTF8.GetBytes("connected");
+                byte[] input = "connected"u8.ToArray();
                 streamOut.Write(input, 0, input.Length);
 
                 cancelSignal = new CancellationTokenSource();

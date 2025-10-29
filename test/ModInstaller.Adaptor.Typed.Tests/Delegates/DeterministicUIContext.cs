@@ -40,8 +40,16 @@ internal class DeterministicUIContext : UIDelegates
         _currentStep = 0;
     }
 
+    private bool dialogInProgress = false;
+    
     public override void UpdateState(InstallerStep[] installSteps, int currentStep)
     {
+        if (dialogInProgress)
+            return;
+        
+        _installerSteps = installSteps;
+        _currentStep = currentStep;
+        
         if (_cont == null) throw new NotSupportedException();
 
         if (_unattended)
@@ -50,21 +58,20 @@ internal class DeterministicUIContext : UIDelegates
         }
         else if (_dialogChoices is { Count: > 0 })
         {
-            var option = _dialogChoices.FirstOrDefault(x => x.StepId == currentStep);
+            if (_select == null) throw new NotSupportedException();
+            
+            var option = _dialogChoices.First(x => x.StepId == currentStep);
 
-            Task.Run(async () =>
+            dialogInProgress = true;
+            _select(option.StepId, option.GroupId, option.PluginIds);
+            
+            Task.Delay(200).ContinueWith(_ =>
             {
-                _select(option.StepId, option.GroupId, option.PluginIds);
                 // Hello being-too-fasty-fast user. We need to make "sure"
                 // Select executes before continue
-                await Task.Delay(1000);
                 _cont(true, currentStep);
+                dialogInProgress = false;
             });
-        }
-        else
-        {
-            _installerSteps = installSteps;
-            _currentStep = currentStep;
         }
     }
 

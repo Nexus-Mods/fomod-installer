@@ -14,7 +14,7 @@ file class Fallout4TestData
     {
         public required string Name { get; init; }
         public required string ModFile { get; init; }
-        public required Dictionary<string, List<Instruction>> InstructionsByChoice { get; init; }
+        public required Dictionary<string, List<InstallInstruction>> InstructionsByChoice { get; init; }
     }
 
     public static List<string> StopPatterns =
@@ -44,7 +44,7 @@ file class Fallout4TestData
     {
         Name = "Improved Map with Visible Roads",
         ModFile = "Improved Map with Visible Roads 2.0-1215-2-0.zip",
-        InstructionsByChoice = new Dictionary<string, List<Instruction>>
+        InstructionsByChoice = new Dictionary<string, List<InstallInstruction>>
         {
             ["Default"] =
             [

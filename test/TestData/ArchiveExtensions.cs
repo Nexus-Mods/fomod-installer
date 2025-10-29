@@ -16,4 +16,9 @@ public static class ArchiveExtensions
     {
         return instructions.OrderBy(x => x.type).ThenBy(x => x.source).ThenBy(x => x.destination).ToList();
     }
+    
+    public static List<Instruction> Order(this IEnumerable<InstallInstruction> instructions)
+    {
+        return instructions.ToInstruction().OrderBy(x => x.type).ThenBy(x => x.source).ThenBy(x => x.destination).ToList();
+    }
 }

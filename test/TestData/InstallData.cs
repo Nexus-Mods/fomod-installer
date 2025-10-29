@@ -41,7 +41,7 @@ public sealed record InstallData
     public required string ExtenderVersion { get; init; }
     public required bool Validate { get; init; }
     public required string Message { get; init; }
-    public required List<Instruction> Instructions { get; init; }
+    public required List<InstallInstruction> Instructions { get; init; }
 
     public override string ToString()
     {

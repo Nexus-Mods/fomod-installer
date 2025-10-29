@@ -7,7 +7,6 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseWindowsForms>true</UseWindowsForms>
     
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>false</SelfContained>
     <EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
     <PublishSingleFile>true</PublishSingleFile>
@@ -21,8 +20,6 @@
     <InvariantGlobalization>true</InvariantGlobalization>
     -->
     
-    <OutputPath>../Build/bin/$(Configuration)/$(MSBuildProjectName)</OutputPath>
-    <OutDir>$(OutputPath)</OutDir>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace>ModInstallerIPC</RootNamespace>
     <AssemblyName>ModInstallerIPC</AssemblyName>

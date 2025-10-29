@@ -80,9 +80,22 @@ namespace FomodInstaller.Scripting.XmlScript
             m_csmState = new ConditionStateManager();
 
             if (preset is OptionsPreset preConverted)
+            {
                 m_Preset = preConverted;
+            }
             else if (preset is IEnumerable<Dictionary<string, object>> presetEnum)
+            {
                 m_Preset = convertPreset(presetEnum);
+            }
+            else
+            {
+                try
+                {
+                    // TODO: Remove this mess
+                    m_Preset = convertPreset(preset);
+                }
+                catch { /* ignore */ }
+            }
 
             if (!(scpScript is XmlScript))
                 throw new ArgumentException("The given script must be of type XmlScript.", scpScript.Type.TypeName);
@@ -478,53 +491,78 @@ namespace FomodInstaller.Scripting.XmlScript
                 return null;
             }
 
-            Func<IEnumerable<Dictionary<string, object>>, IEnumerable<OptionsPresetChoice>> convertChoices = choiceIn =>
+            IEnumerable<OptionsPresetChoice> ConvertChoices(IEnumerable<Dictionary<string, object>> choiceIn)
             {
                 if (choiceIn == null)
                 {
                     return new List<OptionsPresetChoice>();
                 }
-                return choiceIn.Select(choice => new OptionsPresetChoice
-                {
-                    name = Convert.ToString(choice["name"]),
-                    idx = Convert.ToInt32(choice["idx"])
-                });
-            };
 
-            Func<IEnumerable<Dictionary<string, object>>, IEnumerable<OptionsPresetGroup>> convertGroups = groupsIn =>
+                return choiceIn.Select(choice => new OptionsPresetChoice {name = Convert.ToString(choice["name"]), idx = Convert.ToInt32(choice["idx"])});
+            }
+
+            IEnumerable<OptionsPresetGroup> ConvertGroups(IEnumerable<Dictionary<string, object>> groupsIn)
             {
                 if (groupsIn == null)
                 {
                     return new List<OptionsPresetGroup>();
                 }
+
                 return groupsIn.Select(group =>
                 {
                     var choices = (group["choices"] as IEnumerable<object>)?.OfType<Dictionary<string, object>>();
-                    return new OptionsPresetGroup
-                    {
-                        name = Convert.ToString(group["name"]) ?? string.Empty,
-                        choices = convertChoices(choices ?? []).ToArray()
-                    };
+                    return new OptionsPresetGroup {name = Convert.ToString(group["name"]) ?? string.Empty, choices = ConvertChoices(choices ?? []).ToArray()};
                 });
-            };
+            }
 
-            Func<IEnumerable<Dictionary<string, object>>, IEnumerable<OptionsPresetStep>> convertSteps = stepsIn =>
+            IEnumerable<OptionsPresetStep> ConvertSteps(IEnumerable<Dictionary<string, object>> stepsIn)
             {
                 return stepsIn.Select(step =>
                 {
                     var groups = (step["groups"] as IEnumerable<object>)?.OfType<Dictionary<string, object>>();
-                    return new OptionsPresetStep
-                    {
-                        name = Convert.ToString(step["name"]) ?? string.Empty,
-                        groups = convertGroups(groups ?? []).ToArray(),
-                    };
+                    return new OptionsPresetStep {name = Convert.ToString(step["name"]) ?? string.Empty, groups = ConvertGroups(groups ?? []).ToArray(),};
                 });
-            };
+            }
 
             return new OptionsPreset
             {
-                steps = convertSteps(input).ToArray(),
+                steps = ConvertSteps(input).ToArray(),
             };
+        }
+        
+        private OptionsPreset? convertPreset(dynamic input)
+        {
+            if (input == null)
+            {
+                return null;
+            }
+
+            IEnumerable<OptionsPresetChoice> ConvertChoices(IEnumerable<dynamic> choiceIn)
+            {
+                if (choiceIn == null)
+                {
+                    return new List<OptionsPresetChoice>();
+                }
+
+                return choiceIn.Select(choice => new OptionsPresetChoice {name = choice.name, idx = choice.idx});
+            }
+
+            IEnumerable<OptionsPresetGroup> ConvertGroups(IEnumerable<dynamic> groupsIn)
+            {
+                if (groupsIn == null)
+                {
+                    return new List<OptionsPresetGroup> { };
+                }
+
+                return groupsIn.Select(group => new OptionsPresetGroup {name = group.name, choices = ConvertChoices(group["choices"] as IEnumerable<dynamic>).ToArray()});
+            }
+
+            IEnumerable<OptionsPresetStep> ConvertSteps(IEnumerable<dynamic> stepsIn)
+            {
+                return stepsIn.Select(step => new OptionsPresetStep {name = step.name, groups = ConvertGroups(step["groups"] as IEnumerable<dynamic>).ToArray()});
+            }
+
+            return new OptionsPreset { steps = (ConvertSteps(input) as IEnumerable<OptionsPresetStep>).ToArray() };
         }
 
         #endregion

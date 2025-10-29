@@ -13,7 +13,7 @@ file class FomodComplianceTestData
     public record FomodComplianceMod
     {
         public required string ModFile { get; init; }
-        public required List<Instruction> DefaultInstructions { get; init; }
+        public required List<InstallInstruction> DefaultInstructions { get; init; }
     }
 
     public static List<string> StopPatterns =
@@ -155,7 +155,7 @@ file class FomodComplianceTestData
         return ArchiveFactory.Open(resource);
     }
 
-    public static InstallData BaseTest(FomodComplianceMod mod, List<Instruction> instructions, IEnumerable<SelectedOption>? dialogChoices, JsonDocument? preset, List<string> installedPlugins) => new()
+    public static InstallData BaseTest(FomodComplianceMod mod, List<InstallInstruction> instructions, IEnumerable<SelectedOption>? dialogChoices, JsonDocument? preset, List<string> installedPlugins) => new()
     {
         Game = "FOMOD",
         Mod = "FOMOD",

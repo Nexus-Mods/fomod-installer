@@ -1,5 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 using BUTR.NativeAOT.Shared;
+using FluentAssertions;
 using FomodInstaller.Interface.ui;
 using Microsoft.Win32.SafeHandles;
 using ModInstaller.Native.Tests.Utils;
@@ -38,6 +40,8 @@ public sealed class ModInstallerWrapper
 
     public static unsafe return_value_data* ReadFileContent(param_ptr* handler, param_string* pFilePath, param_int offset, param_int length)
     {
+        //Utils2.LibraryAliveCount().Should().Be(0);
+        
         Stream? stream = null;
         try
         {
@@ -66,7 +70,7 @@ public sealed class ModInstallerWrapper
             var bufferPtr = (byte*) Allocator.Alloc((uint) (int) length);
             var buffer = new Span<byte>(bufferPtr, length);
             stream.ReadExactly(buffer);
-            return return_value_data.AsValue(Copy(buffer, false), length, false);
+            return return_value_data.AsValue(bufferPtr, length, false);
         }
         catch
         {
@@ -75,6 +79,7 @@ public sealed class ModInstallerWrapper
         finally
         {
             stream?.Dispose();
+            //Utils2.LibraryAliveCount().Should().Be(2);
         }
     }
 
@@ -131,6 +136,7 @@ public sealed class ModInstallerWrapper
     
     public static unsafe return_value_json* PluginsGetAll(param_ptr* handler, param_bool includeDisabled)
     {
+        Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -140,10 +146,15 @@ public sealed class ModInstallerWrapper
         {
             return return_value_json.AsException(e, false);
         }
+        finally
+        {
+            Utils2.LibraryAliveCount().Should().Be(1);
+        }
     }
 
     public static unsafe return_value_void* ContextGetAppVersion(param_ptr* handler, param_ptr* p_context, delegate* unmanaged[Cdecl] <param_ptr*, return_value_string*, void> p_callback)
     {
+        Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -155,10 +166,15 @@ public sealed class ModInstallerWrapper
         {
             return return_value_void.AsException(e, false);
         }
+        finally
+        {
+            Utils2.LibraryAliveCount().Should().Be(1);
+        }
     }
 
     public static unsafe return_value_void* ContextGetCurrentGameVersion(param_ptr* handler, param_ptr* p_context, delegate* unmanaged[Cdecl] <param_ptr*, return_value_string*, void> p_callback)
     {
+        //Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -170,10 +186,15 @@ public sealed class ModInstallerWrapper
         {
             return return_value_void.AsException(e, false);
         }
+        finally
+        {
+            //Utils2.LibraryAliveCount().Should().Be(1);
+        }
     }
 
     public static unsafe return_value_void* ContextGetExtenderVersion(param_ptr* handler, param_string* p_extender_name, param_ptr* p_context, delegate* unmanaged[Cdecl] <param_ptr*, return_value_string*, void> p_callback)
     {
+        Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -184,6 +205,10 @@ public sealed class ModInstallerWrapper
         catch (Exception e)
         {
             return return_value_void.AsException(e, false);
+        }
+        finally
+        {
+            Utils2.LibraryAliveCount().Should().Be(2);
         }
     }
 
@@ -196,6 +221,7 @@ public sealed class ModInstallerWrapper
         delegate* unmanaged[Cdecl]<param_ptr*, param_bool, param_int, return_value_void*, void> p_cont_callback,
         delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_cancel_callback)
     {
+        Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -211,10 +237,15 @@ public sealed class ModInstallerWrapper
         {
             return return_value_void.AsException(e, false);
         }
+        finally
+        {
+            Utils2.LibraryAliveCount().Should().Be(1);
+        }
     }
 
     public static unsafe return_value_void* UiEndDialog(param_ptr* handler)
     {
+        //Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -233,16 +264,28 @@ public sealed class ModInstallerWrapper
         {
             return return_value_void.AsException(e, false);
         }
+        finally
+        {
+            //Utils2.LibraryAliveCount().Should().Be(1);
+        }
     }
 
+    private bool dialogInProgress = false;
     public static unsafe return_value_void* UiUpdateState(param_ptr* handler, param_json* p_install_steps, param_int current_step)
     {
+        //Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
-
+            
             var installSteps = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_install_steps, SourceGenerationContext.Default.InstallerStepArray);
             var currentStepValue = (int) current_step;
+
+            modInstallerWrapper._installerSteps = installSteps;
+            modInstallerWrapper._currentStep = currentStepValue;
+            
+            if (modInstallerWrapper.dialogInProgress)
+                return return_value_void.AsValue(false);
 
             if (modInstallerWrapper._callback_handler is null)
                 throw new NotSupportedException();
@@ -258,7 +301,7 @@ public sealed class ModInstallerWrapper
             {
                 if (modInstallerWrapper._cont is null)
                     throw new NotSupportedException();
-                
+
                 cont(callbackHandler, true, currentStepValue, return_value_void.AsValue(false));
             }
             else if (modInstallerWrapper._dialogChoices is { Count: > 0 })
@@ -266,16 +309,12 @@ public sealed class ModInstallerWrapper
                 var option = modInstallerWrapper._dialogChoices.FirstOrDefault(x => x.StepId == currentStepValue);
 
                 using var pluginIds = Utils2.ToJson(option.PluginIds);
+                modInstallerWrapper.dialogInProgress = true;
                 select(callbackHandler, option.StepId, option.GroupId, pluginIds, return_value_void.AsValue(false));
 
-                Thread.Sleep(1000);
-                
+                Thread.Sleep(200);
                 cont(callbackHandler, true, currentStepValue, return_value_void.AsValue(false));
-            }
-            else
-            {
-                modInstallerWrapper._installerSteps = installSteps;
-                modInstallerWrapper._currentStep = currentStepValue;
+                modInstallerWrapper.dialogInProgress = false;
             }
 
             return return_value_void.AsValue(false);
@@ -283,6 +322,10 @@ public sealed class ModInstallerWrapper
         catch (Exception e)
         {
             return return_value_void.AsException(e, false);
+        }
+        finally
+        {
+            //Utils2.LibraryAliveCount().Should().Be(1);
         }
     }
 }

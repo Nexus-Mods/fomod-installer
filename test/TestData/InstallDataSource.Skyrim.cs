@@ -8,14 +8,14 @@ namespace TestData;
 
 using static SkyrimTestData;
 
-file class SkyrimTestData
+internal class SkyrimTestData
 {
     public record SkyrimMod
     {
         public required string Name { get; init; }
         public required string ModFile { get; init; }
-        public required List<Instruction> InstructionsAE { get; init; }
-        public required List<Instruction> InstructionsSE { get; init; }
+        public required List<InstallInstruction> InstructionsAE { get; init; }
+        public required List<InstallInstruction> InstructionsSE { get; init; }
     }
     
     public static string GameVersionAE = "1.6.1170.0";
@@ -95,6 +95,22 @@ file class SkyrimTestData
             },
         ],
     };
+
+    public static SkyrimMod ModBetterMessageBoxControls = new()
+    {
+        Name = "Better MessageBox Controls",
+        ModFile = "Better MessageBox Controls v1_2-1428-1-2.zip",
+        InstructionsAE = [],
+        InstructionsSE = [],
+    };
+
+    public static SkyrimMod ModXP32MaximumSkeletonSpecialExtended = new()
+    {
+        Name = "XP32 Maximum Skeleton Special Extended",
+        ModFile = "XP32 Maximum Skeleton Special Extended-1988-5-06-1707663131.7z",
+        InstructionsAE = [],
+        InstructionsSE = [],
+    };
     
     public static IArchive GetSkyrimMod(string mod)
     {
@@ -102,7 +118,7 @@ file class SkyrimTestData
         return ArchiveFactory.Open(resource);
     }
     
-    public static InstallData BaseTest(SkyrimMod mod, string gameVersion, List<Instruction> instructions, IEnumerable<SelectedOption>? dialogChoices, JsonDocument? preset, List<string> installedPlugins) => new()
+    public static InstallData BaseTest(SkyrimMod mod, string gameVersion, List<InstallInstruction> instructions, IEnumerable<SelectedOption>? dialogChoices, JsonDocument? preset, List<string> installedPlugins) => new()
     {
         Game = "Skyrim",
         Mod = mod.Name,
@@ -136,6 +152,8 @@ public partial class InstallDataSource
 {
     public static IEnumerable<Func<InstallData>> SkyrimData()
     {
+        //yield return () => TestAE(ModXP32MaximumSkeletonSpecialExtended, null, null, []);
+        
         // No Preset and Choices - Unattended Mode
         // Uses Recommended
         yield return () => TestAE(ModSpellPerkItemDistributor, null, null, []);

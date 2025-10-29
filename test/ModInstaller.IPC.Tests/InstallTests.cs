@@ -1,5 +1,5 @@
-using ModInstaller.IPC.Tests.Delegates;
 using ModInstaller.IPC.Tests.Utils;
+using SharpCompress.Archives;
 using TestData;
 
 namespace ModInstaller.IPC.Tests;
@@ -17,7 +17,7 @@ public class InstallTests
     [MethodDataSource(nameof(SkyrimData))]
     [MethodDataSource(nameof(Fallout4Data))]
     [MethodDataSource(nameof(FomodComplianceTestsData))]
-    //[MethodDataSource(nameof(CSharpTestCaseData))]
+    [MethodDataSource(nameof(CSharpTestCaseData))]
     [NotInParallel]
     public async Task Test(InstallData data)
     {
@@ -27,6 +27,7 @@ public class InstallTests
 
         try
         {
+            //data.ModArchive.ExtractToDirectory(tempDir);
             // Extract all files from archive
             foreach (var entry in data.ModArchive.Entries.Where(e => !e.IsDirectory))
             {
@@ -40,17 +41,13 @@ public class InstallTests
                     Directory.CreateDirectory(destDir);
                 }
 
-                using var stream = entry.OpenEntryStream();
-                using var fileStream = File.Create(destPath);
+                await using var stream = entry.OpenEntryStream();
+                await using var fileStream = File.Create(destPath);
                 await stream.CopyToAsync(fileStream);
             }
-
-            await using var harness = await new IPCTestHarness().InitializeAsync();
-
-            // Create delegates that wrap the test data
-            var fileSystem = new ArchiveFileSystem(data.ModArchive);
-            var delegates = new IPCDelegates(fileSystem, data, data.DialogChoices);
-
+            
+            await using var harness = new IPCTestHarness(data);
+            await harness.InitializeAsync();
             // Get file list from archive
             var files = data.ModArchive.Entries.Select(x => x.GetNormalizedName()).OfType<string>().ToList();
 
@@ -62,38 +59,18 @@ public class InstallTests
                 data.PluginPath,
                 tempDir,  // scriptPath is used as the temp folder where files are extracted
                 data.Preset,
-                data.Validate,
-                data.DialogChoices,  // Pass dialog choices for deterministic UI
-                getAppVersion: delegates.GetAppVersion,
-                getCurrentGameVersion: delegates.GetCurrentGameVersion,
-                getExtenderVersion: delegates.GetExtenderVersion,
-                isExtenderPresent: delegates.IsExtenderPresent,
-                checkIfFileExists: delegates.CheckIfFileExists,
-                getExistingDataFile: delegates.GetExistingDataFile,
-                getExistingDataFileList: delegates.GetExistingDataFileList,
-                getAllPlugins: delegates.GetAllPlugins,
-                isPluginActive: delegates.IsPluginActive,
-                isPluginPresent: delegates.IsPluginPresent,
-                getIniString: delegates.GetIniString,
-                getIniInt: delegates.GetIniInt);
+                data.Validate);
 
             // Assert results match expected
             await Assert.That(result.Instructions.Order()).IsEquivalentTo(data.Instructions.Order());
         }
         finally
         {
-            // Cleanup temp directory
-            if (Directory.Exists(tempDir))
+            try
             {
-                try
-                {
-                    Directory.Delete(tempDir, true);
-                }
-                catch
-                {
-                    // Ignore cleanup errors
-                }
+                Directory.Delete(tempDir, true);
             }
+            catch { /* ignore */ }
         }
     }
 }

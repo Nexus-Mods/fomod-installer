@@ -125,12 +125,15 @@ internal class CallbackUIDelegates : UIDelegates
         Logger.LogOutput();
     }
 
-    private GCHandle _currentDialogHandle;
+    private GCHandle? _currentDialogHandle;
     
     private unsafe void StartDialogNative(string moduleName, HeaderImage image, StartDialogCallbacksData callbacksData)
     {
         Logger.LogInput();
 
+        if (_currentDialogHandle is not null)
+            throw new Exception("Should be null");
+        
         _currentDialogHandle = GCHandle.Alloc(callbacksData, GCHandleType.Normal);
 
         fixed (char* pModuleName = moduleName)
@@ -138,7 +141,7 @@ internal class CallbackUIDelegates : UIDelegates
         {
             try
             {
-                using var result = SafeStructMallocHandle.Create(_startDialog(_pOwner, (param_string*) pModuleName, (param_json*) pImage, (param_ptr*) GCHandle.ToIntPtr(_currentDialogHandle), &StartDialogSelectCallback, &StartDialogContinueCallback, &StartDialogCancelCallback), true);
+                using var result = SafeStructMallocHandle.Create(_startDialog(_pOwner, (param_string*) pModuleName, (param_json*) pImage, (param_ptr*) GCHandle.ToIntPtr(_currentDialogHandle.Value), &StartDialogSelectCallback, &StartDialogContinueCallback, &StartDialogCancelCallback), true);
                 result.ValueAsVoid();
 
                 Logger.LogOutput();
@@ -147,7 +150,8 @@ internal class CallbackUIDelegates : UIDelegates
             {
                 Logger.LogException(e);
                 callbacksData.TaskCompletionSource.TrySetException(e);
-                _currentDialogHandle.Free();
+                _currentDialogHandle?.Free();
+                _currentDialogHandle = null;
             }
         }
     }
@@ -161,7 +165,8 @@ internal class CallbackUIDelegates : UIDelegates
             using var result = SafeStructMallocHandle.Create(_endDialog(_pOwner), true);
             result.ValueAsVoid();
             
-            _currentDialogHandle.Free();
+            _currentDialogHandle?.Free();
+            _currentDialogHandle = null;
 
             Logger.LogOutput();
         }

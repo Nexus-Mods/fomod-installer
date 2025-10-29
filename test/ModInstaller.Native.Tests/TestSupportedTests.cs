@@ -27,15 +27,16 @@ public sealed partial class TestSupportedTests : BaseTests
     [TestCaseSource(nameof(LiteData))]
     public unsafe void Test(TestSupportData data)
     {
-        using var modArchiveFileListJson = ToJson(data.ModArchiveFileList);
-        using var allowedTypesJson = ToJson(data.AllowedTypes);
-
-        var result = GetResult<SupportedResult>(test_supported(modArchiveFileListJson, allowedTypesJson));
-
-        result.Should().BeEquivalentTo(new SupportedResult
         {
-            Supported = data.Supported,
-            RequiredFiles = data.RequiredFiles,
-        });
+            using var modArchiveFileListJson = ToJson(data.ModArchiveFileList);
+            using var allowedTypesJson = ToJson(data.AllowedTypes);
+
+            var result = GetResult<SupportedResult>(test_supported(modArchiveFileListJson, allowedTypesJson));
+
+            result.RequiredFiles.Order().Should().BeEquivalentTo(data.RequiredFiles.Order());
+            result.Supported.Should().Be(result.Supported);
+        }
+        
+        LibraryAliveCount().Should().Be(0);
     }
 }

@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using FomodInstaller.Interface;
 using ModInstaller.IPC.Tests.Delegates;
 using TestData;
 
@@ -23,6 +24,52 @@ internal class IPCTestHarness : IAsyncDisposable
     private readonly ConcurrentDictionary<string, TaskCompletionSource<JsonNode?>> _pendingReplies = new();
     private readonly ConcurrentDictionary<string, Func<JsonArray?, Task<object?>>> _callbacks = new();
     private bool _disposed;
+    private string? _currentRequestId;  // Tracks the current Install request ID for callback invocations
+
+    public IPCTestHarness(TestSupportData data)
+    {
+        // No callbacks needed
+    }
+    
+    public IPCTestHarness(InstallData data)
+    {
+        // Register callbacks
+        var delegates = new IPCDelegates(data);
+        RegisterCallback("getAppVersion", async _ => await delegates.GetAppVersion());
+        RegisterCallback("getCurrentGameVersion", async _ => await delegates.GetCurrentGameVersion());
+        RegisterCallback("getExtenderVersion", async args => await delegates.GetExtenderVersion(args![0]!.GetValue<string>()));
+        RegisterCallback("isExtenderPresent", async _ => await delegates.IsExtenderPresent());
+        RegisterCallback("checkIfFileExists", async args => await delegates.CheckIfFileExists(args![0]!.GetValue<string>()));
+        RegisterCallback("getExistingDataFile", async args => await delegates.GetExistingDataFile(args![0]!.GetValue<string>()));
+        RegisterCallback("getExistingDataFileList", async args => await delegates.GetExistingDataFileList(args![0]!.GetValue<string>(), args[1]!.GetValue<string>(), args[2]!.GetValue<bool>()));
+        RegisterCallback("getAllPlugins", async args => await delegates.GetAllPlugins(args![0]!.GetValue<bool>()));
+        RegisterCallback("isPluginActive", async args => await delegates.IsPluginActive(args![0]!.GetValue<string>()));
+        RegisterCallback("isPluginPresent", async args => await delegates.IsPluginPresent(args![0]!.GetValue<string>()));
+        RegisterCallback("getIniString", async args => await delegates.GetIniString(args![0]!.GetValue<string>(), args[1]!.GetValue<string>(), args[2]!.GetValue<string>()));
+        RegisterCallback("getIniInt", async args => await delegates.GetIniInt(args![0]!.GetValue<string>(), args[1]!.GetValue<string>(), args[2]!.GetValue<string>()));
+
+        // Register UI callbacks using the UI handler
+        var uiHandler = new IPCUIHandler(data.DialogChoices, (requestId, callbackId, args) =>
+            InvokeServerCallback(requestId, callbackId, args));
+        RegisterCallback("startDialog", async args => {
+            // Pass the message ID that sent this callback
+            await uiHandler.StartDialog(_currentRequestId!, args!);
+            return null;
+        });
+        RegisterCallback("endDialog", async args => {
+            await uiHandler.EndDialog();
+            return null;
+        });
+        RegisterCallback("updateState", async args => {
+            // Pass the message ID that sent this callback
+            await uiHandler.UpdateState(_currentRequestId!, args!);
+            return null;
+        });
+        RegisterCallback("reportError", async args => {
+            await uiHandler.ReportError(args!);
+            return null;
+        });
+    }
 
     public async Task<IPCTestHarness> InitializeAsync()
     {
@@ -32,7 +79,7 @@ internal class IPCTestHarness : IAsyncDisposable
         var port = ((IPEndPoint)_listener.LocalEndpoint).Port;
 
         // Spawn ModInstallerIPC.exe with the port
-        var exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", @"Build\bin\Debug\ModInstallerIPC", "ModInstallerIPC.exe");
+        var exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\..\src\ModInstaller.IPC\bin\Debug\ModInstallerIPC.exe");
         if (!File.Exists(exePath))
         {
             throw new FileNotFoundException($"ModInstallerIPC.exe not found at {exePath}. Run 'dotnet build' first.");
@@ -120,60 +167,8 @@ internal class IPCTestHarness : IAsyncDisposable
         string pluginPath,
         string scriptPath,
         JsonDocument? fomodChoices,
-        bool validate,
-        IEnumerable<SelectedOption>? dialogChoices = null,
-        Func<Task<string>>? getAppVersion = null,
-        Func<Task<string>>? getCurrentGameVersion = null,
-        Func<string, Task<string>>? getExtenderVersion = null,
-        Func<Task<bool>>? isExtenderPresent = null,
-        Func<string, Task<bool>>? checkIfFileExists = null,
-        Func<string, Task<byte[]>>? getExistingDataFile = null,
-        Func<string, string, bool, Task<string[]>>? getExistingDataFileList = null,
-        Func<bool, Task<string[]>>? getAllPlugins = null,
-        Func<string, Task<bool>>? isPluginActive = null,
-        Func<string, Task<bool>>? isPluginPresent = null,
-        Func<string, string, string, Task<string>>? getIniString = null,
-        Func<string, string, string, Task<int>>? getIniInt = null)
+        bool validate)
     {
-        // Register callbacks
-        RegisterCallback("getAppVersion", async _ => getAppVersion != null ? await getAppVersion() : "1.0.0");
-        RegisterCallback("getCurrentGameVersion", async _ => getCurrentGameVersion != null ? await getCurrentGameVersion() : "1.0.0");
-        RegisterCallback("getExtenderVersion", async args => getExtenderVersion != null ? await getExtenderVersion(args![0]!.GetValue<string>()) : "1.0.0");
-        RegisterCallback("isExtenderPresent", async _ => isExtenderPresent != null ? await isExtenderPresent() : false);
-        RegisterCallback("checkIfFileExists", async args => checkIfFileExists != null ? await checkIfFileExists(args![0]!.GetValue<string>()) : false);
-        RegisterCallback("getExistingDataFile", async args => getExistingDataFile != null ? await getExistingDataFile(args![0]!.GetValue<string>()) : Array.Empty<byte>());
-        RegisterCallback("getExistingDataFileList", async args => getExistingDataFileList != null
-            ? await getExistingDataFileList(args![0]!.GetValue<string>(), args[1]!.GetValue<string>(), args[2]!.GetValue<bool>())
-            : Array.Empty<string>());
-        RegisterCallback("getAllPlugins", async args => getAllPlugins != null ? await getAllPlugins(args![0]!.GetValue<bool>()) : Array.Empty<string>());
-        RegisterCallback("isPluginActive", async args => isPluginActive != null ? await isPluginActive(args![0]!.GetValue<string>()) : false);
-        RegisterCallback("isPluginPresent", async args => isPluginPresent != null ? await isPluginPresent(args![0]!.GetValue<string>()) : false);
-        RegisterCallback("getIniString", async args => getIniString != null
-            ? await getIniString(args![0]!.GetValue<string>(), args[1]!.GetValue<string>(), args[2]!.GetValue<string>())
-            : "");
-        RegisterCallback("getIniInt", async args => getIniInt != null
-            ? await getIniInt(args![0]!.GetValue<string>(), args[1]!.GetValue<string>(), args[2]!.GetValue<string>())
-            : 0);
-
-        // Register UI callbacks using the UI handler
-        var uiHandler = new IPCUIHandler(dialogChoices, InvokeServerCallback);
-        RegisterCallback("startDialog", async args => {
-            await uiHandler.StartDialog(args!);
-            return null;
-        });
-        RegisterCallback("endDialog", async args => {
-            await uiHandler.EndDialog();
-            return null;
-        });
-        RegisterCallback("updateState", async args => {
-            await uiHandler.UpdateState(args!);
-            return null;
-        });
-        RegisterCallback("reportError", async args => {
-            await uiHandler.ReportError(args!);
-            return null;
-        });
-
         var id = Guid.NewGuid().ToString("N");
 
         // Convert JsonDocument to JsonNode if needed
@@ -199,9 +194,12 @@ internal class IPCTestHarness : IAsyncDisposable
         var response = await SendAndReceiveAsync(id, message);
         if (response == null) throw new InvalidOperationException("Received null response");
 
+        var instructionsJson = response["instructions"]?.AsArray();
+        var instructionJsonWithObjects = instructionsJson?.Select(x => JsonSerializer.Deserialize<InstallInstruction>(x)).ToList();
+        
         return new InstallResult
         {
-            Instructions = response["instructions"]?.AsArray().Select(x => x?.GetValue<string>() ?? "").ToArray() ?? Array.Empty<string>()
+            Instructions = instructionJsonWithObjects
         };
     }
 
@@ -210,7 +208,7 @@ internal class IPCTestHarness : IAsyncDisposable
         _callbacks[name] = callback;
     }
 
-    private async Task<object?> InvokeServerCallback(string callbackId, JsonArray args)
+    private async Task<object?> InvokeServerCallback(string requestId, string callbackId, JsonArray args)
     {
         // Send an Invoke command to the server to call its callback
         var invokeId = Guid.NewGuid().ToString("N");
@@ -220,7 +218,7 @@ internal class IPCTestHarness : IAsyncDisposable
             payload = new
             {
                 command = "Invoke",
-                requestId = invokeId,
+                requestId = requestId,  // ID of the message that sent the callbacks
                 callbackId,
                 args
             }
@@ -237,6 +235,8 @@ internal class IPCTestHarness : IAsyncDisposable
         _pendingReplies[id] = tcs;
 
         var json = JsonSerializer.Serialize(message);
+        await File.AppendAllTextAsync("D:\\Git\\writes.txt", json);
+        await File.AppendAllTextAsync("D:\\Git\\writes.txt", Environment.NewLine);
         var bytes = Encoding.UTF8.GetBytes(json + "\uFFFF");
 
         await _stream!.WriteAsync(bytes);
@@ -291,6 +291,9 @@ internal class IPCTestHarness : IAsyncDisposable
 
     private async Task ProcessMessageAsync(string json)
     {
+        await File.AppendAllTextAsync("D:\\Git\\read.txt", json);
+        await File.AppendAllTextAsync("D:\\Git\\read.txt", Environment.NewLine);
+        
         try
         {
             var message = JsonNode.Parse(json);
@@ -301,13 +304,19 @@ internal class IPCTestHarness : IAsyncDisposable
             var data = message["data"];
             var error = message["error"];
 
+            if (error != null)
+                ;
+
             // Is this a callback invocation from the server?
             if (callback != null)
             {
-                var callbackId = callback["id"]?.GetValue<string>();
+                var callbackId = callback["id"]?.GetValue<string>();  // Original Install request ID
                 var callbackType = callback["type"]?.GetValue<string>();
                 var name = data?["name"]?.GetValue<string>();
                 var args = data?["args"]?.AsArray();
+
+                // Store the MESSAGE ID (not callback.id) - this is what the server uses to look up callbacks
+                _currentRequestId = id;
 
                 if (!string.IsNullOrEmpty(name) && _callbacks.TryGetValue(name, out var callbackFunc))
                 {
@@ -315,29 +324,42 @@ internal class IPCTestHarness : IAsyncDisposable
                     {
                         var result = await callbackFunc(args);
 
-                        // Send reply
+                        // Send reply wrapped in id+payload structure like all messages
+                        // IMPORTANT: Use the message's "id" field, not "callback.id"
+                        // When result is null, send empty object instead to avoid JValue(null) issues
                         var replyMessage = new
                         {
-                            command = "Reply",
-                            request = new { id = callbackId },
-                            data = result,
-                            error = (object?)null
+                            id = Guid.NewGuid().ToString("N"),
+                            payload = new
+                            {
+                                command = "Reply",
+                                request = new { id = id },  // Use the callback message ID, not callbackId
+                                data = result ?? new { },  // Empty object instead of null
+                                error = (object?)null
+                            }
                         };
 
                         var replyJson = JsonSerializer.Serialize(replyMessage);
+                        await File.AppendAllTextAsync("D:\\Git\\replies.txt", replyJson);
+                        await File.AppendAllTextAsync("D:\\Git\\replies.txt", Environment.NewLine);
                         var replyBytes = Encoding.UTF8.GetBytes(replyJson + "\uFFFF");
                         await _stream!.WriteAsync(replyBytes);
                         await _stream!.FlushAsync();
                     }
                     catch (Exception ex)
                     {
-                        // Send error reply
+                        // Send error reply wrapped in id+payload structure like all messages
+                        // IMPORTANT: Use the message's "id" field, not "callback.id"
                         var replyMessage = new
                         {
-                            command = "Reply",
-                            request = new { id = callbackId },
-                            data = (object?)null,
-                            error = new { message = ex.Message }
+                            id = Guid.NewGuid().ToString("N"),
+                            payload = new
+                            {
+                                command = "Reply",
+                                request = new { id = id },  // Use the callback message ID, not callbackId
+                                data = (object?)null,
+                                error = new { message = ex.Message }
+                            }
                         };
 
                         var replyJson = JsonSerializer.Serialize(replyMessage);
@@ -425,9 +447,10 @@ public class TestSupportedResult
     public string[] RequiredFiles { get; set; } = Array.Empty<string>();
 }
 
-public class InstallResult
+public record InstallResult
 {
-    public string[] Instructions { get; set; } = Array.Empty<string>();
+    public string Message { get; set; }
+    public required List<InstallInstruction> Instructions { get; set; }
 }
 
 // Stub types for UI delegates (matching the interface)

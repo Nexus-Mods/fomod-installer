@@ -13,7 +13,7 @@ file class CSharpTestCaseTestData
     public record CSharpTestCaseMod
     {
         public required string ModFile { get; init; }
-        public required List<Instruction> DefaultInstructions { get; init; }
+        public required List<InstallInstruction> DefaultInstructions { get; init; }
     }
 
     public static List<string> StopPatterns =
@@ -31,11 +31,7 @@ file class CSharpTestCaseTestData
             {
                 type = @"generatefile",
                 destination = @"dummy.esp",
-                value = "YWJj", // Base64 encoded "abc" bytes
-            },
-            new()
-            {
-                type = @"enableallplugins",
+                data = JsonDocument.Parse("{\"type\" : \"Buffer\", \"data\" : \"YWJj\"}"),
             },
         ],
     };
@@ -46,7 +42,7 @@ file class CSharpTestCaseTestData
         return ArchiveFactory.Open(resource);
     }
 
-    public static InstallData BaseTest(CSharpTestCaseMod mod, List<Instruction> instructions, IEnumerable<SelectedOption>? dialogChoices, JsonDocument? preset, List<string> installedPlugins) => new()
+    public static InstallData BaseTest(CSharpTestCaseMod mod, List<InstallInstruction> instructions, IEnumerable<SelectedOption>? dialogChoices, JsonDocument? preset, List<string> installedPlugins) => new()
     {
         Game = "C#",
         Mod = "C#",

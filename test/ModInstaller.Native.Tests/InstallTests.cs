@@ -57,8 +57,12 @@ public sealed partial class InstallTests : BaseTests
 
     private static unsafe void InstallCallback(param_ptr* owner, return_value_json* result)
     {
+        //LibraryAliveCount().Should().Be(2);
         var tcs = (TaskCompletionSource<InstallResult?>) GCHandle.FromIntPtr((IntPtr) owner).Target!;
-        GetResult(result, tcs);
+        var tcs2 = new TaskCompletionSource<InstallResult?>();
+        GetResult(result, tcs2);
+        tcs.SetResult(tcs2.Task.Result);
+        //LibraryAliveCount().Should().Be(0);
     }
 
     private static unsafe (IntPtr, IntPtr) Setup(InstallData data)
@@ -88,10 +92,7 @@ public sealed partial class InstallTests : BaseTests
     {
         GetResult(dispose_handler((param_ptr*) ptr));
     }
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private unsafe delegate void InstallCallbackDelegate(param_ptr* owner, return_value_json* result);
-
+    
     private static unsafe void Call(InstallData data, IntPtr ptr, IntPtr tcsPtr)
     {
         using var files = ToJson(data.ModArchive.Entries.Select(x => x.GetNormalizedName()).ToList());
@@ -101,6 +102,7 @@ public sealed partial class InstallTests : BaseTests
         using var scriptPath = BUTR.NativeAOT.Shared.Utils.Copy("", true);
         using var preset = ToJson(data.Preset ?? JsonDocument.Parse("[]"));
 
+        LibraryAliveCount().Should().Be(5);
         GetResult(install(
             (param_ptr*) ptr,
             files,
@@ -121,21 +123,26 @@ public sealed partial class InstallTests : BaseTests
     [NonParallelizable]
     public async Task Test(InstallData data)
     {
-        var (ptr, handle) = Setup(data);
-        
-        var tcs = new TaskCompletionSource<InstallResult?>();
-        var tcsPtr = GCHandle.ToIntPtr(GCHandle.Alloc(tcs, GCHandleType.Normal));
-        
-        Call(data, ptr, tcsPtr);
+        {
+            var (ptr, handle) = Setup(data);
 
-        var result = await tcs.Task;
+            var tcs = new TaskCompletionSource<InstallResult?>();
+            var tcsPtr = GCHandle.ToIntPtr(GCHandle.Alloc(tcs, GCHandleType.Normal));
+
+            Call(data, ptr, tcsPtr);
+
+            var result = await tcs.Task;
+            //LibraryAliveCount().Should().Be(0);
+
+            GCHandle.FromIntPtr(handle).Free();
+            GCHandle.FromIntPtr(tcsPtr).Free();
+
+            Setdown(ptr);
+
+            result.Instructions.Order().Should().BeEquivalentTo(data.Instructions.Order());
+            result.Message.Order().Should().BeEquivalentTo(result.Message);
+        }
         
-        GCHandle.FromIntPtr(handle).Free();
-        GCHandle.FromIntPtr(tcsPtr).Free();
-
-        Setdown(ptr);
-
-        result.Instructions.Order().Should().BeEquivalentTo(data.Instructions.Order());
-        result.Message.Order().Should().BeEquivalentTo(result.Message);
+        LibraryAliveCount().Should().Be(0);
     }
 }
