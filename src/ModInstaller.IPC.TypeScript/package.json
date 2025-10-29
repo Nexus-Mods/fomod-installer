@@ -1,6 +1,6 @@
 {
-  "name": "fomod-installer-ipc",
-  "version": "0.10.0",
+  "name": "fomod-installer",
+  "version": "0.10.1",
   "description": "Installer for xml and c# fomods",
   "typings": "index.d.ts",
   "repository": {
