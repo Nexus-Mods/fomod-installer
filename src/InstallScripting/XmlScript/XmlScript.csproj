@@ -1,0 +1,70 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>FomodInstaller.Scripting.XmlScript</RootNamespace>
+    
+    <Title>XML Script</Title>
+    <Copyright>Copyright ©  2016</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Antlr3.Runtime">
+      <HintPath>..\..\..\lib\Antlr\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\AntlrUtil\AntlrUtil.csproj" />
+    <ProjectReference Include="..\..\FomodInstaller.Interface\FomodInstaller.Interface.csproj" />
+    <ProjectReference Include="..\..\Utils\Utils.csproj" />
+    <ProjectReference Include="..\Scripting\Scripting.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Antlr3 Include="CPL\CPLLexer.g">
+      <Generator>MSBuild:Compile</Generator>
+    </Antlr3>
+    <Antlr3 Include="CPL\CPLParser.g">
+      <Generator>MSBuild:Compile</Generator>
+    </Antlr3>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <EmbeddedResource Include="Schemas\XmlScript1.0.xsd" />
+    <EmbeddedResource Include="Schemas\XmlScript2.0.xsd" />
+    <EmbeddedResource Include="Schemas\XmlScript3.0.xsd" />
+    <EmbeddedResource Include="Schemas\XmlScript4.0.xsd" />
+    <EmbeddedResource Include="Schemas\XmlScript5.0.xsd" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.4.421302">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  
+  <PropertyGroup>
+    <AntlrBuildTaskPath>$(NuGetPackageRoot)\antlr3.codegenerator\3.5.2-rc1\tools\netstandard</AntlrBuildTaskPath>
+    <AntlrToolPath>$(NuGetPackageRoot)\antlr3.codegenerator\3.5.2-rc1\tools\net40\Antlr3.exe</AntlrToolPath>
+  </PropertyGroup>
+  
+  <Import Project="$(NuGetPackageRoot)\antlr3.codegenerator\3.5.2-rc1\build\Antlr3.CodeGenerator.targets" />
+</Project>

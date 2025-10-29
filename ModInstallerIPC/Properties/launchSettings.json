@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ModInstallerIPC": {
-      "commandName": "Project",
-      "commandLineArgs": "12345"
-    }
-  }
-}

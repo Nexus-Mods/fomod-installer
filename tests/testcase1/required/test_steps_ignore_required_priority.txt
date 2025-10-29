@@ -1,1 +1,0 @@
-Files installed in installSteps ignore the priority of files installed in requiredInstallFiles.

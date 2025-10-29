@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/node_modules/node-addon-api",
+                "~/AppData/Local/node-gyp/Cache/37.4.0/include/node/"
+            ]
+        }
+    ],
+    "version": 4
+}

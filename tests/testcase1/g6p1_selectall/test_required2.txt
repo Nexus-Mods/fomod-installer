@@ -1,3 +1,0 @@
-The "required" flag on plugins should take precedence over "SelectAtMostOne" on the group
-
-This file should be overwritten by the one from g6p2 because of plugin order
