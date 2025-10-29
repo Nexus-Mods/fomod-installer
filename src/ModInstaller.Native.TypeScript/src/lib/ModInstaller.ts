@@ -32,12 +32,13 @@ export class NativeModInstaller implements ModInstallerWithoutConstructor {
     );
   }
 
-  public testSupported(files: string[], allowedTypes: string[]): types.SupportedResult {
-    return this.manager.testSupported(files, allowedTypes);
-  }
-
   public install(files: string[], stopPatterns: string[], pluginPath: string,
     scriptPath: string, preset: any, validate: boolean): Promise<types.InstallResult> {
     return this.manager.install(files, stopPatterns, pluginPath, scriptPath, preset, validate);
   }
+}
+
+export const testSupported = (files: string[], allowedTypes: string[]): types.SupportedResult => {
+  const addon: types.INativeExtension = require('./../../modinstaller.node');
+  return addon.testSupported(files, allowedTypes);
 }

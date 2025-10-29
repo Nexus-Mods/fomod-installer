@@ -70,25 +70,17 @@ namespace Bindings::ModInstaller
         ModInstaller(const CallbackInfo &info);
         ~ModInstaller();
 
-        Napi::Value TestSupported(const CallbackInfo &info);
         Napi::Value Install(const CallbackInfo &info);
 
     private:
         void *_pInstance;
     };
 
-    // Initialize native add-on
-    Napi::Object Init(const Napi::Env env, const Napi::Object exports)
-    {
-        return ModInstaller::Init(env, exports);
-    }
-
     Object ModInstaller::Init(const Napi::Env env, Object exports)
     {
         // This method is used to hook the accessor and method callbacks
         const auto func = DefineClass(env, "ModInstaller",
                                       {
-                                          InstanceMethod<&ModInstaller::TestSupported>("testSupported", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                           InstanceMethod<&ModInstaller::Install>("install", static_cast<napi_property_attributes>(napi_writable | napi_configurable)),
                                       });
 
@@ -840,21 +832,6 @@ namespace Bindings::ModInstaller
         dispose_handler(this->_pInstance);
     }
 
-    Value ModInstaller::TestSupported(const CallbackInfo &info)
-    {
-        LoggerScope logger(__FUNCTION__);
-
-        const auto env = info.Env();
-        const auto modArchiveFileList = JSONStringify(info[0].As<Object>());
-        const auto allowedTypes = JSONStringify(info[1].As<Object>());
-
-        const auto modArchiveFileListCopy = CopyWithFree(modArchiveFileList.Utf16Value());
-        const auto allowedTypesCopy = CopyWithFree(allowedTypes.Utf16Value());
-
-        const auto result = test_supported(modArchiveFileListCopy.get(), allowedTypesCopy.get());
-        return ThrowOrReturnJson(env, result);
-    }
-
     Value ModInstaller::Install(const CallbackInfo &info)
     {
         const auto functionName = __FUNCTION__;
@@ -890,6 +867,31 @@ namespace Bindings::ModInstaller
             cbData,
             HandleJsonResultCallback);
         return ReturnAndHandleReject(env, result, deferred, tsfn);
+    }
+
+    Value TestSupported(const CallbackInfo &info)
+    {
+        LoggerScope logger(__FUNCTION__);
+
+        const auto env = info.Env();
+        const auto modArchiveFileList = JSONStringify(info[0].As<Object>());
+        const auto allowedTypes = JSONStringify(info[1].As<Object>());
+
+        const auto modArchiveFileListCopy = CopyWithFree(modArchiveFileList.Utf16Value());
+        const auto allowedTypesCopy = CopyWithFree(allowedTypes.Utf16Value());
+
+        const auto result = test_supported(modArchiveFileListCopy.get(), allowedTypesCopy.get());
+        return ThrowOrReturnJson(env, result);
+    }
+
+    // Initialize native add-on
+    Napi::Object Init(const Napi::Env env, const Napi::Object exports)
+    {
+        ModInstaller::Init(env, exports);
+
+        exports.Set("testSupported", Function::New(env, TestSupported));
+
+        return exports;
     }
 }
 #endif

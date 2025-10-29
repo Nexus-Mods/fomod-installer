@@ -16,12 +16,11 @@ export interface INativeExtension {
     readDirectoryFileList: (directoryPath: string, pattern: string, searchType: number) => string[] | null,
     readDirectoryList: (directoryPath: string) => string[] | null
   ) => ModInstaller
+  testSupported(files: string[], allowedTypes: string[]): SupportedResult;
 }
 
 export type ModInstaller = {
   constructor(): ModInstaller;
-
-  testSupported(files: string[], allowedTypes: string[]): SupportedResult;
 
   install(files: string[], stopPatterns: string[], pluginPath: string, scriptPath: string,
     preset: any, validate: boolean): Promise<InstallResult>;
