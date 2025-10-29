@@ -1,11 +1,13 @@
+﻿using FomodInstaller.Interface;
+
+using SharpCompress.Archives;
+
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using FomodInstaller.Interface;
-using SharpCompress.Archives;
 
 namespace TestData;
 
@@ -14,9 +16,9 @@ public sealed record SelectedOption
     public required int StepId { get; init; }
     public required int GroupId { get; init; }
     public required int[] PluginIds { get; init; }
-    
+
     public SelectedOption() { }
-    
+
     [SetsRequiredMembers]
     public SelectedOption(int stepId, int groupId, int[] pluginIds)
     {
@@ -50,10 +52,10 @@ public sealed record InstallData
             type = $"[DC: {string.Join(", ", DialogChoices.Select(x => $"{x.StepId};{x.GroupId};{string.Join(",", x.PluginIds)}"))}]";
         if (Preset != null)
             type = $"[P: {ToJsonString(Preset)}]";
-        
+
         return $"{Game}({GameVersion}) - {Mod} - {type}";
     }
-    
+
     private static string ToJsonString(JsonDocument jdoc)
     {
         using var stream = new MemoryStream();

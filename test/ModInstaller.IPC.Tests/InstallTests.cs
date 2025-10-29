@@ -1,5 +1,7 @@
-using ModInstaller.IPC.Tests.Utils;
+﻿using ModInstaller.IPC.Tests.Utils;
+
 using SharpCompress.Archives;
+
 using TestData;
 
 namespace ModInstaller.IPC.Tests;
@@ -45,7 +47,7 @@ public class InstallTests
                 await using var fileStream = File.Create(destPath);
                 await stream.CopyToAsync(fileStream);
             }
-            
+
             await using var harness = new IPCTestHarness(data);
             await harness.InitializeAsync();
             // Get file list from archive

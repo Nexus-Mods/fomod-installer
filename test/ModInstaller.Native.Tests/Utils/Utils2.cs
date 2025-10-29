@@ -1,11 +1,12 @@
-﻿using System.Runtime.CompilerServices;
+﻿using BUTR.NativeAOT.Shared;
+
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using System.Text.Unicode;
-using BUTR.NativeAOT.Shared;
 
 namespace ModInstaller.Native.Tests.Utils;
 

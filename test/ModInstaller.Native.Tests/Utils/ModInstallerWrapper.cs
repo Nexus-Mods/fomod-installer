@@ -1,10 +1,16 @@
-﻿using System.Diagnostics;
-using System.Runtime.InteropServices;
-using BUTR.NativeAOT.Shared;
+﻿using BUTR.NativeAOT.Shared;
+
 using FluentAssertions;
+
 using FomodInstaller.Interface.ui;
+
 using Microsoft.Win32.SafeHandles;
+
 using ModInstaller.Native.Tests.Utils;
+
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+
 using TestData;
 
 namespace ModInstaller.Native.Tests;
@@ -17,9 +23,9 @@ public sealed class ModInstallerWrapper
     private readonly bool _unattended;
 
     private unsafe param_ptr* _callback_handler;
-    private unsafe delegate* unmanaged[Cdecl] <param_ptr*, param_int, param_int, param_json*, return_value_void*, void> _select;
-    private unsafe delegate* unmanaged[Cdecl] <param_ptr*, param_bool, param_int, return_value_void*, void> _cont;
-    private unsafe delegate* unmanaged[Cdecl] <param_ptr*, return_value_void*, void> _cancel;
+    private unsafe delegate* unmanaged[Cdecl]<param_ptr*, param_int, param_int, param_json*, return_value_void*, void> _select;
+    private unsafe delegate* unmanaged[Cdecl]<param_ptr*, param_bool, param_int, return_value_void*, void> _cont;
+    private unsafe delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> _cancel;
 
     private InstallerStep[]? _installerSteps;
     private int? _currentStep;
@@ -41,17 +47,17 @@ public sealed class ModInstallerWrapper
     public static unsafe return_value_data* ReadFileContent(param_ptr* handler, param_string* pFilePath, param_int offset, param_int length)
     {
         //Utils2.LibraryAliveCount().Should().Be(0);
-        
+
         Stream? stream = null;
         try
         {
             var filePath = new string(param_string.ToSpan(pFilePath));
-            
+
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
             var entry = modInstallerWrapper._data.ModArchive.Entries.FirstOrDefault(x => x.GetNormalizedName() == filePath);
             if (entry == null)
                 return return_value_data.AsValue(null, 0, false);
-            
+
             stream = entry.OpenEntryStream();
 
             if (length == -1) length = (int) entry.Size;
@@ -133,7 +139,7 @@ public sealed class ModInstallerWrapper
         var data = Directory.Exists(directoryPath) ? Directory.GetDirectories(directoryPath) : null;
         return data is null ? return_value_json.AsValue(null, false) : return_value_json.AsValue(data, Utils2.CustomSourceGenerationContext.StringArray, false);
     }
-    
+
     public static unsafe return_value_json* PluginsGetAll(param_ptr* handler, param_bool includeDisabled)
     {
         Utils2.LibraryAliveCount().Should().Be(0);
@@ -152,7 +158,7 @@ public sealed class ModInstallerWrapper
         }
     }
 
-    public static unsafe return_value_void* ContextGetAppVersion(param_ptr* handler, param_ptr* p_context, delegate* unmanaged[Cdecl] <param_ptr*, return_value_string*, void> p_callback)
+    public static unsafe return_value_void* ContextGetAppVersion(param_ptr* handler, param_ptr* p_context, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)
     {
         Utils2.LibraryAliveCount().Should().Be(0);
         try
@@ -172,7 +178,7 @@ public sealed class ModInstallerWrapper
         }
     }
 
-    public static unsafe return_value_void* ContextGetCurrentGameVersion(param_ptr* handler, param_ptr* p_context, delegate* unmanaged[Cdecl] <param_ptr*, return_value_string*, void> p_callback)
+    public static unsafe return_value_void* ContextGetCurrentGameVersion(param_ptr* handler, param_ptr* p_context, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)
     {
         //Utils2.LibraryAliveCount().Should().Be(0);
         try
@@ -192,7 +198,7 @@ public sealed class ModInstallerWrapper
         }
     }
 
-    public static unsafe return_value_void* ContextGetExtenderVersion(param_ptr* handler, param_string* p_extender_name, param_ptr* p_context, delegate* unmanaged[Cdecl] <param_ptr*, return_value_string*, void> p_callback)
+    public static unsafe return_value_void* ContextGetExtenderVersion(param_ptr* handler, param_string* p_extender_name, param_ptr* p_context, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)
     {
         Utils2.LibraryAliveCount().Should().Be(0);
         try
@@ -277,13 +283,13 @@ public sealed class ModInstallerWrapper
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
-            
+
             var installSteps = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_install_steps, SourceGenerationContext.Default.InstallerStepArray);
             var currentStepValue = (int) current_step;
 
             modInstallerWrapper._installerSteps = installSteps;
             modInstallerWrapper._currentStep = currentStepValue;
-            
+
             if (modInstallerWrapper.dialogInProgress)
                 return return_value_void.AsValue(false);
 

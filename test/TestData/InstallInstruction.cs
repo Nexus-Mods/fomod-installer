@@ -1,7 +1,8 @@
+﻿using FomodInstaller.Interface;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using FomodInstaller.Interface;
 
 namespace TestData;
 

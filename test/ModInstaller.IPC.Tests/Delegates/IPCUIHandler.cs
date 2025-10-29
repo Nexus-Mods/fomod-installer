@@ -1,4 +1,5 @@
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
+
 using TestData;
 
 namespace ModInstaller.IPC.Tests.Delegates;

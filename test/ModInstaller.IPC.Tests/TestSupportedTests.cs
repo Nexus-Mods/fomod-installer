@@ -1,4 +1,5 @@
-using ModInstaller.IPC.Tests.Utils;
+﻿using ModInstaller.IPC.Tests.Utils;
+
 using TestData;
 
 namespace ModInstaller.IPC.Tests;

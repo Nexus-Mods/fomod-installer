@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using FomodInstaller.Interface;
+using FomodInstaller.Interface.ui;
+
+using ModInstaller.Lite;
+
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using FomodInstaller.Interface;
-using FomodInstaller.Interface.ui;
-using ModInstaller.Lite;
 
 namespace ModInstaller.Native;
 

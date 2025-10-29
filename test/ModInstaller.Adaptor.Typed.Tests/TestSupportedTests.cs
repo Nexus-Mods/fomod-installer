@@ -1,4 +1,5 @@
 ﻿using ModInstaller.Lite;
+
 using TestData;
 
 namespace ModInstaller.Adaptor.Typed.Tests;
@@ -11,7 +12,7 @@ public class TestSupportedTests
     public static TestClass BasicData() => TestSupportDataSource.BasicData();
     public static TestClass XmlData() => TestSupportDataSource.XmlData();
     public static TestClass LiteData() => TestSupportDataSource.LiteData();
-    
+
     [Test]
     [MethodDataSource(nameof(SkyrimData))]
     [MethodDataSource(nameof(BasicData))]
@@ -20,7 +21,7 @@ public class TestSupportedTests
     public async Task Test(TestSupportData data)
     {
         var result = Installer.TestSupported(data.ModArchiveFileList, data.AllowedTypes);
-        
+
         await Assert.That(result).IsEquivalentTo(new SupportedResult()
         {
             Supported = data.Supported,

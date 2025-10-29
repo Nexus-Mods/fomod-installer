@@ -1,9 +1,11 @@
+﻿using BUTR.NativeAOT.Shared;
+
+using FomodInstaller.Interface;
+
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using BUTR.NativeAOT.Shared;
-using FomodInstaller.Interface;
 
 namespace ModInstaller.Native.Adapters;
 
@@ -21,14 +23,14 @@ internal class CallbackIniDelegates : IniDelegates
         _getIniString = getIniString;
         _getIniInt = getIniInt;
     }
-    
+
     public override async Task<string> GetIniString(string iniFilename, string iniSection, string iniKey)
     {
         var tcs = new TaskCompletionSource<string>();
         GetIniStringNative(iniFilename, iniSection, iniKey, tcs);
         return await tcs.Task;
     }
-    
+
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void GetIniStringCallback(param_ptr* pOwner, return_value_string* pResult)
     {
@@ -85,7 +87,7 @@ internal class CallbackIniDelegates : IniDelegates
         GetIniIntNative(iniFilename, iniSection, iniKey, tcs);
         return await tcs.Task;
     }
-    
+
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void GetIniIntCallback(param_ptr* pOwner, return_value_int32* pResult)
     {

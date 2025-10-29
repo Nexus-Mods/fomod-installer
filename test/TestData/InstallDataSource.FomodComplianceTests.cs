@@ -1,8 +1,10 @@
+﻿using FomodInstaller.Interface;
+
+using SharpCompress.Archives;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using FomodInstaller.Interface;
-using SharpCompress.Archives;
 
 namespace TestData;
 

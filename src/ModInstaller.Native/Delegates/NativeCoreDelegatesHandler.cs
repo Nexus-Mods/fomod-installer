@@ -1,8 +1,10 @@
-using System;
-using System.Runtime.InteropServices;
-using BUTR.NativeAOT.Shared;
+﻿using BUTR.NativeAOT.Shared;
+
 using FomodInstaller.Interface;
 using FomodInstaller.Interface.ui;
+
+using System;
+using System.Runtime.InteropServices;
 
 namespace ModInstaller.Native.Adapters;
 

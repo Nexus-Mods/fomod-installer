@@ -1,8 +1,10 @@
+﻿using FomodInstaller.Interface;
+
+using SharpCompress.Archives;
+
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using FomodInstaller.Interface;
-using SharpCompress.Archives;
 
 namespace TestData;
 
@@ -163,7 +165,7 @@ public partial class InstallDataSource
         yield return () => BaseTest(ModImprovedMap, "Darker with Regions and Grid", [new(0, 0, [3])], null, []);
         yield return () => BaseTest(ModImprovedMap, "Even Darker", [new(0, 0, [4])], null, []);
         yield return () => BaseTest(ModImprovedMap, "Even Darker with Regions and Grid", [new(0, 0, [5])], null, []);
-        
+
         // Test with presets
         var presetDefault = JsonDocument.Parse("[{\"name\":\"Install Improved Map with Visible Roads\",\"groups\":[{\"name\":\"Improved Map with Visible Roads\",\"choices\":[{\"name\":\"Default\",\"idx\":0}]}]}]");
         yield return () => BaseTest(ModImprovedMap, "Default", null, presetDefault, []);

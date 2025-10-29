@@ -1,4 +1,5 @@
 ﻿using FomodInstaller.ModInstaller;
+
 using TestData;
 
 namespace ModInstaller.Adaptor.Dynamic.Tests;
@@ -11,7 +12,7 @@ public class TestSupportedTests
     public static TestClass CSharpData() => TestSupportDataSource.CSharpData();
     public static TestClass XmlData() => TestSupportDataSource.XmlData();
     public static TestClass DynamicData() => TestSupportDataSource.DynamicData();
-    
+
     [Test]
     [MethodDataSource(nameof(BasicData))]
     [MethodDataSource(nameof(CSharpData))]
@@ -21,7 +22,7 @@ public class TestSupportedTests
     {
         var installer = new Installer();
         var result = await installer.TestSupported(data.ModArchiveFileList, data.AllowedTypes);
-        
+
         await Assert.That(result["supported"]).IsEquivalentTo(data.Supported);
         await Assert.That(result["requiredFiles"]).IsEquivalentTo(data.RequiredFiles);
     }

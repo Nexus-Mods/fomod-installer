@@ -1,7 +1,9 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using FomodInstaller.Interface.ui;
+﻿using FomodInstaller.Interface.ui;
+
 using ModInstaller.Lite;
+
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ModInstaller.Native.Tests.Utils;
 

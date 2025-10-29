@@ -1,4 +1,8 @@
-﻿using System;
+﻿using FomodInstaller.Interface;
+using FomodInstaller.ModInstaller;
+using FomodInstaller.Scripting;
+
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Globalization;
@@ -6,9 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using FomodInstaller.Interface;
-using FomodInstaller.ModInstaller;
-using FomodInstaller.Scripting;
 
 namespace ModInstaller.Lite;
 
@@ -104,7 +105,7 @@ public static class Installer
         {
             instructions = BasicModInstall(modArchiveFileList, stopPatterns);
         }
- 
+
         // f***ing ugly hack, but this is in NMM so...
         if (pluginPath != null)
         {
@@ -193,7 +194,7 @@ public static class Installer
         CoreDelegates coreDelegate)
     {
         var presetExpando = preset is not null ? JsonUtils.ParseJsonArray(preset) : null;
-        
+
         var sexScript = modArchive.InstallScript.Type.CreateExecutor(modArchive, coreDelegate);
         return (await sexScript.Execute(modArchive.InstallScript, modArchive.TempPath, presetExpando)).ToList();
     }
@@ -235,7 +236,7 @@ file static class JsonUtils
         {
             JsonValueKind.String => value.GetString(),
             JsonValueKind.Number => value.TryGetInt64(out var l) ? l :
-                value.TryGetDouble(out var d) ? d : (object?)null,
+                value.TryGetDouble(out var d) ? d : (object?) null,
             JsonValueKind.True => true,
             JsonValueKind.False => false,
             JsonValueKind.Null => null,

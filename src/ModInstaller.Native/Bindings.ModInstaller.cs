@@ -1,11 +1,15 @@
-﻿using System;
+﻿using BUTR.NativeAOT.Shared;
+
+using FomodInstaller.ModInstaller;
+
+using ModInstaller.Lite;
+using ModInstaller.Native.Adapters;
+
+using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using BUTR.NativeAOT.Shared;
-using FomodInstaller.ModInstaller;
-using ModInstaller.Lite;
-using ModInstaller.Native.Adapters;
+
 using Utils;
 
 namespace ModInstaller.Native;
@@ -33,7 +37,7 @@ public static unsafe partial class Bindings
             var pluginsDelegate = new CallbackPluginDelegates(p_owner,
                 Marshal.GetDelegateForFunctionPointer<N_Plugins_GetAll>(new IntPtr(p_plugins_get_all))
             );
-            
+
             var iniDelegate = new CallbackIniDelegates(p_owner,
                 null!,
                 null!
@@ -48,16 +52,16 @@ public static unsafe partial class Bindings
                 null!,
                 null!
             );
-            
+
             var uiDelegate = new CallbackUIDelegates(p_owner,
                 Marshal.GetDelegateForFunctionPointer<N_UI_StartDialog>(new IntPtr(p_ui_start_dialog)),
                 Marshal.GetDelegateForFunctionPointer<N_UI_EndDialog>(new IntPtr(p_ui_end_dialog)),
                 Marshal.GetDelegateForFunctionPointer<N_UI_UpdateState>(new IntPtr(p_ui_update_state)),
                 null!
             );
-            
+
             var coreDelegates = new NativeCoreDelegatesHandler(p_owner, pluginsDelegate, contextDelegate, iniDelegate, uiDelegate);
-            
+
             Logger.LogOutput();
             return return_value_ptr.AsValue(coreDelegates.HandlePtr, false);
         }
@@ -67,7 +71,7 @@ public static unsafe partial class Bindings
             return return_value_ptr.AsException(e, false);
         }
     }
-    
+
     // Simplified version for the XML installer
     [UnmanagedCallersOnly(EntryPoint = "create_handler_with_fs", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_ptr* CreateHandlerWithFS(param_ptr* p_owner,
@@ -93,7 +97,7 @@ public static unsafe partial class Bindings
             var pluginsDelegate = new CallbackPluginDelegates(p_owner,
                 Marshal.GetDelegateForFunctionPointer<N_Plugins_GetAll>(new IntPtr(p_plugins_get_all))
             );
-            
+
             var iniDelegate = new CallbackIniDelegates(p_owner,
                 null!,
                 null!
@@ -108,14 +112,14 @@ public static unsafe partial class Bindings
                 null!,
                 null!
             );
-            
+
             var uiDelegate = new CallbackUIDelegates(p_owner,
                 Marshal.GetDelegateForFunctionPointer<N_UI_StartDialog>(new IntPtr(p_ui_start_dialog)),
                 Marshal.GetDelegateForFunctionPointer<N_UI_EndDialog>(new IntPtr(p_ui_end_dialog)),
                 Marshal.GetDelegateForFunctionPointer<N_UI_UpdateState>(new IntPtr(p_ui_update_state)),
                 null!
             );
-            
+
             var coreDelegates = new NativeCoreDelegatesHandler(p_owner, pluginsDelegate, contextDelegate, iniDelegate, uiDelegate);
 
             var fileSystemDelegate = new CallbackFileSystem(p_owner,
@@ -125,7 +129,7 @@ public static unsafe partial class Bindings
             );
 
             FileSystem.Instance = fileSystemDelegate;
-            
+
             Logger.LogOutput();
             return return_value_ptr.AsValue(coreDelegates.HandlePtr, false);
         }
@@ -135,7 +139,7 @@ public static unsafe partial class Bindings
             return return_value_ptr.AsException(e, false);
         }
     }
-    
+
     /*
     [UnmanagedCallersOnly(EntryPoint = "ve_create_handler", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_ptr* CreateHandler(param_ptr* p_owner,
@@ -200,7 +204,7 @@ public static unsafe partial class Bindings
         }
     }
     */
-    
+
     [UnmanagedCallersOnly(EntryPoint = "dispose_handler", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* DisposeHandler(param_ptr* p_handle)
     {
@@ -221,7 +225,7 @@ public static unsafe partial class Bindings
             return return_value_void.AsException(e, false);
         }
     }
-    
+
     [UnmanagedCallersOnly(EntryPoint = "test_supported", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_json* TestSupported(
         // param_ptr* p_handle,
@@ -233,7 +237,7 @@ public static unsafe partial class Bindings
         {
             //if (p_handle is null || NativeCoreDelegatesHandler.FromPointer(p_handle) is not { } handler)
             //    return return_value_json.AsError(BUTR.NativeAOT.Shared.Utils.Copy("Handler is null or wrong!", false), false);
-            
+
             var modArchiveFileList = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_mod_archive_file_list, CustomSourceGenerationContext.StringArray);
             var allowedTypes = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_allowed_types, CustomSourceGenerationContext.StringArray);
 
@@ -248,7 +252,7 @@ public static unsafe partial class Bindings
             return return_value_json.AsException(e, false);
         }
     }
-    
+
     [UnmanagedCallersOnly(EntryPoint = "install", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
     public static return_value_async* Install(
         param_ptr* p_handle,
@@ -274,7 +278,7 @@ public static unsafe partial class Bindings
             var preset = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_preset, CustomSourceGenerationContext.JsonDocument);
 
             var progressDelegate = new ProgressDelegate((progress) => { });
-            
+
             Installer.Install(modArchiveFileList.ToList(), stopPatterns.ToList(), pluginPath, scriptPath, preset, validate, progressDelegate, handler).ContinueWith(result =>
             {
                 Logger.LogAsyncInput($"{nameof(Install)}_Callback");

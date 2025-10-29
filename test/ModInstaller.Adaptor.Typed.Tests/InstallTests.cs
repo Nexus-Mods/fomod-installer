@@ -1,7 +1,10 @@
 ﻿using FomodInstaller.ModInstaller;
+
 using ModInstaller.Adaptor.Typed.Tests.Delegates;
 using ModInstaller.Lite;
+
 using TestData;
+
 using Utils;
 
 namespace ModInstaller.Adaptor.Typed.Tests;
@@ -47,7 +50,7 @@ public class InstallTests
             data.Validate,
             progressDelegate,
             coreDelegates);
-        
+
         await Assert.That(result.Instructions.Order()).IsEquivalentTo(data.Instructions.Order());
         await Assert.That(result.Message).IsEquivalentTo(data.Message);
     }

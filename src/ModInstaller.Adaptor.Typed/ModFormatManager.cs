@@ -1,9 +1,11 @@
-﻿using System;
+﻿using FomodInstaller.Scripting;
+using FomodInstaller.Scripting.XmlScript;
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using FomodInstaller.Scripting;
-using FomodInstaller.Scripting.XmlScript;
+
 using Utils;
 
 namespace ModInstaller.Lite;
@@ -101,7 +103,8 @@ public class ModFormatManager
                     {
                         HasFoundScriptType = true;
                         FoundScriptType = scriptType;
-                    } else
+                    }
+                    else
                     {
                         var fomodMatch = modFiles.FirstOrDefault(x => ScriptMatch(x, scriptFile));
                         if (!string.IsNullOrEmpty(fomodMatch))

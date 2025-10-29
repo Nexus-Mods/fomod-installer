@@ -1,10 +1,12 @@
+﻿using BUTR.NativeAOT.Shared;
+
+using FomodInstaller.Interface;
+
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using BUTR.NativeAOT.Shared;
-using FomodInstaller.Interface;
 
 namespace ModInstaller.Native.Adapters;
 
@@ -12,17 +14,17 @@ internal class CallbackPluginDelegates : PluginDelegates
 {
     private readonly unsafe param_ptr* _pOwner;
     private readonly N_Plugins_GetAll _getAll;
-    
+
     private string[]? mActiveCache;
     private string[]? mPresentCache;
-    
+
     public unsafe CallbackPluginDelegates(param_ptr* pOwner,
         N_Plugins_GetAll getAll)
     {
         _pOwner = pOwner;
         _getAll = getAll;
     }
-   
+
     public override async Task<string[]> GetAll(bool activeOnly)
     {
         var tcs = new TaskCompletionSource<string[]>();
@@ -41,7 +43,7 @@ internal class CallbackPluginDelegates : PluginDelegates
         mPresentCache ??= await GetAll(false);
         return mPresentCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default;
     }
-    
+
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void GetAllCallback(param_ptr* pOwner, return_value_json* pResult)
     {

@@ -1,5 +1,7 @@
-using SharpCompress.Archives;
+﻿using SharpCompress.Archives;
+
 using TestData;
+
 using Utils;
 
 namespace ModInstaller.Adaptor.Typed.Tests.Delegates;
@@ -49,7 +51,7 @@ public class ArchiveFileSystem : IFileSystem
             stream?.Dispose();
         }
     }
-    
+
     public string[] ReadDirectoryFileList(string directoryPath, string pattern, SearchOption searchOption)
     {
         return _mod.Entries

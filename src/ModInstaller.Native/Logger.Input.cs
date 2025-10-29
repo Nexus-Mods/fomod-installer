@@ -1,8 +1,9 @@
-﻿using System;
+﻿using BUTR.NativeAOT.Shared;
+
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using BUTR.NativeAOT.Shared;
 
 namespace ModInstaller.Native;
 
@@ -13,7 +14,7 @@ public static partial class Logger
     {
         Log($"{caller} - {message}");
     }
-    
+
     [Conditional("LOGGING")]
     public static void LogInput([CallerMemberName] string? caller = null)
     {

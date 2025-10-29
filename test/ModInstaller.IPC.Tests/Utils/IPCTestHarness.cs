@@ -1,3 +1,7 @@
+﻿using FomodInstaller.Interface;
+
+using ModInstaller.IPC.Tests.Delegates;
+
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net;
@@ -5,8 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using FomodInstaller.Interface;
-using ModInstaller.IPC.Tests.Delegates;
+
 using TestData;
 
 namespace ModInstaller.IPC.Tests.Utils;
@@ -30,7 +33,7 @@ internal class IPCTestHarness : IAsyncDisposable
     {
         // No callbacks needed
     }
-    
+
     public IPCTestHarness(InstallData data)
     {
         // Register callbacks
@@ -51,21 +54,25 @@ internal class IPCTestHarness : IAsyncDisposable
         // Register UI callbacks using the UI handler
         var uiHandler = new IPCUIHandler(data.DialogChoices, (requestId, callbackId, args) =>
             InvokeServerCallback(requestId, callbackId, args));
-        RegisterCallback("startDialog", async args => {
+        RegisterCallback("startDialog", async args =>
+        {
             // Pass the message ID that sent this callback
             await uiHandler.StartDialog(_currentRequestId!, args!);
             return null;
         });
-        RegisterCallback("endDialog", async args => {
+        RegisterCallback("endDialog", async args =>
+        {
             await uiHandler.EndDialog();
             return null;
         });
-        RegisterCallback("updateState", async args => {
+        RegisterCallback("updateState", async args =>
+        {
             // Pass the message ID that sent this callback
             await uiHandler.UpdateState(_currentRequestId!, args!);
             return null;
         });
-        RegisterCallback("reportError", async args => {
+        RegisterCallback("reportError", async args =>
+        {
             await uiHandler.ReportError(args!);
             return null;
         });
@@ -76,7 +83,7 @@ internal class IPCTestHarness : IAsyncDisposable
         // Find a free port by binding to port 0
         _listener = new TcpListener(IPAddress.Loopback, 0);
         _listener.Start();
-        var port = ((IPEndPoint)_listener.LocalEndpoint).Port;
+        var port = ((IPEndPoint) _listener.LocalEndpoint).Port;
 
         // Spawn ModInstallerIPC.exe with the port
         var exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\..\src\ModInstaller.IPC\bin\Debug\ModInstallerIPC.exe");
@@ -124,7 +131,7 @@ internal class IPCTestHarness : IAsyncDisposable
 
         // Read "connected" message
         var buffer = new byte[9];
-        await _stream.ReadAsync(buffer);
+        await _stream.ReadExactlyAsync(buffer);
         var connected = Encoding.UTF8.GetString(buffer);
         if (connected != "connected")
         {
@@ -196,7 +203,7 @@ internal class IPCTestHarness : IAsyncDisposable
 
         var instructionsJson = response["instructions"]?.AsArray();
         var instructionJsonWithObjects = instructionsJson?.Select(x => JsonSerializer.Deserialize<InstallInstruction>(x)).ToList();
-        
+
         return new InstallResult
         {
             Instructions = instructionJsonWithObjects
@@ -293,7 +300,7 @@ internal class IPCTestHarness : IAsyncDisposable
     {
         await File.AppendAllTextAsync("D:\\Git\\read.txt", json);
         await File.AppendAllTextAsync("D:\\Git\\read.txt", Environment.NewLine);
-        
+
         try
         {
             var message = JsonNode.Parse(json);
@@ -335,7 +342,7 @@ internal class IPCTestHarness : IAsyncDisposable
                                 command = "Reply",
                                 request = new { id = id },  // Use the callback message ID, not callbackId
                                 data = result ?? new { },  // Empty object instead of null
-                                error = (object?)null
+                                error = (object?) null
                             }
                         };
 
@@ -357,7 +364,7 @@ internal class IPCTestHarness : IAsyncDisposable
                             {
                                 command = "Reply",
                                 request = new { id = id },  // Use the callback message ID, not callbackId
-                                data = (object?)null,
+                                data = (object?) null,
                                 error = new { message = ex.Message }
                             }
                         };

@@ -1,7 +1,8 @@
-﻿using System;
+﻿using BUTR.NativeAOT.Shared;
+
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using BUTR.NativeAOT.Shared;
 
 namespace ModInstaller.Native;
 

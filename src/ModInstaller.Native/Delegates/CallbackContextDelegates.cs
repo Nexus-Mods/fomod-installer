@@ -1,9 +1,11 @@
+﻿using BUTR.NativeAOT.Shared;
+
+using FomodInstaller.Interface;
+
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using BUTR.NativeAOT.Shared;
-using FomodInstaller.Interface;
 
 namespace ModInstaller.Native.Adapters;
 
@@ -43,7 +45,7 @@ internal class CallbackContextDelegates : ContextDelegates
         GetAppVersionNative(tcs);
         return await tcs.Task;
     }
-    
+
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void GetAppVersionCallback(param_ptr* pOwner, return_value_string* pResult)
     {
@@ -100,26 +102,26 @@ internal class CallbackContextDelegates : ContextDelegates
     public static unsafe void GetCurrentGameVersionCallback(param_ptr* pOwner, return_value_string* pResult)
     {
         Logger.LogCallbackInput(pResult);
-        
+
         if (pOwner == null)
         {
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsString(tcs);
         handle.Free();
-        
+
         Logger.LogOutput();
     }
-    
+
     private unsafe void GetCurrentGameVersionNative(TaskCompletionSource<string> tcs)
     {
         Logger.LogInput();
@@ -158,20 +160,20 @@ internal class CallbackContextDelegates : ContextDelegates
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsString(tcs);
         handle.Free();
-        
+
         Logger.LogOutput();
     }
-    
+
     private unsafe void GetExtenderVersionNative(ReadOnlySpan<char> extender, TaskCompletionSource<string> tcs)
     {
         Logger.LogInput();
@@ -192,7 +194,7 @@ internal class CallbackContextDelegates : ContextDelegates
                 Logger.LogException(e);
                 tcs.TrySetException(e);
                 handle.Free();
-            } 
+            }
         }
     }
 
@@ -207,26 +209,26 @@ internal class CallbackContextDelegates : ContextDelegates
     public static unsafe void IsExtenderPresentCallback(param_ptr* pOwner, return_value_bool* pResult)
     {
         Logger.LogCallbackInput(pResult);
-        
+
         if (pOwner == null)
         {
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<bool> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsBool(tcs);
         handle.Free();
-        
+
         Logger.LogOutput();
     }
-    
+
     private unsafe void IsExtenderPresentNative(TaskCompletionSource<bool> tcs)
     {
         Logger.LogInput();
@@ -247,7 +249,7 @@ internal class CallbackContextDelegates : ContextDelegates
             handle.Free();
         }
     }
-    
+
     public override async Task<bool> CheckIfFileExists(string fileName)
     {
         var tcs = new TaskCompletionSource<bool>();
@@ -265,20 +267,20 @@ internal class CallbackContextDelegates : ContextDelegates
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<bool> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsBool(tcs);
         handle.Free();
-        
+
         Logger.LogOutput();
     }
-    
+
     private unsafe void CheckIfFileExistsNative(ReadOnlySpan<char> fileName, TaskCompletionSource<bool> tcs)
     {
         Logger.LogInput();
@@ -299,7 +301,7 @@ internal class CallbackContextDelegates : ContextDelegates
                 Logger.LogException(e);
                 tcs.TrySetException(e);
                 handle.Free();
-            } 
+            }
         }
     }
 
@@ -320,20 +322,20 @@ internal class CallbackContextDelegates : ContextDelegates
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<byte[]?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsData(tcs);
         handle.Free();
-        
+
         Logger.LogOutput();
     }
-    
+
     private unsafe void GetExistingDataFileNative(ReadOnlySpan<char> dataFile, TaskCompletionSource<byte[]> tcs)
     {
         Logger.LogInput();
@@ -354,7 +356,7 @@ internal class CallbackContextDelegates : ContextDelegates
                 Logger.LogException(e);
                 tcs.TrySetException(e);
                 handle.Free();
-            } 
+            }
         }
     }
 
@@ -369,26 +371,26 @@ internal class CallbackContextDelegates : ContextDelegates
     public static unsafe void GetExistingDataFileListCallback(param_ptr* pOwner, return_value_json* pResult)
     {
         Logger.LogCallbackInput(pResult);
-        
+
         if (pOwner == null)
         {
             Logger.LogException(new ArgumentNullException(nameof(pOwner)));
             return;
         }
-        
+
         if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string[]?> tcs } handle)
         {
             Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
             return;
         }
-        
+
         using var result = SafeStructMallocHandle.Create(pResult, true);
         result.SetAsJson(tcs, SourceGenerationContext.Default.StringArray);
         handle.Free();
-        
+
         Logger.LogOutput();
     }
-    
+
     private unsafe void GetExistingDataFileListNative(ReadOnlySpan<char> folderPath, ReadOnlySpan<char> searchFilter, bool isRecursive, TaskCompletionSource<string[]> tcs)
     {
         Logger.LogInput();
@@ -410,7 +412,7 @@ internal class CallbackContextDelegates : ContextDelegates
                 Logger.LogException(e);
                 tcs.TrySetException(e);
                 handle.Free();
-            } 
+            }
         }
     }
 }

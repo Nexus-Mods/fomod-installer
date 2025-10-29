@@ -1,6 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using BUTR.NativeAOT.Shared;
 
-using BUTR.NativeAOT.Shared;
+using System.Runtime.InteropServices;
 
 namespace ModInstaller.Native;
 
@@ -98,7 +98,7 @@ internal unsafe delegate return_value_void* N_Context_GetExistingDataFileList(pa
     param_bool is_recursive,
     param_ptr* p_callback_handler,
     delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback);
-    
+
 // FileSystem Delegates
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_data* N_ReadFileContentDelegate(param_ptr* p_owner,

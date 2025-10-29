@@ -1,5 +1,6 @@
+﻿using FomodInstaller.Interface;
+
 using System.Collections.Generic;
-using FomodInstaller.Interface;
 
 namespace ModInstaller.Lite;
 

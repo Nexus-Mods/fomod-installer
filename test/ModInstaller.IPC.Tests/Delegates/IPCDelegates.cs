@@ -1,4 +1,4 @@
-using TestData;
+﻿using TestData;
 
 namespace ModInstaller.IPC.Tests.Delegates;
 

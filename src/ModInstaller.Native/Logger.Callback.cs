@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
+﻿using BUTR.NativeAOT.Shared;
+
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using BUTR.NativeAOT.Shared;
 
 namespace ModInstaller.Native;
 

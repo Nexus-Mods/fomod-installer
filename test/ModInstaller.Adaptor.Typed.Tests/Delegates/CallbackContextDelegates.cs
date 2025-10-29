@@ -11,7 +11,7 @@ internal class CallbackContextDelegates : ContextDelegates
     private readonly Func<string, Task<bool>> _checkIfFileExistsFunc;
     private readonly Func<string, Task<byte[]>> _getExistingDataFileFunc;
     private readonly Func<string, string, bool, Task<string[]>> _getExistingDataFileListFunc;
-    
+
     public CallbackContextDelegates(
         Func<Task<string>> getAppVersionFunc,
         Func<Task<string>> getCurrentGameVersionFunc,
@@ -29,7 +29,7 @@ internal class CallbackContextDelegates : ContextDelegates
         _getExistingDataFileFunc = getExistingDataFileFunc;
         _getExistingDataFileListFunc = getExistingDataFileListFunc;
     }
-    
+
     public override async Task<string> GetAppVersion() => await _getAppVersionFunc();
     public override async Task<string> GetCurrentGameVersion() => await _getCurrentGameVersionFunc();
     public override async Task<string> GetExtenderVersion(string extender) => await _getExtenderVersionFunc(extender);

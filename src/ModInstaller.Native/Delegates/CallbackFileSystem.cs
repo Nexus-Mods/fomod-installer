@@ -1,6 +1,8 @@
-﻿using System;
+﻿using BUTR.NativeAOT.Shared;
+
+using System;
 using System.IO;
-using BUTR.NativeAOT.Shared;
+
 using Utils;
 
 namespace ModInstaller.Native.Adapters;
@@ -11,7 +13,7 @@ internal class CallbackFileSystem : IFileSystem
     private readonly N_ReadFileContentDelegate _readFileContent;
     private readonly N_ReadDirectoryFileList _readDirectoryFileList;
     private readonly N_ReadDirectoryList _readDirectoryList;
-    
+
     public unsafe CallbackFileSystem(param_ptr* pOwner,
         N_ReadFileContentDelegate readFileContent,
         N_ReadDirectoryFileList readDirectoryFileList,
@@ -22,7 +24,7 @@ internal class CallbackFileSystem : IFileSystem
         _readDirectoryFileList = readDirectoryFileList;
         _readDirectoryList = readDirectoryList;
     }
-    
+
     public unsafe byte[]? ReadFileContent(string filePath, int offset, int length)
     {
         Logger.LogInput(offset, length);
@@ -44,7 +46,7 @@ internal class CallbackFileSystem : IFileSystem
             }
         }
     }
-    
+
     public unsafe string[]? ReadDirectoryFileList(string directoryPath, string pattern, SearchOption searchOption)
     {
         //Logger.LogInput(directoryPath, pattern, searchOption);
