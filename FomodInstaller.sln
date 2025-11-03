@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FomodInstaller.Interface", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils", "src\Utils\Utils.csproj", "{5B9AD297-9D49-4593-A795-BDBD309B3313}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InstallScripting", "src\InstallScripting", "{3453ABBE-7DA9-4946-ACC0-D55BD4BDB5D4}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InstallScripting", "InstallScripting", "{3453ABBE-7DA9-4946-ACC0-D55BD4BDB5D4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scripting", "src\InstallScripting\Scripting\Scripting.csproj", "{66DC8748-2DC2-4E6E-B645-080E0CFDC831}"
 EndProject

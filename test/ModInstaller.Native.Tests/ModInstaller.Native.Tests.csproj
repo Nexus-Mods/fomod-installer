@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <TargetFramework>net9.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>ModInstaller.Native.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

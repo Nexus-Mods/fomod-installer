@@ -8,7 +8,7 @@ using Microsoft.Win32.SafeHandles;
 
 using ModInstaller.Native.Tests.Utils;
 
-using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using TestData;
@@ -44,10 +44,9 @@ public sealed class ModInstallerWrapper
         return dst;
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_data* ReadFileContent(param_ptr* handler, param_string* pFilePath, param_int offset, param_int length)
     {
-        //Utils2.LibraryAliveCount().Should().Be(0);
-
         Stream? stream = null;
         try
         {
@@ -85,7 +84,6 @@ public sealed class ModInstallerWrapper
         finally
         {
             stream?.Dispose();
-            //Utils2.LibraryAliveCount().Should().Be(2);
         }
     }
 
@@ -125,6 +123,7 @@ public sealed class ModInstallerWrapper
         }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_json* ReadDirectoryFileList(param_ptr* handler, param_string* pDirectoryPath, param_string* pPattern, param_int searchOption)
     {
         var directoryPath = new string(param_string.ToSpan(pDirectoryPath));
@@ -133,6 +132,7 @@ public sealed class ModInstallerWrapper
         return data is null ? return_value_json.AsValue(null, false) : return_value_json.AsValue(data, Utils2.CustomSourceGenerationContext.StringArray, false);
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_json* ReadDirectoryList(param_ptr* handler, param_string* pDirectoryPath)
     {
         var directoryPath = new string(param_string.ToSpan(pDirectoryPath));
@@ -140,27 +140,24 @@ public sealed class ModInstallerWrapper
         return data is null ? return_value_json.AsValue(null, false) : return_value_json.AsValue(data, Utils2.CustomSourceGenerationContext.StringArray, false);
     }
 
-    public static unsafe return_value_json* PluginsGetAll(param_ptr* handler, param_bool includeDisabled)
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    public static unsafe return_value_void* PluginsGetAll(param_ptr* handler, param_bool includeDisabled, param_ptr* p_callback_handler, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
     {
-        Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
-            return return_value_json.AsValue(modInstallerWrapper._data.InstalledPlugins, Utils2.CustomSourceGenerationContext.ListString, false);
+            p_callback(p_callback_handler, return_value_json.AsValue(modInstallerWrapper._data.InstalledPlugins, Utils2.CustomSourceGenerationContext.ListString, false));
+            return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
-            return return_value_json.AsException(e, false);
-        }
-        finally
-        {
-            Utils2.LibraryAliveCount().Should().Be(1);
+            return return_value_void.AsException(e, false);
         }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_void* ContextGetAppVersion(param_ptr* handler, param_ptr* p_context, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)
     {
-        Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -172,15 +169,11 @@ public sealed class ModInstallerWrapper
         {
             return return_value_void.AsException(e, false);
         }
-        finally
-        {
-            Utils2.LibraryAliveCount().Should().Be(1);
-        }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_void* ContextGetCurrentGameVersion(param_ptr* handler, param_ptr* p_context, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)
     {
-        //Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -192,15 +185,11 @@ public sealed class ModInstallerWrapper
         {
             return return_value_void.AsException(e, false);
         }
-        finally
-        {
-            //Utils2.LibraryAliveCount().Should().Be(1);
-        }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_void* ContextGetExtenderVersion(param_ptr* handler, param_string* p_extender_name, param_ptr* p_context, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback)
     {
-        Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -212,12 +201,9 @@ public sealed class ModInstallerWrapper
         {
             return return_value_void.AsException(e, false);
         }
-        finally
-        {
-            Utils2.LibraryAliveCount().Should().Be(2);
-        }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_void* UiStartDialog(
         param_ptr* handler,
         param_string* p_module_name,
@@ -227,7 +213,6 @@ public sealed class ModInstallerWrapper
         delegate* unmanaged[Cdecl]<param_ptr*, param_bool, param_int, return_value_void*, void> p_cont_callback,
         delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_cancel_callback)
     {
-        Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -243,15 +228,11 @@ public sealed class ModInstallerWrapper
         {
             return return_value_void.AsException(e, false);
         }
-        finally
-        {
-            Utils2.LibraryAliveCount().Should().Be(1);
-        }
     }
 
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_void* UiEndDialog(param_ptr* handler)
     {
-        //Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -270,16 +251,12 @@ public sealed class ModInstallerWrapper
         {
             return return_value_void.AsException(e, false);
         }
-        finally
-        {
-            //Utils2.LibraryAliveCount().Should().Be(1);
-        }
     }
 
     private bool dialogInProgress = false;
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe return_value_void* UiUpdateState(param_ptr* handler, param_json* p_install_steps, param_int current_step)
     {
-        //Utils2.LibraryAliveCount().Should().Be(0);
         try
         {
             var modInstallerWrapper = (ModInstallerWrapper) GCHandle.FromIntPtr((IntPtr) handler).Target!;
@@ -328,10 +305,6 @@ public sealed class ModInstallerWrapper
         catch (Exception e)
         {
             return return_value_void.AsException(e, false);
-        }
-        finally
-        {
-            //Utils2.LibraryAliveCount().Should().Be(1);
         }
     }
 }

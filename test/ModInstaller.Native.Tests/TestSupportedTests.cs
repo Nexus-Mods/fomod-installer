@@ -21,7 +21,9 @@ using TestClass = IEnumerable<TestSupportData>;
 public sealed partial class TestSupportedTests : BaseTests
 {
     [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
-    private static unsafe partial return_value_json* test_supported(param_json* p_mod_archive_file_list, param_json* p_allowed_types);
+    private static unsafe partial return_value_json* test_supported(
+        param_json* p_mod_archive_file_list,
+        param_json* p_allowed_types);
 
     public static TestClass BasicData() => TestSupportDataSource.BasicData().NUnit();
     public static TestClass XmlData() => TestSupportDataSource.XmlData().NUnit();
