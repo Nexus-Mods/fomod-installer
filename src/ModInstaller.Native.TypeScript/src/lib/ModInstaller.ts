@@ -33,7 +33,7 @@ export class NativeModInstaller implements ModInstallerWithoutConstructor {
   }
 
   public install(files: string[], stopPatterns: string[], pluginPath: string,
-    scriptPath: string, preset: any, validate: boolean): Promise<types.InstallResult> {
+    scriptPath: string, preset: any, validate: boolean): Promise<types.InstallResult | null> {
     return this.manager.install(files, stopPatterns, pluginPath, scriptPath, preset, validate);
   }
 }

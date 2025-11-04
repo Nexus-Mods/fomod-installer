@@ -54,4 +54,55 @@ public class InstallTests
         await Assert.That(result.Instructions.Order()).IsEquivalentTo(data.Instructions.Order());
         await Assert.That(result.Message).IsEquivalentTo(data.Message);
     }
+
+    [Test]
+    [MethodDataSource(nameof(SkyrimData))]
+    [MethodDataSource(nameof(Fallout4Data))]
+    [MethodDataSource(nameof(FomodComplianceTestsData))]
+    [NotInParallel]
+    public async Task TestCancellation(InstallData data)
+    {
+        if (data.Preset is not null)
+            return;
+        
+        var cancellingUIContext = new CancellingUIContext();
+        var coreDelegates = new TestCoreDelegates(
+            new CallbackPluginDelegates(
+                _ => Task.FromResult(data.InstalledPlugins.ToArray())
+            ),
+            new CallbackIniDelegates(null!, null!),
+            new CallbackContextDelegates(
+                () => Task.FromResult(data.AppVersion),
+                () => Task.FromResult(data.GameVersion),
+                (_) => Task.FromResult(data.ExtenderVersion),
+                null!, null!, null!, null!
+            ),
+            cancellingUIContext
+        );
+
+        FileSystem.Instance = new ArchiveFileSystem(data.ModArchive);
+
+        var progressDelegate = new ProgressDelegate((perc) => { });
+        try
+        {
+            var result = await Installer.Install(
+                data.ModArchive.Entries.Select(x => x.GetNormalizedName()).ToList(),
+                data.StopPatterns,
+                data.PluginPath,
+                "",
+                data.Preset,
+                data.Validate,
+                progressDelegate,
+                coreDelegates);
+            
+            Assert.Fail("Should have thrown TaskCanceledException");
+        }
+        catch (TaskCanceledException) { }
+        catch (Exception e)
+        {
+            Assert.Fail("Should not throw exception, cancellation is handled internally. Threw: " + e);
+        }
+
+        await Assert.That(cancellingUIContext.CancelWasCalled).IsTrue();
+    }
 }

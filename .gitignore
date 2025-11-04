@@ -22,3 +22,4 @@ FomodInstaller.VC.db
 test_cases
 
 AnalysisReport.sarif
+/src/ModInstaller.Native/ModInstaller.Native.h

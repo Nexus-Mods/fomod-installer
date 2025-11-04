@@ -23,5 +23,5 @@ export type ModInstaller = {
   constructor(): ModInstaller;
 
   install(files: string[], stopPatterns: string[], pluginPath: string, scriptPath: string,
-    preset: any, validate: boolean): Promise<InstallResult>;
+    preset: any, validate: boolean): Promise<InstallResult | null>;
 };

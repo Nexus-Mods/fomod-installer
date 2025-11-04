@@ -8,8 +8,8 @@ namespace ModInstaller.Native;
 
 public static partial class Logger
 {
-    private static readonly string _mutexName = "Global\\FOMODLoggerMutex";
-    private static readonly string _logFilePath = "D:\\Git\\FOMOD.ModInstaller.log";
+    private static readonly string _mutexName = @"Global\FOMODLoggerMutex";
+    private static readonly string _logFilePath = @$"{Environment.GetEnvironmentVariable("APPDATA")}\vortex_devel\FOMOD.ModInstaller.log";
 
     private static void Log(string message)
     {

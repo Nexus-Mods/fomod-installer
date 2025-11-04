@@ -19,7 +19,7 @@ namespace FomodInstaller.Interface
 
         public static Instruction CreateMKDir(string destination)
         {
-            return new Instruction()
+            return new Instruction
             {
                 type = "mkdir",
                 destination = forceRelative(destination),
@@ -28,7 +28,7 @@ namespace FomodInstaller.Interface
 
         public static Instruction GenerateFile(byte[] byteSource, string destination)
         {
-            return new Instruction()
+            return new Instruction
             {
                 type = "generatefile",
                 data = byteSource,
@@ -38,7 +38,7 @@ namespace FomodInstaller.Interface
 
         public static Instruction CreateIniEdit(string fileName, string section, string key, string value)
         {
-            return new Instruction()
+            return new Instruction
             {
                 type = "iniedit",
                 destination = fileName,
@@ -50,7 +50,7 @@ namespace FomodInstaller.Interface
 
         public static Instruction EnablePlugin(string plugin)
         {
-            return new Instruction()
+            return new Instruction
             {
                 type = "enableplugin",
                 source = plugin,
@@ -59,7 +59,7 @@ namespace FomodInstaller.Interface
 
         public static Instruction EnableAllPlugins()
         {
-            return new Instruction()
+            return new Instruction
             {
                 type = "enableallplugins",
             };
@@ -67,7 +67,7 @@ namespace FomodInstaller.Interface
 
         public static Instruction UnsupportedFunctionalityWarning(string function)
         {
-            return new Instruction()
+            return new Instruction
             {
                 type = "unsupported",
                 source = function,

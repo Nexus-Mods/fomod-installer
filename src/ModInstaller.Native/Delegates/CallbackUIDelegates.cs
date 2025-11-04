@@ -47,7 +47,7 @@ internal class CallbackUIDelegates : UIDelegates
             TaskCompletionSource = tcs,
             Select = select,
             Continue = cont,
-            Cancel = cancel
+            Cancel = cancel,
         });
     }
 

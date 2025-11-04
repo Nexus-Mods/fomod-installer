@@ -354,13 +354,13 @@ namespace Utils
 
         const auto lambda = [functionName](Napi::Env env, Napi::Function jsCallback, return_value_json *returnData)
         {
-            LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
+            LoggerScope lambdaLogger(NAMEOFWITHCALLBACK(functionName, lambda));
 
             del_json del{returnData};
 
             if (returnData->error != nullptr)
             {
-                callbackLogger.Log("Error");
+                lambdaLogger.Log("Error");
                 const auto isError = Napi::Boolean::New(env, true);
                 const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
                 const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
@@ -368,16 +368,17 @@ namespace Utils
             }
             else
             {
-                callbackLogger.Log("Resolving");
+                lambdaLogger.Log("Resolving");
                 const auto isError = Napi::Boolean::New(env, false);
                 if (returnData->value == nullptr)
                 {
+                    lambdaLogger.Log("Result is null");
                     const auto result = env.Null();
                     jsCallback.Call({isError, result});
                 }
                 else
                 {
-                    callbackLogger.Log("Resolving");
+                    lambdaLogger.Log("Result is not null");
                     const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
                     const auto result = JSONParse(Napi::String::New(env, resultStr.get()));
                     jsCallback.Call({isError, result});
@@ -400,13 +401,13 @@ namespace Utils
 
         const auto lambda = [functionName](Napi::Env env, Napi::Function jsCallback, return_value_string *returnData)
         {
-            LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
+            LoggerScope lambdaLogger(NAMEOFWITHCALLBACK(functionName, lambda));
 
             del_string del{returnData};
 
             if (returnData->error != nullptr)
             {
-                callbackLogger.Log("Resolving");
+                lambdaLogger.Log("Error");
                 const auto isError = Napi::Boolean::New(env, true);
                 const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
                 const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
@@ -414,15 +415,17 @@ namespace Utils
             }
             else
             {
-                callbackLogger.Log("Resolving");
+                lambdaLogger.Log("Resolving");
                 const auto isError = Napi::Boolean::New(env, false);
                 if (returnData->value == nullptr)
                 {
+                    lambdaLogger.Log("Result is null");
                     const auto result = env.Null();
                     jsCallback.Call({isError, result});
                 }
                 else
                 {
+                    lambdaLogger.Log("Result is not null");
                     const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
                     const auto result = Napi::String::New(env, resultStr.get());
                     jsCallback.Call({isError, result});

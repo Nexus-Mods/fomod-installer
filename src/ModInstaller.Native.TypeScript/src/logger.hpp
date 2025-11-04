@@ -1,7 +1,9 @@
 #ifndef VE_LIB_LOGGER_GUARD_HPP_
 #define VE_LIB_LOGGER_GUARD_HPP_
 
-#define LOGGING_
+#ifdef DEBUG
+#define LOGGING
+#endif
 
 #define NAMEOF(x) #x
 #define NAMEOFWITHCALLBACK(x, y) (std::string(x) + "_" + #y)
@@ -312,7 +314,13 @@ public:
     }
 };
 
-const std::string Logger::_logFilePath = "D:\\Git\\FOMOD.ModInstaller.log";
+const std::string Logger::_logFilePath = []() {
+    const char* appData = std::getenv("APPDATA");
+    if (appData != nullptr) {
+        return std::string(appData) + "\\vortex_devel\\FOMOD.ModInstaller.log";
+    }
+    return std::string("FOMOD.ModInstaller.log"); // Fallback to current directory
+}();
 const std::wstring Logger::_mutexName = L"Global\\FOMODLoggerMutex";
 
 #endif

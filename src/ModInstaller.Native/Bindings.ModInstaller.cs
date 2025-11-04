@@ -283,15 +283,28 @@ public static unsafe partial class Bindings
             {
                 Logger.LogAsyncInput($"{nameof(Install)}_Callback");
 
-                if (result.Exception is not null)
+                try
                 {
-                    p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
-                    Logger.LogException(result.Exception, $"{nameof(Install)}_Callback");
+                    if (result.Exception is not null)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
+                        Logger.LogException(result.Exception, $"{nameof(Install)}_Callback");
+                    }
+                    else if (result.IsCanceled)
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.InstallResult, false));
+                        Logger.LogMessage("Installation cancelled", $"{nameof(Install)}_Callback");
+                    }
+                    else
+                    {
+                        p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.InstallResult, false));
+                        Logger.LogOutput(result.Result.Instructions.Count > 0 ? result.Result.Instructions[0].type : "", $"{nameof(Install)}_Callback");
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.InstallResult, false));
-                    Logger.LogOutput(result.Result.Instructions.Count > 0 ? result.Result.Instructions[0].type : "", $"{nameof(Install)}_Callback");
+                    p_callback(p_callback_handler, return_value_json.AsException(e, false));
+                    Logger.LogException(e, $"{nameof(Install)}_Callback");
                 }
             });
 
