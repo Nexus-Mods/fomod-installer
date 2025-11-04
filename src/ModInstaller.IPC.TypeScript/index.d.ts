@@ -1,6 +1,6 @@
 /// <reference types="node" />
 
-declare module "fomod-installer" {
+declare module "fomod-installer-ipc" {
   /**
    * start the peer server
    * @param usePipe if set, use a pipe for communication, otherwise a network socket is used
