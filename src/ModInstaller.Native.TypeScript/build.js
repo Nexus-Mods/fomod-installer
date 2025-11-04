@@ -215,9 +215,9 @@ try {
     );
 
     // Copy native artifacts
-    const basePath = `../ModInstaller.Native/bin/${configuration}/net9.0/win-x64`;
-    copyItem(`${basePath}/native/ModInstaller.Native.dll`, 'ModInstaller.Native.dll');
-    copyItem(`${basePath}/native/ModInstaller.Native.lib`, 'ModInstaller.Native.lib');
+    const basePath = `../ModInstaller.Native`;
+    copyItem(`${basePath}/bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.dll`, 'ModInstaller.Native.dll');
+    copyItem(`${basePath}/bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`, 'ModInstaller.Native.lib');
     copyItem(`${basePath}/ModInstaller.Native.h`, 'ModInstaller.Native.h');
     console.log('');
   }
