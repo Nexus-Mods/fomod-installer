@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ModInstaller.Lite</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FomodInstaller.Interface\FomodInstaller.Interface.csproj" />
+    <ProjectReference Include="..\InstallScripting\Scripting\Scripting.csproj" />
+    <ProjectReference Include="..\InstallScripting\XmlScript\XmlScript.csproj" />
+    <ProjectReference Include="..\Utils\Utils.csproj" />
+  </ItemGroup>
+
+</Project>

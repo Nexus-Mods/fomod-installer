@@ -1,3 +1,0 @@
-Files marked "installIfUsable" should be installed even if the plugin is disabled, as long as it's usable
-
-This file should be overwritten because the corresponding file from g4p1 has higher priority and should be installed even though the plugin is disabled because the file is marked "installIfUsable"

@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseWindowsForms>true</UseWindowsForms>
+    
+    <SelfContained>false</SelfContained>
+    <EnableCompressionInSingleFile>false</EnableCompressionInSingleFile>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <IncludeRuntimeForSelfExtract>true</IncludeRuntimeForSelfExtract>
+    <!--
+    <PublishAot>true</PublishAot>
+    <TrimMode>link</TrimMode>
+    <PublishTrimmed>true</PublishTrimmed>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    -->
+    
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <RootNamespace>ModInstallerIPC</RootNamespace>
+    <AssemblyName>ModInstallerIPC</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(Configuration) == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ModInstaller.Adaptor.Dynamic\ModInstaller.Adaptor.Dynamic.csproj" />
+  </ItemGroup>
+
+  <Target Name="DeleteFiles" AfterTargets="Publish" Condition="$(Configuration) == 'Release'">
+    <ItemGroup>
+      <FilesToDelete Include="$(PublishDir)*.pdb;"/>
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)">
+      <Output
+              TaskParameter="DeletedFiles"
+              ItemName="FilesDeleted"/>
+    </Delete>
+    <Message Text="Deleted PDB files: @(FilesDeleted)" Importance="high" />
+  </Target>
+  
+</Project>

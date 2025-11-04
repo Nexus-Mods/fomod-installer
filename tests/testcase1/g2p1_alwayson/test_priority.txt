@@ -1,3 +1,0 @@
-file priority was ignored
-
-This file should be overwritten by the one from g1p1 because that one has higher priority
