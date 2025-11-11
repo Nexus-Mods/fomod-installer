@@ -157,8 +157,13 @@ export abstract class BaseIPCConnection {
    * @param exeName Name of the executable file (e.g., 'ModInstallerIPC.exe')
    * @returns Array of absolute paths to check
    */
-  protected getExecutablePath(exeName: string): string {
-    return path.join(__dirname, '..', '..', exeName);
+  protected getExecutablePaths(exeName: string): string[] {
+    const paths: string[] = [];
+
+    const distPath = path.join(__dirname, '..', '..', exeName);
+    paths.push(distPath);
+
+    return paths;
   }
 
   /**
@@ -241,7 +246,7 @@ export abstract class BaseIPCConnection {
       });
 
       // Find executable
-      const exePath = this.findExecutable();
+      const exePath = await this.findExecutable();
       const cwd = path.dirname(exePath);
 
       // Get process arguments from transport
@@ -463,9 +468,27 @@ export abstract class BaseIPCConnection {
   /**
    * Find the executable in various possible locations
    */
-  private findExecutable(): string {
-    const exeName = 'ModInstallerIPC.exe';
-    return path.join(__dirname, '..', '..', exeName);
+  private async findExecutable(): Promise<string> {
+    const possiblePaths = this.getExecutablePaths('ModInstallerIPC.exe');
+
+    // Check each path
+    for (const testPath of possiblePaths) {
+      try {
+        const normalizedPath = path.resolve(testPath);
+        const exists = await this.fileExists(normalizedPath);
+        if (exists) {
+          this.log('info', 'Found executable', { path: normalizedPath });
+          return normalizedPath;
+        }
+      } catch (err) {
+        // File doesn't exist, try next path
+      }
+    }
+
+    // If not found, throw error with all attempted paths
+    const errorMsg = `Executable not found. Tried paths:\n${possiblePaths.map(p => `  - ${p}`).join('\n')}`;
+    this.log('error', errorMsg);
+    throw new Error(errorMsg);
   }
 
   /**
