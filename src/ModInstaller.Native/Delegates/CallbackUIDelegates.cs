@@ -14,7 +14,6 @@ internal class CallbackUIDelegates : UIDelegates
 {
     private record StartDialogCallbacksData
     {
-        public TaskCompletionSource TaskCompletionSource { get; init; }
         public Action<int, int, int[]> Select { get; init; }
         public Action<bool, int> Continue { get; init; }
         public Action Cancel { get; init; }
@@ -39,104 +38,19 @@ internal class CallbackUIDelegates : UIDelegates
         _reportError = reportError;
     }
 
-    public override void StartDialog(string moduleName, HeaderImage image, Action<int, int, int[]> select, Action<bool, int> cont, Action cancel)
-    {
-        var tcs = new TaskCompletionSource();
-        StartDialogNative(moduleName, image, new StartDialogCallbacksData
-        {
-            TaskCompletionSource = tcs,
-            Select = select,
-            Continue = cont,
-            Cancel = cancel,
-        });
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void StartDialogSelectCallback(param_ptr* pOwner, param_int stepId, param_int groupId, param_json* optionIdsJson, return_value_void* pResult)
-    {
-        Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
-        {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
-
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: StartDialogCallbacksData callbacksData } handle)
-        {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
-        }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsVoid(callbacksData.TaskCompletionSource);
-
-        var optionIds = BUTR.NativeAOT.Shared.Utils.DeserializeJson<int[]>(optionIdsJson, Bindings.CustomSourceGenerationContext.Int32Array);
-        callbacksData.Select(stepId, groupId, optionIds);
-
-        Logger.LogOutput();
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void StartDialogContinueCallback(param_ptr* pOwner, param_bool forward, param_int currentStepId, return_value_void* pResult)
-    {
-        Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
-        {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
-
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: StartDialogCallbacksData callbacksData } handle)
-        {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
-        }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsVoid(callbacksData.TaskCompletionSource);
-
-        callbacksData.Continue(forward, currentStepId);
-
-        Logger.LogOutput();
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void StartDialogCancelCallback(param_ptr* pOwner, return_value_void* pResult)
-    {
-        Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
-        {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
-
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: StartDialogCallbacksData callbacksData } handle)
-        {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
-        }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsVoid(callbacksData.TaskCompletionSource);
-
-        callbacksData.Cancel();
-
-        Logger.LogOutput();
-    }
-
-    private GCHandle? _currentDialogHandle;
-
-    private unsafe void StartDialogNative(string moduleName, HeaderImage image, StartDialogCallbacksData callbacksData)
+    public override unsafe void StartDialog(string moduleName, HeaderImage image, Action<int, int, int[]> select, Action<bool, int> cont, Action cancel)
     {
         Logger.LogInput();
 
         if (_currentDialogHandle is not null)
             throw new Exception("Should be null");
 
-        _currentDialogHandle = GCHandle.Alloc(callbacksData, GCHandleType.Normal);
+        _currentDialogHandle = GCHandle.Alloc(new StartDialogCallbacksData
+        {
+            Select = select,
+            Continue = cont,
+            Cancel = cancel,
+        }, GCHandleType.Normal);
 
         fixed (char* pModuleName = moduleName)
         fixed (char* pImage = BUTR.NativeAOT.Shared.Utils.SerializeJson(image, Bindings.CustomSourceGenerationContext.HeaderImage))
@@ -151,43 +65,142 @@ internal class CallbackUIDelegates : UIDelegates
             catch (Exception e)
             {
                 Logger.LogException(e);
-                callbacksData.TaskCompletionSource.TrySetException(e);
                 _currentDialogHandle?.Free();
                 _currentDialogHandle = null;
             }
         }
     }
 
-    public override unsafe void EndDialog()
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    public static unsafe void StartDialogSelectCallback(param_ptr* pOwner, param_int stepId, param_int groupId, param_json* optionIdsJson, return_value_void* pResult)
     {
-        Logger.LogInput();
-
+        Logger.LogCallbackInput(pResult);
         try
         {
-            using var result = SafeStructMallocHandle.Create(_endDialog(_pOwner), true);
-            result.ValueAsVoid();
 
-            _currentDialogHandle?.Free();
-            _currentDialogHandle = null;
+            if (pOwner == null)
+            {
+                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
 
-            Logger.LogOutput();
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: StartDialogCallbacksData callbacksData})
+            {
+                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+
+            var optionIds = BUTR.NativeAOT.Shared.Utils.DeserializeJson<int[]>(optionIdsJson, Bindings.CustomSourceGenerationContext.Int32Array);
+            callbacksData.Select(stepId, groupId, optionIds);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
             throw;
         }
+        finally
+        {
+            Logger.LogOutput();
+        }
     }
 
-    public override unsafe void UpdateState(InstallerStep[] installSteps, int currentStep)
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    public static unsafe void StartDialogContinueCallback(param_ptr* pOwner, param_bool forward, param_int currentStepId, return_value_void* pResult)
+    {
+        Logger.LogCallbackInput(pResult);
+        try
+        {
+
+            if (pOwner == null)
+            {
+                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
+
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: StartDialogCallbacksData callbacksData})
+            {
+                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+
+            callbacksData.Continue(forward, currentStepId);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            throw;
+        }
+        finally
+        {
+            Logger.LogOutput();
+        }
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    public static unsafe void StartDialogCancelCallback(param_ptr* pOwner, return_value_void* pResult)
+    {
+        Logger.LogCallbackInput(pResult);
+        try
+        {
+            if (pOwner == null)
+            {
+                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
+
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: StartDialogCallbacksData callbacksData})
+            {
+                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+
+            callbacksData.Cancel();
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            throw;
+        }
+        finally
+        {
+            Logger.LogOutput();
+        }
+    }
+
+    private GCHandle? _currentDialogHandle;
+
+    public override unsafe void EndDialog()
     {
         Logger.LogInput();
+        
+        try
+        {
+            using var result = SafeStructMallocHandle.Create(_endDialog(_pOwner), true);
+            result.ValueAsVoid();
 
+            Logger.LogOutput();
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+        }
+    }
+
+    public override unsafe void UpdateState(InstallerStep[] installSteps, int currentStepId)
+    {
+        Logger.LogInput();
+        
         fixed (char* pInstallSteps = BUTR.NativeAOT.Shared.Utils.SerializeJson(installSteps, Bindings.CustomSourceGenerationContext.InstallerStepArray))
         {
             try
             {
-                using var result = SafeStructMallocHandle.Create(_updateState(_pOwner, (param_json*) pInstallSteps, (param_int) currentStep), true);
+                using var result = SafeStructMallocHandle.Create(_updateState(_pOwner, (param_json*) pInstallSteps, (param_int) currentStepId), true);
                 result.ValueAsVoid();
 
                 Logger.LogOutput();
@@ -195,39 +208,52 @@ internal class CallbackUIDelegates : UIDelegates
             catch (Exception e)
             {
                 Logger.LogException(e);
-                throw;
             }
         }
     }
 
     public override void ReportError(string title, string message, string details)
     {
+        Logger.LogInput();
+        
         var tcs = new TaskCompletionSource();
         ReportErrorNative(title, message, details, tcs);
+        
+        Logger.LogOutput();
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void ReportErrorCallback(param_ptr* pOwner, return_value_void* pResult)
     {
         Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource tcs } handle)
+            if (pOwner == null)
+            {
+                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
+
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: TaskCompletionSource tcs} handle)
+            {
+                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            result.SetAsVoid(tcs);
+            handle.Free();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            Logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsVoid(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
+        finally
+        {
+            Logger.LogOutput();
+        }
     }
 
     private unsafe void ReportErrorNative(ReadOnlySpan<char> title, ReadOnlySpan<char> message, ReadOnlySpan<char> details, TaskCompletionSource tcs)

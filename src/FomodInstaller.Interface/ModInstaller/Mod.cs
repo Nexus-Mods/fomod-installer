@@ -141,40 +141,36 @@ namespace FomodInstaller.Interface
 
         #endregion
 
-        public async Task Initialize(bool validate)
+        public Task Initialize(bool validate)
         {
-            await Task.Run(() => GetScreenshotPath(ModFiles));
-            await GetScriptFile(validate);
+            GetScreenshotPath(ModFiles);
+            GetScriptFile(validate);
+            return Task.CompletedTask;
         }
 
-        private async Task GetScriptFile(bool validate)
+        private void GetScriptFile(bool validate)
         {
-            byte[] scriptData = null;
-
             if (!string.IsNullOrEmpty(InstallScriptPath))
             {
-                await Task.Run(() =>
+                var scriptData = FileSystem.ReadAllBytes(Path.Combine(TempPath, InstallScriptPath));
+                ModInstallScript = InstallScriptType.LoadScript(TextUtil.ByteToString(scriptData), validate);
+                // when we have an install script, do we really assume that this script uses paths relative
+                // to what our heuristics assumes is the top level directory?
+                int offset = InstallScriptPath.IndexOf(Path.Combine("fomod", "ModuleConfig.xml"), StringComparison.InvariantCultureIgnoreCase);
+                if (offset == -1)
                 {
-                    scriptData = FileSystem.ReadAllBytes(Path.Combine(TempPath, InstallScriptPath));
-                    ModInstallScript = InstallScriptType.LoadScript(TextUtil.ByteToString(scriptData), validate);
-                    // when we have an install script, do we really assume that this script uses paths relative
-                    // to what our heuristics assumes is the top level directory?
-                    int offset = InstallScriptPath.IndexOf(Path.Combine("fomod", "ModuleConfig.xml"),
-                                                           StringComparison.InvariantCultureIgnoreCase);
-                    if (offset == -1)
-                    {
-                        PathPrefix = ArchiveStructure.FindPathPrefix(ModFiles, StopPatterns);
-                    } else
-                    {
-                        PathPrefix = InstallScriptPath.Substring(0, offset);
-                    }
-                });
+                    PathPrefix = ArchiveStructure.FindPathPrefix(ModFiles, StopPatterns);
+                }
+                else
+                {
+                    PathPrefix = InstallScriptPath.Substring(0, offset);
+                }
             }
         }
 
         private void GetScreenshotPath(IList<string> listModFiles)
         {
-            IList<string> NormalizedModFile = NormalizePathList(ModFiles);
+            IList<string> NormalizedModFile = NormalizePathList(listModFiles);
             foreach (string filePath in NormalizedModFile)
             {
                 if (filePath.Contains(FomodScreenshotPath, StringComparison.InvariantCultureIgnoreCase))

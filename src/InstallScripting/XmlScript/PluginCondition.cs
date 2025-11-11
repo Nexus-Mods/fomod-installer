@@ -97,12 +97,12 @@ namespace FomodInstaller.Scripting.XmlScript
                 switch (m_pnsState)
                 {
                     case PluginState.Active:
-                        return coreDelegates.plugin.IsActive(PluginPath).Result;
+                        return coreDelegates.plugin.IsActive(PluginPath);
                     case PluginState.Inactive:
-                        return coreDelegates.plugin.IsPresent(PluginPath).Result
-                            && !coreDelegates.plugin.IsActive(PluginPath).Result;
+                        return coreDelegates.plugin.IsPresent(PluginPath)
+                            && !coreDelegates.plugin.IsActive(PluginPath);
                     case PluginState.Missing:
-                        return !coreDelegates.plugin.IsPresent(PluginPath).Result;
+                        return !coreDelegates.plugin.IsPresent(PluginPath);
                 }
             }
             return false;

@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks>net9.0;net48</TargetFrameworks>
+    <LangVersion>preview</LangVersion>
     <OutputType>Library</OutputType>
     <RootNamespace>FomodInstaller.Scripting.XmlScript</RootNamespace>
     

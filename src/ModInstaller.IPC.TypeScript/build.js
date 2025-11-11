@@ -68,7 +68,7 @@ async function main() {
   try {
     const buildType = debugBuild ? 'Debug' : 'Release';
     await fsExtra.remove(path.join(__dirname, 'dist'));
-    const args = ['publish', '../ModInstaller.IPC', '-c', buildType, '--no-self-contained', '-r', 'win-x64', '-o', 'dist'];
+    const args = ['publish', '../ModInstaller.IPC', '-c', buildType, '-f', 'net9.0-windows', '-o', 'dist'];
     try {
       await dotnet(args);
     } catch (err) {

@@ -8,20 +8,20 @@ namespace FomodInstaller.Interface
         /// app version
         /// </summary>
         /// <returns>version string of running application</returns>
-        public abstract Task<string> GetAppVersion();
+        public abstract string GetAppVersion();
         
         /// <summary>
         /// game version
         /// </summary>
         /// <returns>version string of the game being managed</returns>
-        public abstract Task<string> GetCurrentGameVersion();
+        public abstract string GetCurrentGameVersion();
         
         /// <summary>
         /// script extender version
         /// </summary>
         /// <param name="extender">extender id</param>
         /// <returns>version string of the extender, if installed</returns>
-        public abstract Task<string> GetExtenderVersion(string extender);
+        public abstract string GetExtenderVersion(string extender);
         
         /// <summary>
         /// is extender present.

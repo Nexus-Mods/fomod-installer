@@ -3,9 +3,9 @@ using FomodInstaller.Interface.ui;
 
 using TestData;
 
-namespace ModInstaller.Adaptor.Typed.Tests.Delegates;
+namespace ModInstaller.Adaptor.Tests.Shared.Delegates;
 
-internal class DeterministicUIContext : UIDelegates
+public class DeterministicUIContext : UIDelegates
 {
     private readonly List<SelectedOption>? _dialogChoices;
     private readonly bool _unattended;
@@ -66,13 +66,8 @@ internal class DeterministicUIContext : UIDelegates
             dialogInProgress = true;
             _select(option.StepId, option.GroupId, option.PluginIds);
 
-            Task.Delay(200).ContinueWith(_ =>
-            {
-                // Hello being-too-fasty-fast user. We need to make "sure"
-                // Select executes before continue
-                _cont(true, currentStep);
-                dialogInProgress = false;
-            });
+            _cont(true, currentStep);
+            dialogInProgress = false;
         }
     }
 

@@ -74,7 +74,7 @@ namespace FomodInstaller.Scripting.XmlScript
         /// <see cref="XmlScript"/>.</exception>
         public async override Task<IList<Instruction>> DoExecute(IScript scpScript, string dataPath, object? preset)
         {
-            TaskCompletionSource<IList<Instruction>> Source = new TaskCompletionSource<IList<Instruction>>(); 
+            TaskCompletionSource<IList<Instruction>> Source = new TaskCompletionSource<IList<Instruction>>();
             List<InstallableFile> PluginsToActivate = new List<InstallableFile>();
 
             m_csmState = new ConditionStateManager();
@@ -140,53 +140,42 @@ namespace FomodInstaller.Scripting.XmlScript
             int stepIdx = findNextIdx(lstSteps, -1);
 
             // Otherwise use the UI flow
-            Action<int, int, int[]> select = (int stepId, int groupId, int[] optionIds) =>
+            Action<int, int, int[]> select = (stepId, groupId, optionIds) =>
             {
-                // this needs to happen asynchronously so that this call returns to javascript and js can
-                // return to its main loop and respond to delegated requests, otherwise we could dead-lock
-                Task.Run(() =>
+                ISet<int> selectedIds = new HashSet<int>(optionIds);
+                IList<Option> options = lstSteps[stepId].OptionGroups[groupId].Options;
+                for (int i = 0; i < options.Count; ++i)
                 {
-                    ISet<int> selectedIds = new HashSet<int>(optionIds);
-                    IList<Option> options = lstSteps[stepId].OptionGroups[groupId].Options;
-                    for (int i = 0; i < options.Count; ++i)
-                    {
-                        if (selectedIds.Contains(i) || (resolveOptionType(options[i]) == OptionType.Required))
-                            enableOption(options[i]);
-                        else
-                            disableOption(options[i]);
-                    }
-
-                    fixSelected(lstSteps[stepIdx]);
-                    sendState(lstSteps, ModArchive.Prefix, stepIdx);
-                });
-            };
-
-            Action<bool, int> cont = (bool forward, int currentStep) => {
-                // this needs to happen asynchronously, see above
-                Task.Run(() =>
-                {
-                    if ((currentStep != -1) && (stepIdx != currentStep))
-                    {
-                        return;
-                    }
-                    if (forward)
-                    {
-                        stepIdx = findNextIdx(lstSteps, stepIdx);
-                    }
+                    if (selectedIds.Contains(i) || (resolveOptionType(options[i]) == OptionType.Required))
+                        enableOption(options[i]);
                     else
-                    {
-                        stepIdx = findPrevIdx(lstSteps, stepIdx);
-                    }
+                        disableOption(options[i]);
+                }
 
-                    processStep(lstSteps, stepIdx, Source, xscScript, PluginsToActivate);
-                });
+                fixSelected(lstSteps[stepIdx]);
+                sendState(lstSteps, ModArchive.Prefix, stepIdx);
             };
-            Action cancel = () => {
-                // this needs to happen asynchronously, see above
-                Task.Run(() =>
+
+            Action<bool, int> cont = (forward, currentStep) =>
+            {
+                if (currentStep != -1 && stepIdx != currentStep)
                 {
-                    Source.SetCanceled();
-                });
+                    return;
+                }
+                if (forward)
+                {
+                    stepIdx = findNextIdx(lstSteps, stepIdx);
+                }
+                else
+                {
+                    stepIdx = findPrevIdx(lstSteps, stepIdx);
+                }
+
+                processStep(lstSteps, stepIdx, Source, xscScript, PluginsToActivate);
+            };
+            Action cancel = () =>
+            {
+                Source.SetCanceled();
             };
 
             string bannerPath = string.IsNullOrEmpty(hifHeaderInfo.ImagePath)

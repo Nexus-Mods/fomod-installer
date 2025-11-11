@@ -13,7 +13,7 @@ namespace ModInstaller.Native.Tests.Utils;
 internal static partial class Utils2
 {
 #if DEBUG
-    public const string DllPath = "../../../../../src/ModInstaller.Native/bin/Release/net9.0/win-x64/native/ModInstaller.Native.dll";
+    public const string DllPath = "../../../../../src/ModInstaller.Native/bin/Debug/net9.0/win-x64/native/ModInstaller.Native.dll";
 #else
     public const string DllPath = "../../../../../src/ModInstaller.Native/bin/Release/net9.0/win-x64/native/ModInstaller.Native.dll";
 #endif

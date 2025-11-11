@@ -7,10 +7,8 @@ namespace ModInstaller.Native;
 // PluginDelegates
 // string[]
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-internal unsafe delegate return_value_void* N_Plugins_GetAll(param_ptr* p_owner,
-    param_bool active_only,
-    param_ptr* p_callback_handler,
-    delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback);
+internal unsafe delegate return_value_json* N_Plugins_GetAll(param_ptr* p_owner,
+    param_bool active_only);
 
 // IniDelegates
 // Async?
@@ -59,20 +57,14 @@ internal unsafe delegate return_value_void* N_UI_ReportError(param_ptr* p_owner,
 
 // ContextDelegates
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-internal unsafe delegate return_value_void* N_Context_GetAppVersion(param_ptr* p_owner,
-    param_ptr* p_callback_handler,
-    delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback);
+internal unsafe delegate return_value_string* N_Context_GetAppVersion(param_ptr* p_owner);
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-internal unsafe delegate return_value_void* N_Context_GetCurrentGameVersion(param_ptr* p_owner,
-    param_ptr* p_callback_handler,
-    delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback);
+internal unsafe delegate return_value_string* N_Context_GetCurrentGameVersion(param_ptr* p_owner);
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-internal unsafe delegate return_value_void* N_Context_GetExtenderVersion(param_ptr* p_owner,
-    param_string* p_extender,
-    param_ptr* p_callback_handler,
-    delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void> p_callback);
+internal unsafe delegate return_value_string* N_Context_GetExtenderVersion(param_ptr* p_owner,
+    param_string* p_extender);
 
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_void* N_Context_IsExtenderPresent(param_ptr* p_owner,

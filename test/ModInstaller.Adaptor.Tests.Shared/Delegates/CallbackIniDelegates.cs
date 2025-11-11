@@ -1,8 +1,8 @@
 ﻿using FomodInstaller.Interface;
 
-namespace ModInstaller.Adaptor.Typed.Tests.Delegates;
+namespace ModInstaller.Adaptor.Tests.Shared.Delegates;
 
-internal class CallbackIniDelegates : IniDelegates
+public class CallbackIniDelegates : IniDelegates
 {
     private readonly Func<string, string, string, Task<string>> _getIniStringFunc;
     private readonly Func<string, string, string, Task<int>> _getIniIntFunc;

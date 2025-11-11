@@ -4,7 +4,6 @@ using FomodInstaller.Scripting;
 
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -15,6 +14,7 @@ namespace ModInstaller.Lite;
 
 public static class Installer
 {
+
     /// <summary>
     /// This will determine whether the program can handle the specific archive.
     /// </summary>
@@ -71,7 +71,7 @@ public static class Installer
     public static async Task<InstallResult> Install(
         List<string> modArchiveFileList,
         List<string> stopPatterns,
-        string pluginPath,
+        string? pluginPath,
         string scriptPath,
         JsonDocument? preset,
         bool validate,

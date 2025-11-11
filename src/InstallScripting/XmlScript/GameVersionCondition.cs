@@ -37,18 +37,16 @@ namespace FomodInstaller.Scripting.XmlScript
 		{
             Version GameVersion = new Version("0.0.0.0");
 
-            Task.Run(async () => {
-                string VersionString = await coreDelegates.context.GetCurrentGameVersion();
+            string VersionString = coreDelegates.context.GetCurrentGameVersion();
 
-                try
-                {
-                    if (!string.IsNullOrEmpty(VersionString))
-                        GameVersion = new Version(VersionString);
-                } catch (Exception)
-                {
-                    // don't report as error, treat unparsable version string as version 0.0.0.0
-                }
-            }).Wait();
+            try
+            {
+                if (!string.IsNullOrEmpty(VersionString))
+                    GameVersion = new Version(VersionString);
+            } catch (Exception)
+            {
+                // don't report as error, treat unparsable version string as version 0.0.0.0
+            }
 
             return ((GameVersion != null) && (GameVersion >= MinimumVersion));
 		}
@@ -68,18 +66,16 @@ namespace FomodInstaller.Scripting.XmlScript
 		{
             Version GameVersion = new Version("0.0.0.0");
 
-            Task.Run(async () => {
-                string VersionString = await coreDelegates.context.GetCurrentGameVersion();
+            string VersionString = coreDelegates.context.GetCurrentGameVersion();
 
-                try
-                {
-                    if (!string.IsNullOrEmpty(VersionString))
-                        GameVersion = new Version(VersionString);
-                } catch (Exception)
-                {
-                    // don't report as error, treat unparsable version string as version 0.0.0.0
-                }
-            }).Wait();
+            try
+            {
+                if (!string.IsNullOrEmpty(VersionString))
+                    GameVersion = new Version(VersionString);
+            } catch (Exception)
+            {
+                // don't report as error, treat unparsable version string as version 0.0.0.0
+            }
 
             if ((GameVersion < MinimumVersion) && !invert)
 				return string.Format("This mod requires v{0} or higher of the game. You have {1}. Please update your game.", MinimumVersion, GameVersion);

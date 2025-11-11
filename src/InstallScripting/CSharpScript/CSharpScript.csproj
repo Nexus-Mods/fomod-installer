@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
-    <TargetFramework>net9.0-windows</TargetFramework>
+    <TargetFrameworks>net9.0-windows;net48</TargetFrameworks>
+    <LangVersion>preview</LangVersion>
     <OutputType>Library</OutputType>
     <RootNamespace>Nexus.Client.ModManagement.Scripting.CSharpScript</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>

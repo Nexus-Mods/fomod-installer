@@ -1,9 +1,9 @@
 ﻿using FomodInstaller.Interface;
 using FomodInstaller.Interface.ui;
 
-namespace ModInstaller.Adaptor.Typed.Tests.Delegates;
+namespace ModInstaller.Adaptor.Tests.Shared.Delegates;
 
-internal class TestCoreDelegates : CoreDelegates
+public class TestCoreDelegates : CoreDelegates
 {
     public override PluginDelegates plugin { get; }
     public override IniDelegates ini { get; }
