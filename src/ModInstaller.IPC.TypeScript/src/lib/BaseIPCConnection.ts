@@ -263,7 +263,7 @@ export abstract class BaseIPCConnection {
       const launchOptions: ProcessLaunchOptions = {
         detached: true,
         stdio: ['ignore', 'pipe', 'pipe'],
-        windowsHide: false,
+        windowsHide: true,
         env: {
           PATH: process.env.PATH,
           TEMP: process.env.TEMP || process.env.TMP || os.tmpdir(),
