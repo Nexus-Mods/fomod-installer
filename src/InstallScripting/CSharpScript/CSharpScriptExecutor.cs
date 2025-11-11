@@ -71,18 +71,7 @@ namespace FomodInstaller.Scripting.CSharpScript
 
             ScriptRunner srnRunner = new ScriptRunner(m_csfFunctions);
 
-            return Task.Run(() =>
-            {
-
-                if (!srnRunner.Execute(bteScript))
-                {
-                    return null;
-                }
-                else
-                {
-                    return instructions;
-                }
-            });
+            return !srnRunner.Execute(bteScript) ? Task.FromResult<IList<Instruction>>(null) : Task.FromResult(instructions);
         }
 
         #endregion

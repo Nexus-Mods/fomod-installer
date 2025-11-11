@@ -40,20 +40,17 @@ namespace FomodInstaller.Scripting.XmlScript
     {
       Version verInstalledVersion = null;
 
-      Task.Run(async () =>
-      {
-        string versionString = await coreDelegates.context.GetExtenderVersion(m_strExtender);
+      string versionString = coreDelegates.context.GetExtenderVersion(m_strExtender);
 
-        try
-        {
+      try
+      {
           if (!string.IsNullOrEmpty(versionString))
-            verInstalledVersion = new Version(versionString);
-        }
-        catch (Exception)
-        {
+              verInstalledVersion = new Version(versionString);
+      }
+      catch (Exception)
+      {
           // don't report as error, treat unparsable version string as version 0.0.0.0
-        }
-      }).Wait();
+      }
 
       return ((verInstalledVersion != null) && (verInstalledVersion >= MinimumVersion));
     }
@@ -70,10 +67,7 @@ namespace FomodInstaller.Scripting.XmlScript
     {
       Version verInstalledVersion = null;
 
-      Task.Run(async () =>
-      {
-        verInstalledVersion = new Version(await coreDelegates.context.GetExtenderVersion(m_strExtender));
-      }).Wait();
+    verInstalledVersion = new Version(coreDelegates.context.GetExtenderVersion(m_strExtender));
 
       if ((verInstalledVersion == null) && !invert)
         return String.Format("This mod requires {0} v{1} or higher. Please download from http://{0}.silverlock.org", m_strExtender, MinimumVersion);

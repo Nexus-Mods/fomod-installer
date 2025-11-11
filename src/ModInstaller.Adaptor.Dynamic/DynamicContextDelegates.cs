@@ -25,21 +25,21 @@ public class DynamicContextDelegates : ContextDelegates
         mGetExistingDataFileList = source.getExistingDataFileList;
     }
 
-    public override async Task<string> GetAppVersion()
+    public override string GetAppVersion()
     {
-        object res = await Shared.TimeoutRetry(() => mGetAppVersion(null));
+        object res = Shared.TimeoutRetrySync(() => mGetAppVersion(null));
+        return (string) res;
+    }
+
+    public override string GetCurrentGameVersion()
+    {
+        object res = Shared.TimeoutRetrySync(() => mGetCurrentGameVersion(null));
         return (string)res;
     }
 
-    public override async Task<string> GetCurrentGameVersion()
+    public override string GetExtenderVersion(string extender)
     {
-        object res = await Shared.TimeoutRetry(() => mGetCurrentGameVersion(null));
-        return (string)res;
-    }
-
-    public override async Task<string> GetExtenderVersion(string extender)
-    {
-        object res = await Shared.TimeoutRetry(() => mGetExtenderVersion(extender));
+        object res = Shared.TimeoutRetrySync(() => mGetExtenderVersion(extender));
         return (string)res;
     }
 

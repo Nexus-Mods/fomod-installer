@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ModInstaller.Adaptor.Typed\ModInstaller.Adaptor.Typed.csproj" />
-    <ProjectReference Include="..\TestData\TestData.csproj" />
+    <ProjectReference Include="..\ModInstaller.Adaptor.Tests.Shared\ModInstaller.Adaptor.Tests.Shared.csproj" />
   </ItemGroup>
 
 </Project>

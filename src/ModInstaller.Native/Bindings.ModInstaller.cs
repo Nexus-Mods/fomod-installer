@@ -16,15 +16,67 @@ namespace ModInstaller.Native;
 
 public static unsafe partial class Bindings
 {
-    // Simplified version for the XML installer
+    [UnmanagedCallersOnly(EntryPoint = "set_default_file_system_callbacks", CallConvs = [typeof(CallConvCdecl)])]
+    public static return_value_void* SetFileSystemCallbacks()
+    {
+        Logger.LogInput();
+        try
+        {
+            FileSystem.Instance = new DefaultFileSystem();
+
+            return return_value_void.AsValue(false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_void.AsException(e, false);
+        }
+        finally
+        {
+            Logger.LogOutput();
+        }
+    }
+    
+    [UnmanagedCallersOnly(EntryPoint = "set_file_system_callbacks", CallConvs = [typeof(CallConvCdecl)])]
+    public static return_value_void* SetFileSystemCallbacks(param_ptr* p_owner,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_int, param_int, return_value_data*> p_read_file_content,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_int, return_value_json*> p_read_directory_file_list,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_list
+    )
+    {
+        Logger.LogInput();
+        try
+        {
+            var fileSystemDelegate = new CallbackFileSystem(p_owner,
+                Marshal.GetDelegateForFunctionPointer<N_ReadFileContentDelegate>(new IntPtr(p_read_file_content)),
+                Marshal.GetDelegateForFunctionPointer<N_ReadDirectoryFileList>(new IntPtr(p_read_directory_file_list)),
+                Marshal.GetDelegateForFunctionPointer<N_ReadDirectoryList>(new IntPtr(p_read_directory_list))
+            );
+
+            FileSystem.Instance = fileSystemDelegate;
+
+            return return_value_void.AsValue(false);
+        }
+        catch (Exception e)
+        {
+            Logger.LogException(e);
+            return return_value_void.AsException(e, false);
+        }
+        finally
+        {
+            Logger.LogOutput();
+        }
+    }
+
+
     [UnmanagedCallersOnly(EntryPoint = "create_handler", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_ptr* CreateHandler(param_ptr* p_owner,
         // PluginDelegates
-        delegate* unmanaged[Cdecl]<param_ptr*, param_bool, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void>, return_value_void*> p_plugins_get_all,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_bool, return_value_json*> p_plugins_get_all,
         // ContextDelegates
-        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_context_get_app_version,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_context_get_current_game_version,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_context_get_extender_version,
+        delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*> p_context_get_app_version,
+        delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*> p_context_get_current_game_version,
+        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_string*> p_context_get_extender_version,
         // UI Delegates
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_int, param_int, param_json*, return_value_void*, void>, delegate* unmanaged[Cdecl]<param_ptr*, param_bool, param_int, return_value_void*, void>, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void>, return_value_void*> p_ui_start_dialog,
         delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*> p_ui_end_dialog,
@@ -62,7 +114,6 @@ public static unsafe partial class Bindings
 
             var coreDelegates = new NativeCoreDelegatesHandler(p_owner, pluginsDelegate, contextDelegate, iniDelegate, uiDelegate);
 
-            Logger.LogOutput();
             return return_value_ptr.AsValue(coreDelegates.HandlePtr, false);
         }
         catch (Exception e)
@@ -70,140 +121,11 @@ public static unsafe partial class Bindings
             Logger.LogException(e);
             return return_value_ptr.AsException(e, false);
         }
-    }
-
-    // Simplified version for the XML installer
-    [UnmanagedCallersOnly(EntryPoint = "create_handler_with_fs", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_ptr* CreateHandlerWithFS(param_ptr* p_owner,
-        // PluginDelegates
-        delegate* unmanaged[Cdecl]<param_ptr*, param_bool, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void>, return_value_void*> p_plugins_get_all,
-        // ContextDelegates
-        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_context_get_app_version,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_context_get_current_game_version,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_context_get_extender_version,
-        // UI Delegates
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, param_int, param_int, param_json*, return_value_void*, void>, delegate* unmanaged[Cdecl]<param_ptr*, param_bool, param_int, return_value_void*, void>, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void>, return_value_void*> p_ui_start_dialog,
-        delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*> p_ui_end_dialog,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_json*, param_int, return_value_void*> p_ui_update_state,
-        // FileSystem Delegates
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_int, param_int, return_value_data*> p_read_file_content,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_int, return_value_json*> p_read_directory_file_list,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_list
-        )
-    {
-        Logger.LogInput();
-        try
+        finally
         {
-            var pluginsDelegate = new CallbackPluginDelegates(p_owner,
-                Marshal.GetDelegateForFunctionPointer<N_Plugins_GetAll>(new IntPtr(p_plugins_get_all))
-            );
-
-            var iniDelegate = new CallbackIniDelegates(p_owner,
-                null!,
-                null!
-            );
-
-            var contextDelegate = new CallbackContextDelegates(p_owner,
-                Marshal.GetDelegateForFunctionPointer<N_Context_GetAppVersion>(new IntPtr(p_context_get_app_version)),
-                Marshal.GetDelegateForFunctionPointer<N_Context_GetCurrentGameVersion>(new IntPtr(p_context_get_current_game_version)),
-                Marshal.GetDelegateForFunctionPointer<N_Context_GetExtenderVersion>(new IntPtr(p_context_get_extender_version)),
-                null!,
-                null!,
-                null!,
-                null!
-            );
-
-            var uiDelegate = new CallbackUIDelegates(p_owner,
-                Marshal.GetDelegateForFunctionPointer<N_UI_StartDialog>(new IntPtr(p_ui_start_dialog)),
-                Marshal.GetDelegateForFunctionPointer<N_UI_EndDialog>(new IntPtr(p_ui_end_dialog)),
-                Marshal.GetDelegateForFunctionPointer<N_UI_UpdateState>(new IntPtr(p_ui_update_state)),
-                null!
-            );
-
-            var coreDelegates = new NativeCoreDelegatesHandler(p_owner, pluginsDelegate, contextDelegate, iniDelegate, uiDelegate);
-
-            var fileSystemDelegate = new CallbackFileSystem(p_owner,
-                Marshal.GetDelegateForFunctionPointer<N_ReadFileContentDelegate>(new IntPtr(p_read_file_content)),
-                Marshal.GetDelegateForFunctionPointer<N_ReadDirectoryFileList>(new IntPtr(p_read_directory_file_list)),
-                Marshal.GetDelegateForFunctionPointer<N_ReadDirectoryList>(new IntPtr(p_read_directory_list))
-            );
-
-            FileSystem.Instance = fileSystemDelegate;
-
             Logger.LogOutput();
-            return return_value_ptr.AsValue(coreDelegates.HandlePtr, false);
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            return return_value_ptr.AsException(e, false);
         }
     }
-
-    /*
-    [UnmanagedCallersOnly(EntryPoint = "ve_create_handler", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_ptr* CreateHandler(param_ptr* p_owner,
-        // PluginDelegates
-        delegate* unmanaged[Cdecl]<param_ptr*, param_bool, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void>, return_value_void*> p_plugins_get_all,
-        // IniDelegates
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_uint, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void>, return_value_void*> p_ini_get_ini_string,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, param_json*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_ini_fet_ini_int,
-        // ContextDelegates
-        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_context_get_app_version,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_context_get_current_game_version,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_string*, void>, return_value_void*> p_context_get_extender_version,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_bool*, void>, return_value_void*> p_context_is_extender_present,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_bool*, void>, return_value_void*> p_context_check_if_file_exists,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_data*, void>, return_value_void*> p_context_get_existing_data_file,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_bool, param_ptr*, delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void>, return_value_void*> p_context_get_existing_data_file_list,
-        // UI Delegates
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_json, delegate* unmanaged[Cdecl]<param_ptr*, param_int, param_int, param_json*, return_value_void*, void>, delegate* unmanaged[Cdecl]<param_ptr*, param_bool, param_int, return_value_void*, void>, delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void>, return_value_void*> p_ui_start_dialog,
-        delegate* unmanaged[Cdecl]<param_ptr*, return_value_void*, void> p_ui_end_dialog,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_json*, param_int, return_value_void*, void> p_ui_update_state,
-        delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_string*, return_value_void*, void> p_ui_report_error
-        )
-    {
-        Logger.LogInput();
-        try
-        {
-            var pluginsDelegate = new CallbackPluginDelegates(p_owner,
-                Marshal.GetDelegateForFunctionPointer<N_Plugins_GetAll>(new IntPtr(p_plugins_get_all))
-            );
-
-            var iniDelegate = new CallbackIniDelegates(p_owner,
-                Marshal.GetDelegateForFunctionPointer<N_Ini_GetIniString>(new IntPtr(p_ini_get_ini_string)),
-                Marshal.GetDelegateForFunctionPointer<N_Ini_GetIniInt>(new IntPtr(p_ini_fet_ini_int))
-            );
-            
-            var contextDelegate = new CallbackContextDelegates(p_owner,
-                Marshal.GetDelegateForFunctionPointer<N_Context_GetAppVersion>(new IntPtr(p_context_get_app_version)),
-                Marshal.GetDelegateForFunctionPointer<N_Context_GetCurrentGameVersion>(new IntPtr(p_context_get_current_game_version)),
-                Marshal.GetDelegateForFunctionPointer<N_Context_GetExtenderVersion>(new IntPtr(p_context_get_extender_version)),
-                Marshal.GetDelegateForFunctionPointer<N_Context_IsExtenderPresent>(new IntPtr(p_context_is_extender_present)),
-                Marshal.GetDelegateForFunctionPointer<N_Context_CheckIfFileExists>(new IntPtr(p_context_check_if_file_exists)),
-                Marshal.GetDelegateForFunctionPointer<N_Context_GetExistingDataFile>(new IntPtr(p_context_get_existing_data_file)),
-                Marshal.GetDelegateForFunctionPointer<N_Context_GetExistingDataFileList>(new IntPtr(p_context_get_existing_data_file_list))
-            );
-            
-            var uiDelegate = new CallbackUIDelegates(p_owner,
-                Marshal.GetDelegateForFunctionPointer<N_UI_StartDialog>(new IntPtr(p_ui_start_dialog)),
-                Marshal.GetDelegateForFunctionPointer<N_UI_EndDialog>(new IntPtr(p_ui_end_dialog)),
-                Marshal.GetDelegateForFunctionPointer<N_UI_UpdateState>(new IntPtr(p_ui_update_state)),
-                Marshal.GetDelegateForFunctionPointer<N_UI_ReportError>(new IntPtr(p_ui_report_error))
-            );
-            
-            var coreDelegates = new NativeCoreDelegatesHandler(p_owner, pluginsDelegate, contextDelegate, iniDelegate, uiDelegate);
-
-            Logger.LogOutput();
-            return return_value_ptr.AsValue(coreDelegates.HandlePtr, false);
-        }
-        catch (Exception e)
-        {
-            Logger.LogException(e);
-            return return_value_ptr.AsException(e, false);
-        }
-    }
-    */
 
     [UnmanagedCallersOnly(EntryPoint = "dispose_handler", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* DisposeHandler(param_ptr* p_handle)
@@ -216,13 +138,16 @@ public static unsafe partial class Bindings
 
             handler.Dispose();
 
-            Logger.LogOutput();
             return return_value_void.AsValue(false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
             return return_value_void.AsException(e, false);
+        }
+        finally
+        {
+            Logger.LogOutput();
         }
     }
 
@@ -243,13 +168,16 @@ public static unsafe partial class Bindings
 
             var result = Installer.TestSupported(modArchiveFileList.ToList(), allowedTypes.ToList());
 
-            Logger.LogOutput(result);
             return return_value_json.AsValue(result, CustomSourceGenerationContext.SupportedResult, false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
             return return_value_json.AsException(e, false);
+        }
+        finally
+        {
+            Logger.LogOutput();
         }
     }
 
@@ -273,7 +201,7 @@ public static unsafe partial class Bindings
 
             var modArchiveFileList = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_mod_archive_file_list, CustomSourceGenerationContext.StringArray);
             var stopPatterns = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_stop_patterns, CustomSourceGenerationContext.StringArray);
-            var pluginPath = new string(param_string.ToSpan(p_plugin_path));
+            var pluginPath = p_plugin_path is null ? null : new string(param_string.ToSpan(p_plugin_path));
             var scriptPath = new string(param_string.ToSpan(p_script_path));
             var preset = BUTR.NativeAOT.Shared.Utils.DeserializeJson(p_preset, CustomSourceGenerationContext.JsonDocument);
 
@@ -308,13 +236,16 @@ public static unsafe partial class Bindings
                 }
             });
 
-            Logger.LogOutput();
             return return_value_async.AsValue(false);
         }
         catch (Exception e)
         {
             Logger.LogException(e);
             return return_value_async.AsException(e, false);
+        }
+        finally
+        {
+            Logger.LogOutput();
         }
     }
 }

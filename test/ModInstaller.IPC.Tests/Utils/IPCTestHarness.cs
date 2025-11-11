@@ -38,38 +38,35 @@ internal class IPCTestHarness : IAsyncDisposable
     {
         // Register callbacks
         var delegates = new IPCDelegates(data);
-        RegisterCallback("getAppVersion", async _ => await delegates.GetAppVersion());
-        RegisterCallback("getCurrentGameVersion", async _ => await delegates.GetCurrentGameVersion());
-        RegisterCallback("getExtenderVersion", async args => await delegates.GetExtenderVersion(args![0]!.GetValue<string>()));
+        RegisterCallback("getAppVersion", _ => Task.FromResult<object?>(delegates.GetAppVersion()));
+        RegisterCallback("getCurrentGameVersion", _ => Task.FromResult<object?>(delegates.GetCurrentGameVersion()));
+        RegisterCallback("getExtenderVersion", args => Task.FromResult<object?>(delegates.GetExtenderVersion(args![0]!.GetValue<string>())));
         RegisterCallback("isExtenderPresent", async _ => await delegates.IsExtenderPresent());
         RegisterCallback("checkIfFileExists", async args => await delegates.CheckIfFileExists(args![0]!.GetValue<string>()));
         RegisterCallback("getExistingDataFile", async args => await delegates.GetExistingDataFile(args![0]!.GetValue<string>()));
         RegisterCallback("getExistingDataFileList", async args => await delegates.GetExistingDataFileList(args![0]!.GetValue<string>(), args[1]!.GetValue<string>(), args[2]!.GetValue<bool>()));
-        RegisterCallback("getAllPlugins", async args => await delegates.GetAllPlugins(args![0]!.GetValue<bool>()));
-        RegisterCallback("isPluginActive", async args => await delegates.IsPluginActive(args![0]!.GetValue<string>()));
-        RegisterCallback("isPluginPresent", async args => await delegates.IsPluginPresent(args![0]!.GetValue<string>()));
+        RegisterCallback("getAllPlugins", args => Task.FromResult<object?>(delegates.GetAllPlugins(args![0]!.GetValue<bool>())));
         RegisterCallback("getIniString", async args => await delegates.GetIniString(args![0]!.GetValue<string>(), args[1]!.GetValue<string>(), args[2]!.GetValue<string>()));
         RegisterCallback("getIniInt", async args => await delegates.GetIniInt(args![0]!.GetValue<string>(), args[1]!.GetValue<string>(), args[2]!.GetValue<string>()));
 
         // Register UI callbacks using the UI handler
-        var uiHandler = new IPCUIHandler(data.DialogChoices, (requestId, callbackId, args) =>
-            InvokeServerCallback(requestId, callbackId, args));
-        RegisterCallback("startDialog", async args =>
+        var uiHandler = new IPCUIHandler(data.DialogChoices, InvokeServerCallback);
+        RegisterCallback("startDialog", args =>
         {
             // Pass the message ID that sent this callback
-            await uiHandler.StartDialog(_currentRequestId!, args!);
-            return null;
+            uiHandler.StartDialog(_currentRequestId!, args!);
+            return Task.FromResult<object?>(null);
         });
-        RegisterCallback("endDialog", async args =>
+        RegisterCallback("endDialog", args =>
         {
-            await uiHandler.EndDialog();
-            return null;
+            uiHandler.EndDialog();
+            return Task.FromResult<object?>(null);
         });
-        RegisterCallback("updateState", async args =>
+        RegisterCallback("updateState", args =>
         {
             // Pass the message ID that sent this callback
-            await uiHandler.UpdateState(_currentRequestId!, args!);
-            return null;
+            uiHandler.UpdateState(_currentRequestId!, args!);
+            return Task.FromResult<object?>(null);
         });
         RegisterCallback("reportError", async args =>
         {
@@ -86,7 +83,8 @@ internal class IPCTestHarness : IAsyncDisposable
         var port = ((IPEndPoint) _listener.LocalEndpoint).Port;
 
         // Spawn ModInstallerIPC.exe with the port
-        var exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\..\src\ModInstaller.IPC\bin\Debug\ModInstallerIPC.exe");
+        var exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\..\src\ModInstaller.IPC\bin\Debug\net9.0-windows\win-x64\ModInstallerIPC.exe");
+        //var exePath = @"D:\Git\NexusMods\Vortex\node_modules\fomod-installer-ipc\dist\ModInstallerIPC.exe";
         if (!File.Exists(exePath))
         {
             throw new FileNotFoundException($"ModInstallerIPC.exe not found at {exePath}. Run 'dotnet build' first.");
@@ -242,8 +240,9 @@ internal class IPCTestHarness : IAsyncDisposable
         _pendingReplies[id] = tcs;
 
         var json = JsonSerializer.Serialize(message);
-        await File.AppendAllTextAsync("D:\\Git\\writes.txt", json);
-        await File.AppendAllTextAsync("D:\\Git\\writes.txt", Environment.NewLine);
+        //await File.AppendAllTextAsync("D:\\Git\\writes.txt", json);
+        //await File.AppendAllTextAsync("D:\\Git\\writes.txt", Environment.NewLine);
+        //await File.AppendAllTextAsync("D:\\Git\\writes.txt", Environment.NewLine);
         var bytes = Encoding.UTF8.GetBytes(json + "\uFFFF");
 
         await _stream!.WriteAsync(bytes);
@@ -298,8 +297,9 @@ internal class IPCTestHarness : IAsyncDisposable
 
     private async Task ProcessMessageAsync(string json)
     {
-        await File.AppendAllTextAsync("D:\\Git\\read.txt", json);
-        await File.AppendAllTextAsync("D:\\Git\\read.txt", Environment.NewLine);
+        //await File.AppendAllTextAsync("D:\\Git\\read.txt", json);
+        //await File.AppendAllTextAsync("D:\\Git\\read.txt", Environment.NewLine);
+        //await File.AppendAllTextAsync("D:\\Git\\read.txt", Environment.NewLine);
 
         try
         {
@@ -347,8 +347,9 @@ internal class IPCTestHarness : IAsyncDisposable
                         };
 
                         var replyJson = JsonSerializer.Serialize(replyMessage);
-                        await File.AppendAllTextAsync("D:\\Git\\replies.txt", replyJson);
-                        await File.AppendAllTextAsync("D:\\Git\\replies.txt", Environment.NewLine);
+                        //await File.AppendAllTextAsync("D:\\Git\\replies.txt", replyJson);
+                        //await File.AppendAllTextAsync("D:\\Git\\replies.txt", Environment.NewLine);
+                        //await File.AppendAllTextAsync("D:\\Git\\replies.txt", Environment.NewLine);
                         var replyBytes = Encoding.UTF8.GetBytes(replyJson + "\uFFFF");
                         await _stream!.WriteAsync(replyBytes);
                         await _stream!.FlushAsync();
@@ -374,6 +375,10 @@ internal class IPCTestHarness : IAsyncDisposable
                         await _stream!.WriteAsync(replyBytes);
                         await _stream!.FlushAsync();
                     }
+                }
+                else
+                {
+                    Console.WriteLine($"Unknown callback: {callbackType} {name}");
                 }
             }
             // Is this a response to our request?

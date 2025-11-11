@@ -2,6 +2,7 @@
   
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
     <OutputType>Library</OutputType>
     <RootNamespace>Nexus.Client.Util.Antlr</RootNamespace>
     

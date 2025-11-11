@@ -4,7 +4,7 @@ using TestData;
 
 using Utils;
 
-namespace ModInstaller.Adaptor.Typed.Tests.Delegates;
+namespace ModInstaller.Adaptor.Tests.Shared.Delegates;
 
 public class ArchiveFileSystem : IFileSystem
 {

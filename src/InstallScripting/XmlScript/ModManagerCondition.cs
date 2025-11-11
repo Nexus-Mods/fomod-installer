@@ -37,14 +37,12 @@ namespace FomodInstaller.Scripting.XmlScript
 		{
             Version AppVersion = new Version("0.0.0.0");
 
-            Task.Run(async () => {
-                string VersionString = await coreDelegates.context.GetAppVersion();
+            string VersionString = coreDelegates.context.GetAppVersion();
 
-                if (!string.IsNullOrEmpty(VersionString))
-                    AppVersion = new Version(VersionString);
-                else
-                    AppVersion = new Version("0.0.0.0");
-            }).Wait();
+            if (!string.IsNullOrEmpty(VersionString))
+                AppVersion = new Version(VersionString);
+            else
+                AppVersion = new Version("0.0.0.0");
 
             return ((AppVersion != null) && (AppVersion >= MinimumVersion));
 		}
@@ -64,14 +62,12 @@ namespace FomodInstaller.Scripting.XmlScript
 		{
             Version AppVersion = new Version("0.0.0.0");
 
-            Task.Run(async () => {
-                string VersionString = await coreDelegates.context.GetAppVersion();
+            string VersionString = coreDelegates.context.GetAppVersion();
 
-                if (!string.IsNullOrEmpty(VersionString))
-                    AppVersion = new Version(VersionString);
-                else
-                    AppVersion = new Version("0.0.0.0");
-            }).Wait();
+            if (!string.IsNullOrEmpty(VersionString))
+                AppVersion = new Version(VersionString);
+            else
+                AppVersion = new Version("0.0.0.0");
 
             if ((AppVersion < MinimumVersion) && !invert)
 				return string.Format("This mod requires v{0} or higher.", MinimumVersion);

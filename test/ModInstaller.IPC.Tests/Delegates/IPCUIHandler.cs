@@ -34,7 +34,7 @@ internal class IPCUIHandler
         _invokeCallback = invokeCallback;
     }
 
-    public Task StartDialog(string messageId, JsonArray args)
+    public void StartDialog(string messageId, JsonArray args)
     {
         // The server sends StartParameters as a flat object: { moduleName, image, select, cont, cancel }
         // The callbacks are serialized as { "__callback": "id" }
@@ -52,44 +52,36 @@ internal class IPCUIHandler
             // Store the message ID that sent these callbacks
             _callbackRequestId = messageId;
         }
-
-        return Task.CompletedTask;
     }
 
-    public Task EndDialog()
+    public void EndDialog()
     {
         _selectCallbackId = null;
         _contCallbackId = null;
         _cancelCallbackId = null;
         _dialogInProgress = false;
-        return Task.CompletedTask;
     }
 
-    public Task UpdateState(string messageId, JsonArray args)
+    public void UpdateState(string messageId, JsonArray args)
     {
         // The server sends UpdateParameters as a flat object: { installSteps, currentStep }
-        if (args.Count == 0 || args[0] is not JsonObject updateParams) return Task.CompletedTask;
+        if (args.Count == 0 || args[0] is not JsonObject updateParams)
+            return;
 
         // Prevent re-entry while dialog is in progress
         if (_dialogInProgress)
-            return Task.CompletedTask;
+            return;
 
         var currentStep = updateParams["currentStep"]!.GetValue<int>();
 
         if (_contCallbackId == null || _callbackRequestId == null)
-        {
             throw new InvalidOperationException("UpdateState called before StartDialog");
-        }
 
         // Return immediately (like DeterministicUIContext) to send Reply first
         // Then invoke callbacks asynchronously
         if (_unattended)
         {
-            // Auto-continue in unattended mode
-            Task.Delay(200).ContinueWith(_ =>
-            {
-                _ = InvokeContCallback(true, currentStep);
-            });
+            _ = InvokeContCallback(true, currentStep);
         }
         else if (_dialogChoices is { Count: > 0 })
         {
@@ -109,19 +101,12 @@ internal class IPCUIHandler
                 ["groupId"] = option.GroupId,
                 ["plugins"] = JsonValue.Create(option.PluginIds)
             };
-            _ = _invokeCallback(_callbackRequestId, _selectCallbackId, new JsonArray(selectArgs))
-                .ContinueWith(_ =>
-                {
-                    // Wait for select to complete, then call continue
-                    return Task.Delay(200).ContinueWith(__ =>
-                    {
-                        _ = InvokeContCallback(true, currentStep);
-                        _dialogInProgress = false;
-                    });
-                });
+            _ = _invokeCallback(_callbackRequestId, _selectCallbackId, new JsonArray(selectArgs)).ContinueWith(_ =>
+            {
+                _ = InvokeContCallback(true, currentStep);
+                _dialogInProgress = false;
+            });
         }
-
-        return Task.CompletedTask;
     }
 
     public Task ReportError(JsonArray args)

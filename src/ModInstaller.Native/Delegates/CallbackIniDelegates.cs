@@ -35,24 +35,34 @@ internal class CallbackIniDelegates : IniDelegates
     public static unsafe void GetIniStringCallback(param_ptr* pOwner, return_value_string* pResult)
     {
         Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
+            if (pOwner == null)
+            {
+                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
+
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: TaskCompletionSource<string?> tcs} handle)
+            {
+                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            result.SetAsString(tcs);
+            handle.Free();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            Logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsString(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
+        finally
+        {
+            Logger.LogOutput();
+        }
     }
 
     private unsafe void GetIniStringNative(ReadOnlySpan<char> iniFilename, ReadOnlySpan<char> iniSection, ReadOnlySpan<char> iniKey, TaskCompletionSource<string> tcs)
@@ -92,24 +102,34 @@ internal class CallbackIniDelegates : IniDelegates
     public static unsafe void GetIniIntCallback(param_ptr* pOwner, return_value_int32* pResult)
     {
         Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<int> tcs } handle)
+            if (pOwner == null)
+            {
+                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
+
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: TaskCompletionSource<int> tcs} handle)
+            {
+                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            result.SetAsInt32(tcs);
+            handle.Free();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            Logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsInt32(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
+        finally
+        {
+            Logger.LogOutput();
+        }
     }
 
     private unsafe void GetIniIntNative(ReadOnlySpan<char> iniFilename, ReadOnlySpan<char> iniSection, ReadOnlySpan<char> iniKey, TaskCompletionSource<int> tcs)

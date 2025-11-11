@@ -39,161 +39,65 @@ internal class CallbackContextDelegates : ContextDelegates
         _getExistingDataFileList = getExistingDataFileList;
     }
 
-    public override async Task<string> GetAppVersion()
-    {
-        var tcs = new TaskCompletionSource<string>();
-        GetAppVersionNative(tcs);
-        return await tcs.Task;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void GetAppVersionCallback(param_ptr* pOwner, return_value_string* pResult)
-    {
-        Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
-        {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
-
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
-        {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
-        }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsString(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
-    }
-
-    private unsafe void GetAppVersionNative(TaskCompletionSource<string> tcs)
+    public override unsafe string GetAppVersion()
     {
         Logger.LogInput();
 
-        var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
-
         try
         {
-            using var result = SafeStructMallocHandle.Create(_getAppVersion(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetAppVersionCallback), true);
-            result.ValueAsVoid();
+            using var result = SafeStructMallocHandle.Create(_getAppVersion(_pOwner), true);
+            using var str = result.ValueAsString();
 
             Logger.LogOutput();
+
+            return str.ToString();
         }
         catch (Exception e)
         {
             Logger.LogException(e);
-            tcs.TrySetException(e);
-            handle.Free();
+            throw;
         }
     }
 
-    public override async Task<string> GetCurrentGameVersion()
-    {
-        var tcs = new TaskCompletionSource<string>();
-        GetCurrentGameVersionNative(tcs);
-        return await tcs.Task;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void GetCurrentGameVersionCallback(param_ptr* pOwner, return_value_string* pResult)
-    {
-        Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
-        {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
-
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
-        {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
-        }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsString(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
-    }
-
-    private unsafe void GetCurrentGameVersionNative(TaskCompletionSource<string> tcs)
+    public override unsafe string GetCurrentGameVersion()
     {
         Logger.LogInput();
 
-        var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
-
         try
         {
-            using var result = SafeStructMallocHandle.Create(_getCurrentGameVersion(_pOwner, (param_ptr*) GCHandle.ToIntPtr(handle), &GetCurrentGameVersionCallback), true);
-            result.ValueAsVoid();
+            using var result = SafeStructMallocHandle.Create(_getCurrentGameVersion(_pOwner), true);
+            using var str = result.ValueAsString();
 
             Logger.LogOutput();
+            
+            return str.ToString();
         }
         catch (Exception e)
         {
             Logger.LogException(e);
-            tcs.TrySetException(e);
-            handle.Free();
+            throw;
         }
     }
 
-    public override async Task<string> GetExtenderVersion(string extender)
-    {
-        var tcs = new TaskCompletionSource<string>();
-        GetExtenderVersionNative(extender, tcs);
-        return await tcs.Task;
-    }
-
-    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    public static unsafe void GetExtenderVersionCallback(param_ptr* pOwner, return_value_string* pResult)
-    {
-        Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
-        {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
-
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string?> tcs } handle)
-        {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
-        }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsString(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
-    }
-
-    private unsafe void GetExtenderVersionNative(ReadOnlySpan<char> extender, TaskCompletionSource<string> tcs)
+    public override unsafe string GetExtenderVersion(string extender)
     {
         Logger.LogInput();
-
-        var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
         fixed (char* pExtender = extender)
         {
             try
             {
-                using var result = SafeStructMallocHandle.Create(_getExtenderVersion(_pOwner, (param_string*) pExtender, (param_ptr*) GCHandle.ToIntPtr(handle), &GetExtenderVersionCallback), true);
-                result.ValueAsVoid();
+                using var result = SafeStructMallocHandle.Create(_getExtenderVersion(_pOwner, (param_string*) pExtender), true);
+                using var str = result.ValueAsString();
 
                 Logger.LogOutput();
+                
+            return str.ToString();
             }
             catch (Exception e)
             {
                 Logger.LogException(e);
-                tcs.TrySetException(e);
-                handle.Free();
+                throw;
             }
         }
     }
@@ -209,24 +113,32 @@ internal class CallbackContextDelegates : ContextDelegates
     public static unsafe void IsExtenderPresentCallback(param_ptr* pOwner, return_value_bool* pResult)
     {
         Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<bool> tcs } handle)
+            if (pOwner == null)
+            {
+                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
+
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: TaskCompletionSource<bool> tcs} handle)
+            {
+                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            result.SetAsBool(tcs);
+            handle.Free();
+
+            Logger.LogOutput();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            Logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsBool(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
     }
 
     private unsafe void IsExtenderPresentNative(TaskCompletionSource<bool> tcs)
@@ -261,24 +173,32 @@ internal class CallbackContextDelegates : ContextDelegates
     public static unsafe void CheckIfFileExistsCallback(param_ptr* pOwner, return_value_bool* pResult)
     {
         Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<bool> tcs } handle)
+            if (pOwner == null)
+            {
+                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
+
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: TaskCompletionSource<bool> tcs} handle)
+            {
+                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            result.SetAsBool(tcs);
+            handle.Free();
+
+            Logger.LogOutput();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            Logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsBool(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
     }
 
     private unsafe void CheckIfFileExistsNative(ReadOnlySpan<char> fileName, TaskCompletionSource<bool> tcs)
@@ -316,24 +236,32 @@ internal class CallbackContextDelegates : ContextDelegates
     public static unsafe void GetExistingDataFileCallback(param_ptr* pOwner, return_value_data* pResult)
     {
         Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<byte[]?> tcs } handle)
+            if (pOwner == null)
+            {
+                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
+
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: TaskCompletionSource<byte[]?> tcs} handle)
+            {
+                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            result.SetAsData(tcs);
+            handle.Free();
+
+            Logger.LogOutput();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            Logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsData(tcs);
-        handle.Free();
-
-        Logger.LogOutput();
     }
 
     private unsafe void GetExistingDataFileNative(ReadOnlySpan<char> dataFile, TaskCompletionSource<byte[]> tcs)
@@ -371,24 +299,32 @@ internal class CallbackContextDelegates : ContextDelegates
     public static unsafe void GetExistingDataFileListCallback(param_ptr* pOwner, return_value_json* pResult)
     {
         Logger.LogCallbackInput(pResult);
-
-        if (pOwner == null)
+        try
         {
-            Logger.LogException(new ArgumentNullException(nameof(pOwner)));
-            return;
-        }
 
-        if (GCHandle.FromIntPtr((IntPtr) pOwner) is not { Target: TaskCompletionSource<string[]?> tcs } handle)
+            if (pOwner == null)
+            {
+                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                return;
+            }
+
+            if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: TaskCompletionSource<string[]?> tcs} handle)
+            {
+                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                return;
+            }
+
+            using var result = SafeStructMallocHandle.Create(pResult, true);
+            result.SetAsJson(tcs, SourceGenerationContext.Default.StringArray);
+            handle.Free();
+
+            Logger.LogOutput();
+        }
+        catch (Exception e)
         {
-            Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
-            return;
+            Logger.LogException(e);
+            throw;
         }
-
-        using var result = SafeStructMallocHandle.Create(pResult, true);
-        result.SetAsJson(tcs, SourceGenerationContext.Default.StringArray);
-        handle.Free();
-
-        Logger.LogOutput();
     }
 
     private unsafe void GetExistingDataFileListNative(ReadOnlySpan<char> folderPath, ReadOnlySpan<char> searchFilter, bool isRecursive, TaskCompletionSource<string[]> tcs)

@@ -12,12 +12,14 @@ public class InstallTests
 {
     public static TestClass SkyrimData() => InstallDataSource.SkyrimData();
     public static TestClass Fallout4Data() => InstallDataSource.Fallout4Data();
+    public static TestClass FalloutNVData() => InstallDataSource.FalloutNVData();
     public static TestClass FomodComplianceTestsData() => InstallDataSource.FomodComplianceTestsData();
     public static TestClass CSharpTestCaseData() => InstallDataSource.CSharpTestCaseData();
 
     [Test]
     [MethodDataSource(nameof(SkyrimData))]
     [MethodDataSource(nameof(Fallout4Data))]
+    //[MethodDataSource(nameof(FalloutNVData))]
     [MethodDataSource(nameof(FomodComplianceTestsData))]
     [MethodDataSource(nameof(CSharpTestCaseData))]
     [NotInParallel]

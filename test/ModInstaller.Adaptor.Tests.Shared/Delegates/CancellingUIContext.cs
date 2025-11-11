@@ -1,9 +1,9 @@
 ﻿using FomodInstaller.Interface;
 using FomodInstaller.Interface.ui;
 
-namespace ModInstaller.Adaptor.Typed.Tests.Delegates;
+namespace ModInstaller.Adaptor.Tests.Shared.Delegates;
 
-internal class CancellingUIContext : UIDelegates
+public class CancellingUIContext : UIDelegates
 {
     private Action? _cancel;
     private bool _hasReceivedFirstUpdate;

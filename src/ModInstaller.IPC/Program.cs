@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using Newtonsoft.Json;
 
 namespace ModInstallerIPC
 {
@@ -41,7 +39,9 @@ namespace ModInstallerIPC
 
         static int Main(string[] args)
         {
+#if NET9_0_OR_GREATER
             Application.SetHighDpiMode(HighDpiMode.DpiUnawareGdiScaled);
+#endif
             Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

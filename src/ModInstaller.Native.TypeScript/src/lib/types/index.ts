@@ -1,8 +1,10 @@
 export * from './ModInstaller';
+export * from './FileSystem';
 export * from './SupportedResult';
 export * from './InstallResult';
 
-import { INativeExtension } from './ModInstaller';
+import { IFileSystemExtension } from './FileSystem';
+import { IModInstallerExtension } from './ModInstaller';
 
 export type OrderType = 'AlphaAsc' | 'AlphaDesc' | 'Explicit';
 export type GroupType = 'SelectAtLeastOne' | 'SelectAtMostOne' | 'SelectExactlyOne' | 'SelectAll' | 'SelectAny';
@@ -48,7 +50,7 @@ export type SelectCallback = (stepId: number, groupId: number, optionId: number[
 export type ContinueCallback = (forward: boolean, currentStepId: number) => void;
 export type CancelCallback = () => void;
 
-export interface IExtension extends INativeExtension {
+export interface IExtension extends IModInstallerExtension, IFileSystemExtension {
     allocWithOwnership(length: number): Buffer | null;
     allocWithoutOwnership(length: number): Buffer | null;
     allocAliveCount(): number;

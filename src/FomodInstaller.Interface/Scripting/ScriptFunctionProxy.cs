@@ -367,14 +367,12 @@ namespace FomodInstaller.Interface
         public virtual Version GetModManagerVersion()
         {
             Version AppVersion = new Version("0.0.0.0");
-            Task.Run(async () => {
-                string VersionString = await Core.context.GetAppVersion();
+            string VersionString = Core.context.GetAppVersion();
 
-                if (!string.IsNullOrEmpty(VersionString))
-                    AppVersion = new Version(VersionString);
-                else
-                    AppVersion = new Version("0.0.0.0");
-            }).Wait();
+            if (!string.IsNullOrEmpty(VersionString))
+                AppVersion = new Version(VersionString);
+            else
+                AppVersion = new Version("0.0.0.0");
             return AppVersion;
         }
 
@@ -385,25 +383,25 @@ namespace FomodInstaller.Interface
         /// is not installed.</returns>
         public Version GetGameVersion()
         {
-            string GameVersion = Core.context.GetCurrentGameVersion().GetAwaiter().GetResult();
+            string GameVersion = Core.context.GetCurrentGameVersion();
             return GameVersion != null ? new Version(GameVersion) : new Version("0.0.0.0");
         }
 
         public Version GetSkseVersion()
         {
-            string ExtVersion = Core.context.GetExtenderVersion("skse").GetAwaiter().GetResult();
+            string ExtVersion = Core.context.GetExtenderVersion("skse");
             return ExtVersion != null ? new Version(ExtVersion) : null;
         }
 
         public Version GetFoseVersion()
         {
-            string ExtVersion = Core.context.GetExtenderVersion("fose").GetAwaiter().GetResult();
+            string ExtVersion = Core.context.GetExtenderVersion("fose");
             return ExtVersion != null ? new Version(ExtVersion) : null;
         }
     
         public Version GetNvseVersion()
         {
-            string ExtVersion = AwaitDelegate(() => Core.context.GetExtenderVersion("nvse"));
+            string ExtVersion = Core.context.GetExtenderVersion("nvse");
 
             return ExtVersion != null ? new Version(ExtVersion) : null;
         }
@@ -425,9 +423,7 @@ namespace FomodInstaller.Interface
         {
             string[] ManagedPlugins = null;
 
-            Task.Run(async () => {
-                ManagedPlugins = await Core.plugin.GetAll(false);
-            }).Wait();
+            ManagedPlugins = Core.plugin.GetAll(false);
 
             return ManagedPlugins;
         }
@@ -442,9 +438,7 @@ namespace FomodInstaller.Interface
         {
             string[] ActivePlugins = new string[0];
 
-            Task.Run(async () => {
-                ActivePlugins = await Core.plugin.GetAll(true);
-            }).Wait();
+            ActivePlugins = Core.plugin.GetAll(true);
 
             return ActivePlugins;
         }

@@ -17,9 +17,9 @@ public class DynamicPluginDelegates : PluginDelegates
         mGetAll = source.getAll;
     }
 
-    public override async Task<string[]> GetAll(bool activeOnly)
+    public override string[] GetAll(bool activeOnly)
     {
-        dynamic res = await Shared.TimeoutRetry(() => Task.Run(() => mGetAll(activeOnly)));
+        dynamic res = Shared.TimeoutRetrySync(() => mGetAll(activeOnly));
         if (res != null)
         {
             IEnumerable enu = res;
@@ -29,20 +29,20 @@ public class DynamicPluginDelegates : PluginDelegates
             return new string[0];
     }
 
-    public override async Task<bool> IsActive(string pluginName)
+    public override bool IsActive(string pluginName)
     {
         if (mActiveCache == null)
         {
-            mActiveCache = await GetAll(true);
+            mActiveCache = GetAll(true);
         }
         return mActiveCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default;
     }
 
-    public override async Task<bool> IsPresent(string pluginName)
+    public override bool IsPresent(string pluginName)
     {
         if (mPresentCache == null)
         {
-            mPresentCache = await GetAll(false);
+            mPresentCache = GetAll(false);
         }
         return mPresentCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default;
     }

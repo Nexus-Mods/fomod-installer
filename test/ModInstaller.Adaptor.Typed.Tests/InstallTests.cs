@@ -1,6 +1,6 @@
 ﻿using FomodInstaller.ModInstaller;
 
-using ModInstaller.Adaptor.Typed.Tests.Delegates;
+using ModInstaller.Adaptor.Tests.Shared.Delegates;
 using ModInstaller.Lite;
 
 using TestData;
@@ -15,24 +15,26 @@ public class InstallTests
 {
     public static TestClass SkyrimData() => InstallDataSource.SkyrimData();
     public static TestClass Fallout4Data() => InstallDataSource.Fallout4Data();
+    public static TestClass FalloutNVData() => InstallDataSource.FalloutNVData();
     public static TestClass FomodComplianceTestsData() => InstallDataSource.FomodComplianceTestsData();
 
     [Test]
     [MethodDataSource(nameof(SkyrimData))]
     [MethodDataSource(nameof(Fallout4Data))]
+    //[MethodDataSource(nameof(FalloutNVData))]
     [MethodDataSource(nameof(FomodComplianceTestsData))]
     [NotInParallel]
     public async Task Test(InstallData data)
     {
         var coreDelegates = new TestCoreDelegates(
             new CallbackPluginDelegates(
-                _ => Task.FromResult(data.InstalledPlugins.ToArray())
+                _ => data.InstalledPlugins.ToArray()
             ),
             new CallbackIniDelegates(null!, null!),
             new CallbackContextDelegates(
-                () => Task.FromResult(data.AppVersion),
-                () => Task.FromResult(data.GameVersion),
-                (_) => Task.FromResult(data.ExtenderVersion),
+                () => data.AppVersion,
+                () => data.GameVersion,
+                (_) => data.ExtenderVersion,
                 null!, null!, null!, null!
             ),
             new DeterministicUIContext(data.DialogChoices)
@@ -58,6 +60,7 @@ public class InstallTests
     [Test]
     [MethodDataSource(nameof(SkyrimData))]
     [MethodDataSource(nameof(Fallout4Data))]
+    //[MethodDataSource(nameof(FalloutNVData))]
     [MethodDataSource(nameof(FomodComplianceTestsData))]
     [NotInParallel]
     public async Task TestCancellation(InstallData data)
@@ -68,13 +71,13 @@ public class InstallTests
         var cancellingUIContext = new CancellingUIContext();
         var coreDelegates = new TestCoreDelegates(
             new CallbackPluginDelegates(
-                _ => Task.FromResult(data.InstalledPlugins.ToArray())
+                _ => data.InstalledPlugins.ToArray()
             ),
             new CallbackIniDelegates(null!, null!),
             new CallbackContextDelegates(
-                () => Task.FromResult(data.AppVersion),
-                () => Task.FromResult(data.GameVersion),
-                (_) => Task.FromResult(data.ExtenderVersion),
+                () => data.AppVersion,
+                () => data.GameVersion,
+                (_) => data.ExtenderVersion,
                 null!, null!, null!, null!
             ),
             cancellingUIContext

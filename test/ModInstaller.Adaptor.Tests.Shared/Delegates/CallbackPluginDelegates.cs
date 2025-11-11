@@ -1,36 +1,36 @@
 ﻿using FomodInstaller.Interface;
 
-namespace ModInstaller.Adaptor.Typed.Tests.Delegates;
+namespace ModInstaller.Adaptor.Tests.Shared.Delegates;
 
-internal class CallbackPluginDelegates : PluginDelegates
+public class CallbackPluginDelegates : PluginDelegates
 {
-    private readonly Func<bool, Task<string[]>> _getAllFunc;
+    private readonly Func<bool, string[]> _getAllFunc;
 
     private string[]? mActiveCache;
     private string[]? mPresentCache;
 
     public CallbackPluginDelegates(
-        Func<bool, Task<string[]>> getAllFunc)
+        Func<bool, string[]> getAllFunc)
     {
         _getAllFunc = getAllFunc;
     }
 
-    public override async Task<string[]> GetAll(bool activeOnly) => await _getAllFunc(activeOnly);
+    public override string[] GetAll(bool activeOnly) => _getAllFunc(activeOnly);
 
-    public override async Task<bool> IsActive(string pluginName)
+    public override bool IsActive(string pluginName)
     {
         if (mActiveCache == null)
         {
-            mActiveCache = await GetAll(true);
+            mActiveCache = GetAll(true);
         }
         return mActiveCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default;
     }
 
-    public override async Task<bool> IsPresent(string pluginName)
+    public override bool IsPresent(string pluginName)
     {
         if (mPresentCache == null)
         {
-            mPresentCache = await GetAll(false);
+            mPresentCache = GetAll(false);
         }
         return mPresentCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default;
     }
