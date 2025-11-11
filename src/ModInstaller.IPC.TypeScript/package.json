@@ -25,12 +25,14 @@
     "list-processes": "node cleanup-processes.js",
     "watch:build": "tsc -p tsconfig.json -w"
   },
+  "dependencies": {
+    "winapi-bindings": "Nexus-Mods/node-winapi-bindings"
+  },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "fs-extra": "^10.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.0",
-    "winapi-bindings": "Nexus-Mods/node-winapi-bindings"
+    "typescript": "^5.0.0"
   },
   "packageManager": "yarn@1.22.19"
 }
