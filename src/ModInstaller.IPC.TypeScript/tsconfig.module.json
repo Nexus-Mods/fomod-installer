@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "target": "es2015",
+    "outDir": "dist/module",
+    "module": "esnext",
+    "useUnknownInCatchVariables": false
+  },
+  "exclude": [
+    "node_modules/**"
+  ]
+}
