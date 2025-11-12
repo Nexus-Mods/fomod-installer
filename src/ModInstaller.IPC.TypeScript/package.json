@@ -1,8 +1,10 @@
 {
-  "name": "fomod-installer",
+  "name": "fomod-installer-ipc",
   "version": "0.10.1",
   "description": "Installer for xml and c# fomods",
-  "typings": "index.d.ts",
+  "main": "dist/main/lib/index.js",
+  "typings": "dist/main/lib/index.d.ts",
+  "module": "dist/module/lib/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/Nexus-Mods/fomod-installer.git"
@@ -14,18 +16,23 @@
     "url": "https://github.com/Nexus-Mods/fomod-installer/issues"
   },
   "scripts": {
-    "buildDev": "node build.js Debug",
-    "build": "node build.js",
+    "clean": "node build.js clean",
+    "build": "node build.js build",
+    "build-csharp": "node build.js build-csharp",
+    "build-ts": "node build.js build-ts",
+    "buildDev": "node build.js build Debug",
     "cleanup": "node cleanup-processes.js --force",
-    "list-processes": "node cleanup-processes.js"
-  },
-  "peerDependencies": {
-    "winapi-bindings": "*"
+    "list-processes": "node cleanup-processes.js",
+    "watch:build": "tsc -p tsconfig.json -w"
   },
   "dependencies": {
-    "async": "^3.2.2",
-    "copyfiles": "*",
-    "fs-extra": "^10.1.0"
+    "winapi-bindings": "Nexus-Mods/node-winapi-bindings"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "fs-extra": "^10.1.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0"
   },
   "packageManager": "yarn@1.22.19"
 }
