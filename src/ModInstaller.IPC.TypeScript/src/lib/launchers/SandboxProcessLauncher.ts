@@ -177,7 +177,9 @@ export class SandboxProcessLauncher implements IProcessLauncher {
     });
 
     // Grant access to the executable and its directory
-    this.grantFileSystemAccess(exePath, options.cwd);
+    //  this is no longer needed as we grant access to the exe directory
+    //  in the NSIS installer script
+    // this.grantFileSystemAccess(exePath, options.cwd);
 
     // Build command line
     const commandLine = `"${exePath}" ${args.join(' ')}`;
@@ -224,7 +226,11 @@ export class SandboxProcessLauncher implements IProcessLauncher {
         containerName: this.containerName
       });
     } catch (err) {
-      log('warn', 'Error deleting App Container during cleanup', {
+      // We most probably do not have permissions to delete the container
+      //  as the file system permissions were were created by an elevated process (the installer)
+      //  theoretically we could try to elevate here, but it's not worth the UX impact.
+      const severity = err.message.includes('Access is denied') ? 'debug' : 'debug';
+      log(severity, 'Error deleting App Container during cleanup', {
         containerName: this.containerName,
         error: err.message
       });
