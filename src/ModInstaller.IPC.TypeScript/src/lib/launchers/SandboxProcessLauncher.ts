@@ -227,9 +227,9 @@ export class SandboxProcessLauncher implements IProcessLauncher {
       });
     } catch (err) {
       // We most probably do not have permissions to delete the container
-      //  as the file system permissions were were created by an elevated process (the installer)
+      //  as the file system permissions were created by an elevated process (the installer)
       //  theoretically we could try to elevate here, but it's not worth the UX impact.
-      const severity = err.message.includes('Access is denied') ? 'debug' : 'debug';
+      const severity = err.message.toLowerCase().includes('access is denied') ? 'debug' : 'error';
       log(severity, 'Error deleting App Container during cleanup', {
         containerName: this.containerName,
         error: err.message
