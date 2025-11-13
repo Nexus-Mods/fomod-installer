@@ -179,7 +179,9 @@ export class SandboxProcessLauncher implements IProcessLauncher {
     // Grant access to the executable and its directory
     //  this is no longer needed as we grant access to the exe directory
     //  in the NSIS installer script
-    // this.grantFileSystemAccess(exePath, options.cwd);
+    try {
+      this.grantFileSystemAccess(exePath, options.cwd);
+    } catch { }
 
     // Build command line
     const commandLine = `"${exePath}" ${args.join(' ')}`;
