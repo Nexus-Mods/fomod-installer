@@ -3,7 +3,7 @@
         {
             "target_name": "modinstaller",
             "sources": [
-                "<(module_root_dir)/src/main.cpp"
+                "<(module_root_dir)/src-native/main.cpp"
             ],
             "include_dirs": [
                 "<!@(node -p \"require('node-addon-api').include\")",

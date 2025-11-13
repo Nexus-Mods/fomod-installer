@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 project(modinstaller)
 
 add_library(${PROJECT_NAME} SHARED
-  src/main.cpp
+  src-native/main.cpp
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
 

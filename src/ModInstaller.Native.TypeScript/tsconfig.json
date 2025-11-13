@@ -34,14 +34,14 @@
     "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */,
     "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators. */,
     "lib": [
-      "es2017"
+      "ES2019"
     ],
     "types": [
       "node"
     ],
     "typeRoots": [
       "node_modules/@types",
-      "src/lib/types"
+      "src/types"
     ]
   },
   "include": [

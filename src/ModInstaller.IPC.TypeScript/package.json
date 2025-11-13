@@ -3,7 +3,7 @@
   "version": "0.10.1",
   "description": "Installer for xml and c# fomods",
   "main": "./dist/index.js",
-  "types": "./dist/lib/index.d.ts",
+  "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/Nexus-Mods/fomod-installer.git"
@@ -25,16 +25,13 @@
     "list-processes": "node cleanup-processes.js",
     "watch:build": "tsc -p tsconfig.json -w"
   },
-  "dependencies": {
-    "winapi-bindings": "Nexus-Mods/node-winapi-bindings"
-  },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "fs-extra": "^10.1.0",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.0",
     "vortex-api": "Nexus-Mods/vortex-api",
+    "winapi-bindings": "Nexus-Mods/node-winapi-bindings",
     "webpack": "^5.95.0",
     "webpack-cli": "^5.1.4"
   },
