@@ -101,6 +101,7 @@
 #endif
 
 #include <windows.h>
+#include <shlobj.h>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
@@ -140,11 +141,32 @@ public:
 
         if (mutex)
         {
-            while (true)
+            // Calculate timeout (1 second from now)
+            auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(1);
+
+            while (std::chrono::steady_clock::now() < timeout)
             {
-                DWORD waitResult = WaitForSingleObject(mutex, 100); // 100 ms timeout
-                if (waitResult == WAIT_OBJECT_0)
+                // Ensure directory exists
+                try
                 {
+                    size_t lastSlash = _logFilePath.find_last_of("\\/");
+                    if (lastSlash != std::string::npos)
+                    {
+                        std::string directory = _logFilePath.substr(0, lastSlash);
+                        // Create directory (SHCreateDirectoryExA handles nested directories)
+                        SHCreateDirectoryExA(NULL, directory.c_str(), NULL);
+                    }
+                }
+                catch (...) { /* ignore */ }
+
+                try
+                {
+                    DWORD waitResult = WaitForSingleObject(mutex, 100); // 100 ms timeout
+                    if (waitResult != WAIT_OBJECT_0)
+                    {
+                        continue;
+                    }
+
                     try
                     {
                         std::ofstream fs(_logFilePath, std::ios::app);
@@ -163,13 +185,19 @@ public:
 
                             fs << "[C++][" << timeStr << "." << std::setfill('0') << std::setw(3) << milliseconds << "] " << message << std::endl;
                         }
+                        ReleaseMutex(mutex);
+                        CloseHandle(mutex);
+                        return;
                     }
-                    catch (const std::exception &)
+                    catch (...)
                     {
-                        // Ignore exceptions and retry
+                        ReleaseMutex(mutex);
+                        throw;
                     }
-                    ReleaseMutex(mutex);
-                    break;
+                }
+                catch (...)
+                {
+                    Sleep(50);
                 }
             }
             CloseHandle(mutex);
@@ -317,7 +345,11 @@ public:
 const std::string Logger::_logFilePath = []() {
     const char* appData = std::getenv("APPDATA");
     if (appData != nullptr) {
+#ifdef DEBUG
         return std::string(appData) + "\\vortex_devel\\FOMOD.ModInstaller.log";
+#else
+        return std::string(appData) + "\\vortex\\FOMOD.ModInstaller.log";
+#endif
     }
     return std::string("FOMOD.ModInstaller.log"); // Fallback to current directory
 }();
