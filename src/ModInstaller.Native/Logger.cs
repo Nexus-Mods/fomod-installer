@@ -14,7 +14,9 @@ public static partial class Logger
     private static void Log(string message)
     {
         using var mutex = new Mutex(false, _mutexName);
-        while (true)
+        var timeout = DateTime.UtcNow.AddSeconds(5);
+
+        while (DateTime.UtcNow < timeout)
         {
             try
             {
@@ -37,5 +39,8 @@ public static partial class Logger
             }
             catch (Exception) { /* ignored */ }
         }
+
+        // Timeout reached - log could not be written
+        // Fail silently to prevent hanging the application
     }
 }
