@@ -1,11 +1,11 @@
 import { EventEmitter } from 'events';
 import * as path from 'path';
 import * as winapi from 'winapi-bindings';
+import { log } from 'vortex-api';
 import { IProcessLauncher, ProcessLaunchOptions, ChildProcessCompatible } from './IProcessLauncher';
 import { SecurityLevel } from './SecurityLevel';
 import { ITransport } from '../transport/ITransport';
 import { NamedPipeTransport } from '../transport/NamedPipeTransport';
-import { log } from '../util/log';
 
 /**
  * Configuration for sandbox launcher

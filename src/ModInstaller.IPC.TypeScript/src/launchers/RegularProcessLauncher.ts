@@ -1,7 +1,7 @@
 import { spawn, ChildProcess } from 'child_process';
+import { log } from 'vortex-api';
 import { IProcessLauncher, ProcessLaunchOptions } from './IProcessLauncher';
 import { SecurityLevel } from './SecurityLevel';
-import { log } from '../util/log';
 
 /**
  * Regular process launcher - no security restrictions

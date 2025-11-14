@@ -1,5 +1,5 @@
 import * as net from 'net';
-import { log } from '../util/log';
+import { log } from 'vortex-api';
 import { ITransport, TransportType, TransportError } from './ITransport';
 
 /**
