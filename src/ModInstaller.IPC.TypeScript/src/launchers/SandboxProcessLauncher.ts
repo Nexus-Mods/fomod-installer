@@ -1,11 +1,11 @@
 import { EventEmitter } from 'events';
 import * as path from 'path';
 import * as winapi from 'winapi-bindings';
+import { log } from 'vortex-api';
 import { IProcessLauncher, ProcessLaunchOptions, ChildProcessCompatible } from './IProcessLauncher';
 import { SecurityLevel } from './SecurityLevel';
 import { ITransport } from '../transport/ITransport';
 import { NamedPipeTransport } from '../transport/NamedPipeTransport';
-import { log } from '../util/log';
 
 /**
  * Configuration for sandbox launcher
@@ -132,7 +132,7 @@ export class SandboxProcessLauncher implements IProcessLauncher {
       log('info', 'Granted App Container access to named pipes', {
         containerName: this.containerName
       });
-    } catch (err) {
+    } catch (err: any) {
       log('error', 'Failed to grant App Container access to pipes', {
         containerName: this.containerName,
         outbound: pipePaths.outbound,
@@ -179,7 +179,9 @@ export class SandboxProcessLauncher implements IProcessLauncher {
     // Grant access to the executable and its directory
     //  this is no longer needed as we grant access to the exe directory
     //  in the NSIS installer script
-    // this.grantFileSystemAccess(exePath, options.cwd);
+    try {
+      this.grantFileSystemAccess(exePath, options.cwd);
+    } catch { }
 
     // Build command line
     const commandLine = `"${exePath}" ${args.join(' ')}`;
@@ -225,7 +227,7 @@ export class SandboxProcessLauncher implements IProcessLauncher {
       log('debug', 'Deleted App Container during cleanup', {
         containerName: this.containerName
       });
-    } catch (err) {
+    } catch (err: any) {
       // We most probably do not have permissions to delete the container
       //  as the file system permissions were created by an elevated process (the installer)
       //  theoretically we could try to elevate here, but it's not worth the UX impact.
@@ -275,10 +277,10 @@ export class SandboxProcessLauncher implements IProcessLauncher {
             cwd,
             durationMs: Date.now() - startCwd
           });
-        } catch (cwdErr) {
+        } catch (err: any) {
           log('debug', 'Failed to grant access to working directory', {
             cwd,
-            error: cwdErr.message
+            error: err.message
           });
         }
       }
@@ -310,7 +312,7 @@ export class SandboxProcessLauncher implements IProcessLauncher {
       log('info', 'Granted App Container file system access', {
         exeDir
       });
-    } catch (err) {
+    } catch (err: any) {
       log('warn', 'Failed to grant file access to App Container', {
         error: err.message
       });
@@ -340,7 +342,7 @@ export class SandboxProcessLauncher implements IProcessLauncher {
           path: dirPath,
           durationMs: Date.now() - startTime
         });
-      } catch (err) {
+      } catch (err: any) {
         log('error', 'Failed to grant App Container access to additional path', {
           path: dirPath,
           error: err.message

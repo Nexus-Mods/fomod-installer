@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as os from 'os';
 import { ChildProcess } from 'child_process';
+import { log } from 'vortex-api';
 import { SecurityLevel, IProcessLauncher, ProcessLaunchOptions, ChildProcessCompatible } from './launchers';
 import { ITransport } from './transport';
 
@@ -129,15 +130,6 @@ export abstract class BaseIPCConnection {
   }
 
   /**
-   * Abstract methods to be implemented by derived classes
-   */
-
-  /**
-   * Log a message at the specified level
-   */
-  protected abstract log(level: 'debug' | 'info' | 'warn' | 'error', message: string, metadata?: any): void;
-
-  /**
    * Check if a file exists at the given path
    */
   protected abstract fileExists(filePath: string): Promise<boolean>;
@@ -178,7 +170,7 @@ export abstract class BaseIPCConnection {
       this.transport = strategy.transport;
       this.launcher = strategy.launcher;
 
-      this.log('info', `Attempting connection strategy ${i + 1}/${this.strategies.length}`, {
+      log('info', `Attempting connection strategy ${i + 1}/${this.strategies.length}`, {
         transportType: this.transport.type,
         securityLevel: this.launcher.getSecurityLevel()
       });
@@ -189,7 +181,7 @@ export abstract class BaseIPCConnection {
         // Success! Mark this strategy as active
         this.currentStrategyIndex = i;
 
-        this.log('info', `Connection strategy ${i + 1} succeeded`, {
+        log('info', `Connection strategy ${i + 1} succeeded`, {
           transportType: this.transport.type,
           securityLevel: this.launcher.getSecurityLevel()
         });
@@ -197,7 +189,7 @@ export abstract class BaseIPCConnection {
         return;
       } catch (err: any) {
 
-        this.log('warn', `Connection strategy ${i + 1} failed`, {
+        log('warn', `Connection strategy ${i + 1} failed`, {
           transportType: this.transport.type,
           securityLevel: this.launcher.getSecurityLevel(),
           error: err.message
@@ -240,7 +232,7 @@ export abstract class BaseIPCConnection {
       // Initialize transport and get connection identifier
       const connectionId = await this.transport.initialize();
 
-      this.log('debug', 'Transport initialized', {
+      log('debug', 'Transport initialized', {
         type: this.transport.type,
         connectionId
       });
@@ -252,7 +244,7 @@ export abstract class BaseIPCConnection {
       // Get process arguments from transport
       const processArgs = this.transport.getProcessArgs(connectionId);
 
-      this.log('debug', 'Starting process', {
+      log('debug', 'Starting process', {
         exePath,
         cwd,
         args: processArgs,
@@ -287,16 +279,16 @@ export abstract class BaseIPCConnection {
       // via the launcher's constructor wrapping createServers()
       if (this.transport.createServers) {
         try {
-          this.log('debug', 'Creating transport servers before launching process');
+          log('debug', 'Creating transport servers before launching process');
           await this.transport.createServers();
-          this.log('debug', 'Transport servers created');
+          log('debug', 'Transport servers created');
         } catch (err: any) {
           throw new Error(`Failed to create transport servers: ${err.message}`);
         }
       }
 
       // Now launch the process (any transport-specific configuration already applied)
-      this.log('info', 'Launching process', {
+      log('info', 'Launching process', {
         securityLevel: this.launcher.getSecurityLevel(),
         exePath,
         cwd
@@ -308,26 +300,26 @@ export abstract class BaseIPCConnection {
       // Handle process output
       this.process.stdout?.on('data', (data) => {
         const text = data.toString();
-        this.log('debug', '[Process stdout]', { data: text });
+        log('debug', '[Process stdout]', { data: text });
       });
 
       this.process.stderr?.on('data', (data) => {
         const text = data.toString();
         // Extract error information but don't kill the process
         if (text.includes('Exception') || text.includes('Error:') || text.includes('Failed to')) {
-          this.log('error', '[Process stderr]', { data: text });
+          log('error', '[Process stderr]', { data: text });
         } else {
-          this.log('warn', '[Process stderr]', { data: text });
+          log('warn', '[Process stderr]', { data: text });
         }
       });
 
       this.process.on('exit', (code) => {
-        this.log('info', 'Process exited', { code });
+        log('info', 'Process exited', { code });
         this.handleProcessExit(code);
       });
 
       this.process.on('error', (err) => {
-        this.log('error', 'Process error', { error: err.message });
+        log('error', 'Process error', { error: err.message });
         this.disconnected = true;
 
         // Reject all pending replies on process error
@@ -346,14 +338,14 @@ export abstract class BaseIPCConnection {
       // Wait for C# process to connect to the pipe servers
       // For named pipes, the servers are already listening, we just need to wait for client connection
       // For TCP, waitForConnection creates the server and waits
-      this.log('debug', 'Waiting for transport connection', {
+      log('debug', 'Waiting for transport connection', {
         transportType: this.transport.type
       });
 
       try {
         // Don't use timeout dialog for connection - just fail and try next strategy
         await this.transport.waitForConnection(this.connectionTimeout);
-        this.log('debug', 'Transport connection established');
+        log('debug', 'Transport connection established');
       } catch (err: any) {
         throw new Error(`Failed to establish connection: ${err.message}. The process may have failed to start or connect.`);
       }
@@ -365,9 +357,9 @@ export abstract class BaseIPCConnection {
       try {
         // Short timeout since handshake is optional
         afterHandshake = await this.transport.readHandshake(1000);
-        this.log('info', 'Handshake completed successfully');
+        log('info', 'Handshake completed successfully');
       } catch (err: any) {
-        this.log('debug', 'Handshake not received (optional, continuing anyway)', {
+        log('debug', 'Handshake not received (optional, continuing anyway)', {
           error: err.message
         });
         // Don't throw - handshake is optional, pipes are already connected
@@ -378,22 +370,22 @@ export abstract class BaseIPCConnection {
       // The transport will handle buffering and delimiter parsing
       this.transport.startReceiving((messageText: string) => {
         this.processMessage(messageText).catch(err => {
-          this.log('error', 'Error processing IPC message', { error: err.message });
+          log('error', 'Error processing IPC message', { error: err.message });
         });
       });
 
       // If there was data after the handshake, inject it as the first message
       if (afterHandshake.length > 0) {
-        this.log('debug', 'Processing data that came after handshake', {
+        log('debug', 'Processing data that came after handshake', {
           length: afterHandshake.length
         });
       }
 
-      this.log('info', 'IPC connection established successfully', {
+      log('info', 'IPC connection established successfully', {
         transportType: this.transport.type
       });
     } catch (err: any) {
-      this.log('error', 'Failed to initialize IPC connection', {
+      log('error', 'Failed to initialize IPC connection', {
         error: err.message,
         transportType: this.transport?.type
       });
@@ -416,7 +408,7 @@ export abstract class BaseIPCConnection {
         try {
           await this.transport.dispose();
         } catch (err: any) {
-          this.log('debug', 'Error disposing transport during cleanup', { error: err.message });
+          log('debug', 'Error disposing transport during cleanup', { error: err.message });
         }
       }
 
@@ -441,7 +433,7 @@ export abstract class BaseIPCConnection {
             });
           });
         } catch (err: any) {
-          this.log('debug', 'Error killing process during cleanup', { error: err.message });
+          log('debug', 'Error killing process during cleanup', { error: err.message });
         }
       }
 
@@ -449,11 +441,11 @@ export abstract class BaseIPCConnection {
       if (this.launcher) {
         try {
           await this.launcher.cleanup();
-          this.log('debug', 'Launcher cleanup completed during fallback', {
+          log('debug', 'Launcher cleanup completed during fallback', {
             securityLevel: this.launcher.getSecurityLevel()
           });
         } catch (err: any) {
-          this.log('debug', 'Error during launcher cleanup', {
+          log('debug', 'Error during launcher cleanup', {
             securityLevel: this.launcher.getSecurityLevel(),
             error: err.message
           });
@@ -461,7 +453,7 @@ export abstract class BaseIPCConnection {
       }
     } catch (err: any) {
       // Swallow all errors during failed strategy cleanup
-      this.log('debug', 'Error during failed strategy cleanup', { error: err.message });
+      log('debug', 'Error during failed strategy cleanup', { error: err.message });
     }
   }
 
@@ -477,7 +469,7 @@ export abstract class BaseIPCConnection {
         const normalizedPath = path.resolve(testPath);
         const exists = await this.fileExists(normalizedPath);
         if (exists) {
-          this.log('info', 'Found executable', { path: normalizedPath });
+          log('info', 'Found executable', { path: normalizedPath });
           return normalizedPath;
         }
       } catch (err) {
@@ -487,7 +479,7 @@ export abstract class BaseIPCConnection {
 
     // If not found, throw error with all attempted paths
     const errorMsg = `Executable not found. Tried paths:\n${possiblePaths.map(p => `  - ${p}`).join('\n')}`;
-    this.log('error', errorMsg);
+    log('error', errorMsg);
     throw new Error(errorMsg);
   }
 
@@ -562,7 +554,7 @@ export abstract class BaseIPCConnection {
 
         pending.timeout = setTimeout(async () => {
           try {
-            this.log('info', 'Operation timeout reached', {
+            log('info', 'Operation timeout reached', {
               timeout: ms,
               command: message.payload?.command
             });
@@ -579,16 +571,16 @@ export abstract class BaseIPCConnection {
               pending.dialogId = undefined;
 
               if (shouldContinue) {
-                this.log('info', 'User chose to continue waiting for response');
+                log('info', 'User chose to continue waiting for response');
                 // Reset timeout and continue waiting
                 scheduleTimeout(ms); // Use the same timeout duration
                 return; // Don't reject, keep waiting
               }
 
-              this.log('info', 'User chose to cancel operation or dialog was dismissed');
+              log('info', 'User chose to cancel operation or dialog was dismissed');
             }
           } catch (err: any) {
-            this.log('error', 'Error handling timeout', { error: err.message });
+            log('error', 'Error handling timeout', { error: err.message });
           }
 
           // User chose to cancel, or no dialog available - reject the promise
@@ -647,7 +639,7 @@ export abstract class BaseIPCConnection {
 
     const json = JSON.stringify(message);
 
-    this.log('debug', 'Sending IPC message', {
+    log('debug', 'Sending IPC message', {
       id: message.id,
       command: message.payload?.command,
       length: json.length
@@ -663,7 +655,7 @@ export abstract class BaseIPCConnection {
     try {
       const message: IPCMessage = JSON.parse(messageText);
 
-      this.log('debug', 'Received IPC message', {
+      log('debug', 'Received IPC message', {
         id: message.id,
         hasCallback: !!message.callback,
         hasData: message.data !== undefined,
@@ -679,7 +671,7 @@ export abstract class BaseIPCConnection {
         this.handleResponse(message);
       }
     } catch (err: any) {
-      this.log('error', 'Failed to parse IPC message', { error: err.message, messageText: messageText.substring(0, 500) });
+      log('error', 'Failed to parse IPC message', { error: err.message, messageText: messageText.substring(0, 500) });
     }
   }
 
@@ -691,13 +683,13 @@ export abstract class BaseIPCConnection {
     const args = message.data?.args || [];
 
     if (!name) {
-      this.log('warn', 'Callback message missing name', { messageId: message.id });
+      log('warn', 'Callback message missing name', { messageId: message.id });
       return;
     }
 
     const callback = this.callbacks.get(name);
     if (!callback) {
-      this.log('warn', 'No callback registered for name', { name, messageId: message.id });
+      log('warn', 'No callback registered for name', { name, messageId: message.id });
       return;
     }
 
@@ -735,7 +727,7 @@ export abstract class BaseIPCConnection {
   private handleResponse(message: IPCMessage): void {
     const pending = this.pendingReplies.get(message.id);
     if (!pending) {
-      this.log('warn', 'Received response for unknown request', { messageId: message.id });
+      log('warn', 'Received response for unknown request', { messageId: message.id });
       return;
     }
 
@@ -744,14 +736,14 @@ export abstract class BaseIPCConnection {
     // Clear timeout if it exists
     if (pending.timeout) {
       clearTimeout(pending.timeout);
-      this.log('debug', 'Cleared pending timeout for response', { messageId: message.id });
+      log('debug', 'Cleared pending timeout for response', { messageId: message.id });
     }
 
     // Dismiss timeout dialog if it's currently showing
     // This happens when user hasn't responded to the timeout dialog yet,
     // but the installer completes (e.g., user completed an untracked Windows Forms dialog)
     if (pending.dialogId && this.timeoutOptions.onDismissDialog) {
-      this.log('info', 'Dismissing timeout dialog as response arrived', {
+      log('info', 'Dismissing timeout dialog as response arrived', {
         messageId: message.id,
         dialogId: pending.dialogId
       });
@@ -785,7 +777,7 @@ export abstract class BaseIPCConnection {
       const err = new Error(`Process exited unexpectedly with code ${code}`);
       err.name = 'ProcessExitError';
 
-      this.log('error', 'Process exited unexpectedly', {
+      log('error', 'Process exited unexpectedly', {
         code,
         pendingReplies: this.pendingReplies.size
       });
@@ -826,7 +818,7 @@ export abstract class BaseIPCConnection {
         });
       }
     } catch (err: any) {
-      this.log('warn', 'Error sending quit command', { error: err.message });
+      log('warn', 'Error sending quit command', { error: err.message });
     }
 
     // Dispose transport (handles socket cleanup internally)
@@ -851,7 +843,7 @@ export abstract class BaseIPCConnection {
           });
         });
       } catch (err: any) {
-        this.log('warn', 'Error killing process', { error: err.message });
+        log('warn', 'Error killing process', { error: err.message });
       }
     }
 
@@ -861,11 +853,11 @@ export abstract class BaseIPCConnection {
     if (this.launcher) {
       try {
         await this.launcher.cleanup();
-        this.log('debug', 'Launcher cleanup completed', {
+        log('debug', 'Launcher cleanup completed', {
           securityLevel: this.launcher.getSecurityLevel()
         });
       } catch (err: any) {
-        this.log('warn', 'Error during launcher cleanup', {
+        log('warn', 'Error during launcher cleanup', {
           securityLevel: this.launcher.getSecurityLevel(),
           error: err.message
         });
@@ -880,10 +872,10 @@ export abstract class BaseIPCConnection {
   protected async grantAdditionalAccess(paths: string[]): Promise<void> {
     if (this.launcher && this.launcher.grantAdditionalAccess) {
       try {
-        this.log('debug', 'Granting additional access', { paths });
+        log('debug', 'Granting additional access', { paths });
         await this.launcher.grantAdditionalAccess(paths);
       } catch (err: any) {
-        this.log('warn', 'Failed to grant additional access', {
+        log('warn', 'Failed to grant additional access', {
           paths,
           error: err.message
         });

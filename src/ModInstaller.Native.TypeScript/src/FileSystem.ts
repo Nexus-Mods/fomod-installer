@@ -8,7 +8,7 @@ export class NativeFileSystem implements types.FileSystem {
     readDirectoryFileList: (directoryPath: string, pattern: string, searchType: number) => string[] | null,
     readDirectoryList: (directoryPath: string) => string[] | null
   ) {
-    const addon: types.IFileSystemExtension = require('./../../modinstaller.node');
+    const addon: types.IFileSystemExtension = require('./../build/modinstaller.node');
     this.manager = new addon.FileSystem(
       readFileContent,
       readDirectoryFileList,
@@ -21,7 +21,7 @@ export class NativeFileSystem implements types.FileSystem {
   }
 
   public static setDefaultCallbacks = (): void => {
-    const addon: types.IFileSystemExtension = require('./../../modinstaller.node');
+    const addon: types.IFileSystemExtension = require('./../build/modinstaller.node');
     return addon.FileSystem.setDefaultCallbacks();
   }
 }

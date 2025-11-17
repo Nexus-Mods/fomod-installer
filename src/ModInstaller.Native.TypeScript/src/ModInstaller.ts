@@ -12,7 +12,7 @@ export class NativeModInstaller implements types.ModInstaller {
     uiEndDialog: () => void,
     uiUpdateState: (installSteps: types.IInstallStep[], currentStep: number) => void
   ) {
-    const addon: types.IModInstallerExtension = require('./../../modinstaller.node');
+    const addon: types.IModInstallerExtension = require('./../build/modinstaller.node');
     this.manager = new addon.ModInstaller(
       pluginsGetAll,
       contextGetAppVersion,
@@ -30,7 +30,7 @@ export class NativeModInstaller implements types.ModInstaller {
   }
 
   public static testSupported = (files: string[], allowedTypes: string[]): types.SupportedResult => {
-    const addon: types.IModInstallerExtension = require('./../../modinstaller.node');
+    const addon: types.IModInstallerExtension = require('./../build/modinstaller.node');
     return addon.ModInstaller.testSupported(files, allowedTypes);
   }
 }

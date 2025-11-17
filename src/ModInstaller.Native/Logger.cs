@@ -9,13 +9,32 @@ namespace ModInstaller.Native;
 public static partial class Logger
 {
     private static readonly string _mutexName = @"Global\FOMODLoggerMutex";
+#if DEBUG
     private static readonly string _logFilePath = @$"{Environment.GetEnvironmentVariable("APPDATA")}\vortex_devel\FOMOD.ModInstaller.log";
+#else
+    private static readonly string _logFilePath = @$"{Environment.GetEnvironmentVariable("APPDATA")}\vortex\FOMOD.ModInstaller.log";
+#endif
+    private static DateTime _lastDirectoryCheck = DateTime.MinValue;
+    private static readonly TimeSpan _directoryCheckInterval = TimeSpan.FromSeconds(5);
 
     private static void Log(string message)
     {
         using var mutex = new Mutex(false, _mutexName);
-        while (true)
+
+        var timeout = DateTime.UtcNow.AddSeconds(1);
+        while (DateTime.UtcNow < timeout)
         {
+            // Ensure directory exists (cached check every 5 seconds)
+            if (DateTime.UtcNow - _lastDirectoryCheck > _directoryCheckInterval)
+            {
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(_logFilePath));
+                    _lastDirectoryCheck = DateTime.UtcNow;
+                }
+                catch { /* ignore */ }
+            }
+            
             try
             {
                 if (!mutex.WaitOne(100)) continue;
@@ -35,7 +54,10 @@ public static partial class Logger
                     mutex.ReleaseMutex();
                 }
             }
-            catch (Exception) { /* ignored */ }
+            catch { Thread.Sleep(50); }
         }
+
+        // Timeout reached - log could not be written
+        // Fail silently to prevent hanging the application
     }
 }

@@ -30,11 +30,3 @@ export {
   SandboxLauncherConfig,
   SecurityLevel
 } from './launchers';
-
-// Logging configuration
-export {
-  LogLevel,
-  LogFunction,
-  setLogger,
-  resetLogger,
-} from './util/log';

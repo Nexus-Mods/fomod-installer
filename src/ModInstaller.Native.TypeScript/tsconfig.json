@@ -2,17 +2,20 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": false,
-    "incremental": true,
-    "target": "es2015",
-    "outDir": "dist/main",
+    "incremental": false,
+    "target": "ES2019",
+    "outDir": "dist",
     "rootDir": "src",
     "moduleResolution": "node",
-    "module": "UMD",
+    "module": "commonjs",
     "declaration": true,
+    "emitDeclarationOnly": true,
     "sourceMap": true,
     "esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */,
     "resolveJsonModule": false /* Include modules imported with .json extension. */,
+    "skipLibCheck": true /* Skip type checking of declaration files. */,
     "strict": true /* Enable all strict type-checking options. */,
+    "useUnknownInCatchVariables": false /* Type catch clause variables as 'any' instead of 'unknown'. */,
     /* Strict Type-Checking Options */
     "noImplicitAny": true /* Raise error on expressions and declarations with an implied 'any' type. */,
     "strictNullChecks": true /* Enable strict null checks. */,
@@ -34,14 +37,14 @@
     "experimentalDecorators": true /* Enables experimental support for ES7 decorators. */,
     "emitDecoratorMetadata": true /* Enables experimental support for emitting type metadata for decorators. */,
     "lib": [
-      "es2017"
+      "ES2019"
     ],
     "types": [
       "node"
     ],
     "typeRoots": [
       "node_modules/@types",
-      "src/lib/types"
+      "src/types"
     ]
   },
   "include": [

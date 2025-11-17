@@ -20,6 +20,7 @@ const VALID_TYPES = [
   'clean',
   'build-csharp',
   'build-ts',
+  'build-webpack',
   'build-content'
 ];
 
@@ -227,7 +228,7 @@ async function main() {
       }
     }
 
-    if (['build', 'build-ts'].includes(type)) {
+    if (['build', 'build-ts', 'build-webpack'].includes(type)) {
       if (!commandExists('npx')) {
         throw new Error('npx not found. Please install Node.js and npm.');
       }
@@ -283,24 +284,31 @@ async function main() {
       console.log('');
     }
 
-    // Build TypeScript
+    // Build TypeScript declarations
     if (['build', 'build-ts'].includes(type)) {
-      console.log('Building TypeScript sources');
+      console.log('Building TypeScript declarations');
 
-      // Verify tsconfig files exist
+      // Verify tsconfig.json exists
       if (!fs.existsSync('tsconfig.json')) {
         throw new Error('tsconfig.json not found');
       }
-      if (!fs.existsSync('tsconfig.module.json')) {
-        throw new Error('tsconfig.module.json not found');
+
+      // Compile TypeScript to generate .d.ts files
+      execCommand('npx tsc -p tsconfig.json');
+      console.log('');
+    }
+
+    // Build Webpack Bundle
+    if (['build', 'build-webpack'].includes(type)) {
+      console.log('Building Webpack bundle');
+
+      // Verify webpack config exists
+      if (!fs.existsSync('webpack.config.js')) {
+        throw new Error('webpack.config.js not found');
       }
 
-      // Compile TypeScript with both configs
-      // Main build (CommonJS/UMD)
-      execCommand('npx tsc -p tsconfig.json');
-
-      // Module build (ES modules)
-      execCommand('npx tsc -p tsconfig.module.json');
+      // Build with webpack
+      execCommand('npx webpack --config webpack.config.js');
       console.log('');
     }
 

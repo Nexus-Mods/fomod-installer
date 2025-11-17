@@ -21,6 +21,7 @@ const VALID_TYPES = [
   'build-native',
   'build-napi',
   'build-ts',
+  'build-webpack',
   'build-content',
   'test-build'
 ];
@@ -177,7 +178,7 @@ try {
     }
   }
 
-  if (['build', 'test', 'build-napi'].includes(type)) {
+  if (['build', 'test', 'build-napi', 'build-ts', 'build-webpack'].includes(type)) {
     if (!commandExists('npx')) {
       throw new Error('npx not found. Please install Node.js and npm.');
     }
@@ -244,30 +245,40 @@ try {
     console.log('');
   }
 
-  // Build TypeScript
-  if (['build', 'test', 'test-build', 'build-ts'].includes(type)) {
-    console.log('Building @nexusmods/modinstaller');
-
-    // Verify tsconfig files exist
-    if (!fs.existsSync('tsconfig.json')) {
-      throw new Error('tsconfig.json not found');
-    }
-    if (!fs.existsSync('tsconfig.module.json')) {
-      throw new Error('tsconfig.module.json not found');
-    }
-
-    // Compile TypeScript with both configs
-    execCommand('npx tsc -p tsconfig.json');
-    execCommand('npx tsc -p tsconfig.module.json');
-    console.log('');
-  }
-
   // Copy content to dist
   if (['build', 'test', 'test-build', 'build-content'].includes(type)) {
     console.log('Copying content to dist');
 
     copyItem('ModInstaller.Native.dll', 'dist/ModInstaller.Native.dll');
     copyItem(`build/${configuration}/modinstaller.node`, 'dist/modinstaller.node');
+    console.log('');
+  }
+
+  // Build TypeScript declarations
+  if (['build', 'build-ts'].includes(type)) {
+    console.log('Building TypeScript declarations');
+
+    // Verify tsconfig.json exists
+    if (!fs.existsSync('tsconfig.json')) {
+      throw new Error('tsconfig.json not found');
+    }
+
+    // Compile TypeScript to generate .d.ts files
+    execCommand('npx tsc -p tsconfig.json');
+    console.log('');
+  }
+
+  // Build Webpack Bundle
+  if (['build', 'build-webpack'].includes(type)) {
+    console.log('Building Webpack bundle');
+
+    // Verify webpack config exists
+    if (!fs.existsSync('webpack.config.js')) {
+      throw new Error('webpack.config.js not found');
+    }
+
+    // Build with webpack
+    execCommand('npx webpack --config webpack.config.js');
     console.log('');
   }
 
