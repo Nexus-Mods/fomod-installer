@@ -6,7 +6,7 @@
  * and packages the C# IPC executable
  *
  * Usage: node build.js [type] [configuration]
- * Types: build, clean, build-csharp, build-ts, build-content
+ * Types: build, clean, build-csharp, build-webpack, build-content
  * Configuration: Release (default) or Debug
  */
 
@@ -19,7 +19,6 @@ const VALID_TYPES = [
   'build',
   'clean',
   'build-csharp',
-  'build-ts',
   'build-webpack',
   'build-content'
 ];
@@ -228,7 +227,7 @@ async function main() {
       }
     }
 
-    if (['build', 'build-ts', 'build-webpack'].includes(type)) {
+    if (['build', 'build-webpack'].includes(type)) {
       if (!commandExists('npx')) {
         throw new Error('npx not found. Please install Node.js and npm.');
       }
@@ -281,20 +280,6 @@ async function main() {
         await sign(exePath);
       }
 
-      console.log('');
-    }
-
-    // Build TypeScript declarations
-    if (['build', 'build-ts'].includes(type)) {
-      console.log('Building TypeScript declarations');
-
-      // Verify tsconfig.json exists
-      if (!fs.existsSync('tsconfig.json')) {
-        throw new Error('tsconfig.json not found');
-      }
-
-      // Compile TypeScript to generate .d.ts files
-      execCommand('npx tsc -p tsconfig.json');
       console.log('');
     }
 

@@ -22,7 +22,6 @@
     "build": "node build.js build",
     "build-native": "node build.js build-native",
     "build-napi": "node build.js build-napi",
-    "build-ts": "node build.js build-ts",
     "build-webpack": "node build.js build-webpack",
     "build-content": "node build.js build-content",
     "test": "node build.js test",

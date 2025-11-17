@@ -18,7 +18,6 @@
     "clean": "node build.js clean",
     "build": "node build.js build",
     "build-csharp": "node build.js build-csharp",
-    "build-ts": "node build.js build-ts",
     "build-webpack": "node build.js build-webpack",
     "buildDev": "node build.js build Debug",
     "cleanup": "node cleanup-processes.js --force",

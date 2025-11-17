@@ -5,7 +5,7 @@
  * Converted from commands.ps1 to native JavaScript
  *
  * Usage: node build.js <type> [configuration]
- * Types: build, test, clear, build-native, build-napi, build-ts, build-content, test-build
+ * Types: build, test, clear, build-native, build-napi, build-webpack, build-content, test-build
  * Configuration: Release (default) or Debug
  */
 
@@ -20,7 +20,6 @@ const VALID_TYPES = [
   'clear',
   'build-native',
   'build-napi',
-  'build-ts',
   'build-webpack',
   'build-content',
   'test-build'
@@ -178,7 +177,7 @@ try {
     }
   }
 
-  if (['build', 'test', 'build-napi', 'build-ts', 'build-webpack'].includes(type)) {
+  if (['build', 'test', 'build-napi', 'build-webpack'].includes(type)) {
     if (!commandExists('npx')) {
       throw new Error('npx not found. Please install Node.js and npm.');
     }
@@ -251,20 +250,6 @@ try {
 
     copyItem('ModInstaller.Native.dll', 'dist/ModInstaller.Native.dll');
     copyItem(`build/${configuration}/modinstaller.node`, 'dist/modinstaller.node');
-    console.log('');
-  }
-
-  // Build TypeScript declarations
-  if (['build', 'build-ts'].includes(type)) {
-    console.log('Building TypeScript declarations');
-
-    // Verify tsconfig.json exists
-    if (!fs.existsSync('tsconfig.json')) {
-      throw new Error('tsconfig.json not found');
-    }
-
-    // Compile TypeScript to generate .d.ts files
-    execCommand('npx tsc -p tsconfig.json');
     console.log('');
   }
 
