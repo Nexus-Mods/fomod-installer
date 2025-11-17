@@ -2,7 +2,7 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": false,
-    "incremental": true,
+    "incremental": false,
     "target": "ES2019",
     "outDir": "dist",
     "rootDir": "src",
