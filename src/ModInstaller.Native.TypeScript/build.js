@@ -4,12 +4,12 @@
  * Build script for fomod-installer-native
  * Converted from commands.ps1 to native JavaScript
  *
- * Usage: node build.js <type> [configuration]
+ * Usage: node build.js [type] [configuration]
  * Types: build, test, clear, build-native, build-napi, build-webpack, build-content, test-build
  * Configuration: Release (default) or Debug
  */
 
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -27,17 +27,10 @@ const VALID_TYPES = [
 
 // Parse command line arguments
 const args = process.argv.slice(2);
-const type = args[0];
+const type = args[0] || 'build';
 const configuration = args[1] || 'Release';
 
 // Validate build type
-if (!type) {
-  console.error('Error: Build type required');
-  console.error('Usage: node build.js <type> [configuration]');
-  console.error(`Types: ${VALID_TYPES.join(', ')}`);
-  process.exit(1);
-}
-
 if (!VALID_TYPES.includes(type)) {
   console.error(`Error: Invalid build type '${type}'`);
   console.error(`Valid types: ${VALID_TYPES.join(', ')}`);
@@ -49,6 +42,87 @@ if (!['Release', 'Debug'].includes(configuration)) {
   console.error(`Error: Invalid configuration '${configuration}'`);
   console.error('Valid configurations: Release, Debug');
   process.exit(1);
+}
+
+/**
+ * Custom exception for missing .NET SDK
+ */
+class MissingDotNetSDKException extends Error {
+  constructor() {
+    super('Missing .NET SDK - Install a .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/9.0');
+    this.name = 'MissingDotNetSDKException';
+  }
+}
+
+/**
+ * Error code handlers for specific error conditions
+ */
+const ERROR_CODE_HANDLER = {
+  2147516561: {
+    genError: () => new MissingDotNetSDKException(),
+  },
+};
+
+/**
+ * Spawns a process and returns a promise
+ * @param {string} exe - Executable to run
+ * @param {string[]} args - Arguments
+ * @param {Object} options - Spawn options
+ * @param {Object} out - Output logger
+ * @returns {Promise<void>}
+ */
+function spawnAsync(exe, args, options = {}, out = console) {
+  return new Promise((resolve, reject) => {
+    const desc = `${options.cwd || '.'}/${exe} ${args.join(' ')}`;
+    out.log('started: ' + desc);
+    const outBufs = [];
+
+    try {
+      const proc = spawn(exe, args, options);
+      proc.stdout.on('data', (data) => outBufs.push(data));
+      proc.stderr.on('data', (data) => out.error(data.toString()));
+      proc.on('error', (err) => {
+        out.log(Buffer.concat(outBufs).toString());
+        reject(err);
+      });
+      proc.on('close', (code) => {
+        out.log('done: ' + desc + ': ' + code);
+        if (code === 0) {
+          resolve();
+        } else {
+          out.log(Buffer.concat(outBufs).toString());
+          reject(new Error(`${desc} failed with code ${code}`));
+        }
+      });
+    } catch (err) {
+      out.error(`failed to spawn ${desc}: ${err.message}`);
+      reject(err);
+    }
+  });
+}
+
+/**
+ * Signs a file using the configured signing tool
+ * @param {string} filePath - Path to file to sign
+ * @returns {Promise<void>}
+ */
+async function sign(filePath) {
+  if (process.env['SIGN_TOOL'] !== undefined) {
+    console.log(`  Signing: ${filePath}`);
+    return spawnAsync(
+      process.env['SIGN_TOOL'],
+      [
+        'sign',
+        '/sha1', process.env['SIGN_THUMBPRINT'],
+        '/td', 'sha256',
+        '/fd', 'sha256',
+        '/tr', 'http://timestamp.comodoca.com',
+        filePath
+      ]
+    );
+  } else {
+    console.log(`  Skipping signing (SIGN_TOOL not configured)`);
+  }
 }
 
 /**
@@ -163,117 +237,159 @@ function execCommand(command, options = {}) {
   }
 }
 
-try {
-  console.log(`\n=== Build Configuration ===`);
-  console.log(`Type: ${type}`);
-  console.log(`Configuration: ${configuration}`);
-  console.log(`Working Directory: ${process.cwd()}`);
-  console.log(`===========================\n`);
+/**
+ * Main build function
+ */
+async function main() {
+  try {
+    console.log(`\n=== Build Configuration ===`);
+    console.log(`Type: ${type}`);
+    console.log(`Configuration: ${configuration}`);
+    console.log(`Working Directory: ${process.cwd()}`);
+    console.log(`===========================\n`);
 
-  // Validate prerequisites
-  if (['build', 'test', 'build-native'].includes(type)) {
-    if (!commandExists('dotnet')) {
-      throw new Error('dotnet CLI not found. Please install .NET SDK.');
-    }
-  }
-
-  if (['build', 'test', 'build-napi', 'build-webpack'].includes(type)) {
-    if (!commandExists('npx')) {
-      throw new Error('npx not found. Please install Node.js and npm.');
-    }
-  }
-
-  // Clean
-  if (['build', 'test', 'clear'].includes(type)) {
-    console.log('Cleaning build artifacts...');
-    removeItems([
-      '*.tgz',
-      '*.h',
-      '*.dll',
-      '*.lib',
-      'build',
-      'dist',
-      'coverage',
-      '.nyc_output'
-    ]);
-    console.log('');
-  }
-
-  // Build C# Native Module
-  if (['build', 'test', 'build-native'].includes(type)) {
-    console.log(`Building ModInstaller.Native (${configuration})`);
-
-    // Verify source directory exists
-    const nativeDir = path.resolve('../ModInstaller.Native');
-    if (!fs.existsSync(nativeDir)) {
-      throw new Error(`ModInstaller.Native directory not found at: ${nativeDir}`);
+    // Validate prerequisites
+    if (['build', 'test', 'build-native'].includes(type)) {
+      if (!commandExists('dotnet')) {
+        throw new Error('dotnet CLI not found. Please install .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/9.0');
+      }
     }
 
-    // Run dotnet publish
-    execCommand(
-      `dotnet publish -r win-x64 --self-contained -c ${configuration} ../ModInstaller.Native`
-    );
-
-    // Copy native artifacts
-    const basePath = `../ModInstaller.Native`;
-    copyItem(`${basePath}/bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.dll`, 'ModInstaller.Native.dll');
-    copyItem(`${basePath}/bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`, 'ModInstaller.Native.lib');
-    copyItem(`${basePath}/ModInstaller.Native.h`, 'ModInstaller.Native.h');
-    console.log('');
-  }
-
-  // Build NAPI
-  if (['build', 'test', 'build-napi'].includes(type)) {
-    console.log(`Building NAPI (${configuration})`);
-
-    // Verify binding.gyp exists
-    if (!fs.existsSync('binding.gyp')) {
-      throw new Error('binding.gyp not found in current directory');
+    if (['build', 'test', 'build-napi', 'build-webpack'].includes(type)) {
+      if (!commandExists('npx')) {
+        throw new Error('npx not found. Please install Node.js and npm.');
+      }
     }
 
-    // Determine build tag
-    let tag = '';
-    if (configuration === 'Release') {
-      tag = '--release';
-    } else if (configuration === 'Debug') {
-      tag = '--debug';
+    // Clean
+    if (['build', 'test', 'clear'].includes(type)) {
+      console.log('Cleaning build artifacts...');
+      removeItems([
+        '*.tgz',
+        '*.h',
+        '*.dll',
+        '*.lib',
+        'build',
+        'dist',
+        'coverage',
+        '.nyc_output'
+      ]);
+      console.log('');
     }
 
-    // Run node-gyp rebuild
-    execCommand(`npx node-gyp rebuild --arch=x64 ${tag}`.trim());
-    console.log('');
-  }
+    // Build C# Native Module
+    if (['build', 'test', 'build-native'].includes(type)) {
+      console.log(`Building ModInstaller.Native (${configuration})`);
 
-  // Copy content to dist
-  if (['build', 'test', 'test-build', 'build-content'].includes(type)) {
-    console.log('Copying content to dist');
+      // Verify source directory exists
+      const nativeDir = path.resolve('../ModInstaller.Native');
+      if (!fs.existsSync(nativeDir)) {
+        throw new Error(`ModInstaller.Native directory not found at: ${nativeDir}`);
+      }
 
-    copyItem('ModInstaller.Native.dll', 'dist/ModInstaller.Native.dll');
-    copyItem(`build/${configuration}/modinstaller.node`, 'dist/modinstaller.node');
-    console.log('');
-  }
+      // Run dotnet publish with retry logic
+      const buildArgs = [
+        'publish',
+        '-r', 'win-x64',
+        '--self-contained',
+        '-c', configuration,
+        '../ModInstaller.Native'
+      ];
 
-  // Build Webpack Bundle
-  if (['build', 'build-webpack'].includes(type)) {
-    console.log('Building Webpack bundle');
+      try {
+        await spawnAsync('dotnet', buildArgs);
+      } catch (err) {
+        // The build may fail because of locked files (sigh) so just try again...
+        console.log('  Build failed, retrying after 500ms...');
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        await spawnAsync('dotnet', buildArgs);
+      }
 
-    // Verify webpack config exists
-    if (!fs.existsSync('webpack.config.js')) {
-      throw new Error('webpack.config.js not found');
+      // Copy native artifacts
+      const basePath = `../ModInstaller.Native`;
+      copyItem(`${basePath}/bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.dll`, 'ModInstaller.Native.dll');
+      copyItem(`${basePath}/bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`, 'ModInstaller.Native.lib');
+      copyItem(`${basePath}/ModInstaller.Native.h`, 'ModInstaller.Native.h');
+
+      // Sign the DLL if signing is configured
+      if (fs.existsSync('ModInstaller.Native.dll')) {
+        await sign('ModInstaller.Native.dll');
+      }
+
+      console.log('');
     }
 
-    // Build with webpack
-    execCommand('npx webpack --config webpack.config.js');
-    console.log('');
-  }
+    // Build NAPI
+    if (['build', 'test', 'build-napi'].includes(type)) {
+      console.log(`Building NAPI (${configuration})`);
 
-  console.log('✓ Build completed successfully!');
-  process.exit(0);
+      // Verify binding.gyp exists
+      if (!fs.existsSync('binding.gyp')) {
+        throw new Error('binding.gyp not found in current directory');
+      }
 
-} catch (err) {
-  console.error('\n✗ Build failed:', err.message);
-  if (process.env.DEBUG) {
-    console.error('\nStack trace:', err.stack);
+      // Determine build tag
+      let tag = '';
+      if (configuration === 'Release') {
+        tag = '--release';
+      } else if (configuration === 'Debug') {
+        tag = '--debug';
+      }
+
+      // Run node-gyp rebuild
+      execCommand(`npx node-gyp rebuild --arch=x64 ${tag}`.trim());
+      console.log('');
+    }
+
+    // Copy content to dist
+    if (['build', 'test', 'test-build', 'build-content'].includes(type)) {
+      console.log('Copying content to dist');
+
+      copyItem('ModInstaller.Native.dll', 'dist/ModInstaller.Native.dll');
+      copyItem(`build/${configuration}/modinstaller.node`, 'dist/modinstaller.node');
+      console.log('');
+    }
+
+    // Build Webpack Bundle
+    if (['build', 'build-webpack'].includes(type)) {
+      console.log('Building Webpack bundle');
+
+      // Verify TypeScript config exists
+      if (!fs.existsSync('tsconfig.json')) {
+        throw new Error('tsconfig.json not found');
+      }
+
+      // Verify webpack config exists
+      if (!fs.existsSync('webpack.config.js')) {
+        throw new Error('webpack.config.js not found');
+      }
+      
+      // Compile TypeScript declarations
+      execCommand('npx tsc --emitDeclarationOnly');
+
+      // Build with webpack
+      execCommand('npx webpack --config webpack.config.js');
+      console.log('');
+    }
+
+    console.log('✓ Build completed successfully!');
+    process.exit(0);
+
+  } catch (err) {
+    // Handle specific error codes
+    const error = ERROR_CODE_HANDLER[err?.code] !== undefined
+      ? ERROR_CODE_HANDLER[err.code].genError()
+      : err;
+
+    console.error('\n✗ Build failed:', error.message);
+    if (process.env.DEBUG) {
+      console.error('\nStack trace:', error.stack);
+    }
+
+    const exitCode = err?.code || -1;
+    process.exit(exitCode);
   }
-  process.exit(1);
 }
+
+// Run main function
+main();

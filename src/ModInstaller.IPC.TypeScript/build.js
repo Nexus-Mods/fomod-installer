@@ -2,8 +2,7 @@
 
 /**
  * Build script for fomod-installer-ipc
- * Builds TypeScript sources for both CommonJS and ES module formats
- * and packages the C# IPC executable
+ * Builds TypeScript sources and packages the C# IPC executable
  *
  * Usage: node build.js [type] [configuration]
  * Types: build, clean, build-csharp, build-webpack, build-content
@@ -121,6 +120,32 @@ async function sign(filePath) {
   } else {
     console.log(`  Skipping signing (SIGN_TOOL not configured)`);
   }
+}
+
+/**
+ * Recursively creates directory and copies file
+ * @param {string} sourcePath - Source file path
+ * @param {string} destPath - Destination file path
+ */
+function copyItem(sourcePath, destPath) {
+  const resolvedSource = path.resolve(sourcePath);
+  const resolvedDest = path.resolve(destPath);
+
+  // Check if source exists
+  if (!fs.existsSync(resolvedSource)) {
+    throw new Error(`Source file not found: ${sourcePath}`);
+  }
+
+  const destDir = path.dirname(resolvedDest);
+
+  // Create directory if it doesn't exist
+  if (!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true });
+  }
+
+  // Copy file
+  fs.copyFileSync(resolvedSource, resolvedDest);
+  console.log(`  Copied: ${sourcePath} -> ${destPath}`);
 }
 
 /**
@@ -283,14 +308,36 @@ async function main() {
       console.log('');
     }
 
+    // Copy content to dist (for build-content type)
+    if (['build-content'].includes(type)) {
+      console.log('Copying content to dist');
+
+      const exePath = path.resolve('../ModInstaller.IPC/bin/Release/net9.0-windows/ModInstallerIPC.exe');
+      if (fs.existsSync(exePath)) {
+        copyItem(exePath, 'dist/ModInstallerIPC.exe');
+      } else {
+        console.log('  Warning: ModInstallerIPC.exe not found, skipping copy');
+      }
+
+      console.log('');
+    }
+
     // Build Webpack Bundle
     if (['build', 'build-webpack'].includes(type)) {
       console.log('Building Webpack bundle');
+
+      // Verify TypeScript config exists
+      if (!fs.existsSync('tsconfig.json')) {
+        throw new Error('tsconfig.json not found');
+      }
 
       // Verify webpack config exists
       if (!fs.existsSync('webpack.config.js')) {
         throw new Error('webpack.config.js not found');
       }
+
+      // Compile TypeScript declarations
+      execCommand('npx tsc --emitDeclarationOnly');
 
       // Build with webpack
       execCommand('npx webpack --config webpack.config.js');

@@ -4,12 +4,12 @@
  * Utility script to clean up stuck ModInstallerIPC.exe processes
  */
 
-const cp = require('child_process');
-const { promisify } = require('util');
+import cp from 'child_process';
+import { promisify } from 'util';
 
 const exec = promisify(cp.exec);
 
-async function findStuckProcesses() {
+export async function findStuckProcesses(): Promise<number[]> {
   try {
     const { stdout } = await exec('tasklist /FI "IMAGENAME eq ModInstallerIPC.exe" /FO CSV');
     const lines = stdout.trim().split('\n');
@@ -35,10 +35,10 @@ async function findStuckProcesses() {
   }
 }
 
-async function killProcess(pid) {
+export async function killProcess(pid: number): Promise<boolean> {
   try {
     await exec(`taskkill /F /PID ${pid}`);
-    console.log(`Successfully killed process ${pid}`);
+    console.log(`Successfully kill ed process ${pid}`);
     return true;
   } catch (error) {
     console.error(`Failed to kill process ${pid}:`, error.message);
@@ -46,7 +46,7 @@ async function killProcess(pid) {
   }
 }
 
-async function main() {
+async function main(): Promise<void> {
   console.log('Searching for stuck ModInstallerIPC.exe processes...');
 
   const processes = await findStuckProcesses();
@@ -78,9 +78,3 @@ async function main() {
 
   console.log(`Successfully killed ${killed} out of ${processes.length} processes.`);
 }
-
-if (require.main === module) {
-  main().catch(console.error);
-}
-
-module.exports = { findStuckProcesses, killProcess };
