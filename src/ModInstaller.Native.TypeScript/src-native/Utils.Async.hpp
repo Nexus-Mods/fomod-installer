@@ -28,7 +28,9 @@ namespace Utils::Async
         }
 
         const auto resultStr = result.As<Napi::String>();
+#if DEBUG
         logger.Log("Value: " + resultStr.Utf8Value());
+#endif
         return Create(return_value_string{nullptr, Copy(resultStr.Utf16Value())});
     }
 
@@ -42,7 +44,9 @@ namespace Utils::Async
         }
 
         const auto resultObj = result.As<Object>();
+#if DEBUG
         logger.Log("Value: " + JSONStringify(resultObj).Utf8Value());
+#endif
         return Create(return_value_json{nullptr, Copy(JSONStringify(resultObj).Utf16Value())});
     }
 

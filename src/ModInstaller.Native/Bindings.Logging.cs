@@ -13,19 +13,20 @@ namespace ModInstaller.Native;
 public static unsafe partial class Bindings
 {
     [UnmanagedCallersOnly(EntryPoint = "set_default_logging_callbacks", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* SetLoggingCallbacks()
+    public static int SetLoggingCallbacks()
     {
         Logger.LogInput();
         try
         {
             Logger.CreateDefault();
 
-            return return_value_void.AsValue(false);
+            return 0;
         }
         catch (Exception e)
         {
+            Console.Error.WriteLine(e);
             Logger.LogException(e);
-            return return_value_void.AsException(e, false);
+            return -1;
         }
         finally
         {
@@ -34,7 +35,7 @@ public static unsafe partial class Bindings
     }
     
     [UnmanagedCallersOnly(EntryPoint = "set_logging_callbacks", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* SetLoggingCallbacks(param_ptr* p_owner,
+    public static int SetLoggingCallbacks(param_ptr* p_owner,
         delegate* unmanaged[Cdecl]<param_ptr*, param_int, param_string*, param_int> p_log
     )
     {
@@ -47,12 +48,13 @@ public static unsafe partial class Bindings
 
             Logger.Create(loggerDelegate);
 
-            return return_value_void.AsValue(false);
+            return 0;
         }
         catch (Exception e)
         {
+            Console.Error.WriteLine(e);
             Logger.LogException(e);
-            return return_value_void.AsException(e, false);
+            return -1;
         }
         finally
         {
@@ -61,17 +63,19 @@ public static unsafe partial class Bindings
     }
     
     [UnmanagedCallersOnly(EntryPoint = "dispose_default_logger", CallConvs = [typeof(CallConvCdecl)]), IsNotConst<IsPtrConst>]
-    public static return_value_void* DisposeDefaultLogger()
+    public static int DisposeDefaultLogger()
     {
         try
         {
             Logger.Dispose();
             
-            return return_value_void.AsValue(false);
+            return 0;
         }
         catch (Exception e)
         {
-            return return_value_void.AsException(e, false);
+            Console.Error.WriteLine(e);
+            Logger.LogException(e);
+            return -1;
         }
     }
     
@@ -86,7 +90,7 @@ public static unsafe partial class Bindings
         }
         catch (Exception e)
         {
-            //Logger.LogException(e);
+            Console.Error.WriteLine(e);
         }
     }
 }

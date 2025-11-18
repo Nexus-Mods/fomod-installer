@@ -60,9 +60,9 @@ namespace Utils
 
             if (length == 0)
             {
-                deferred.Resolve(env.Undefined());
+                deferred.Resolve(env.Null());
             }
-            else if (length == 2)
+            else if (length == 2 && info[0].IsBoolean())
             {
                 const auto isErr = info[0].As<Napi::Boolean>();
                 const auto obj = info[1];
@@ -79,7 +79,7 @@ namespace Utils
             }
             else
             {
-                deferred.Reject(Napi::Error::New(env, "Too many arguments").Value());
+                deferred.Reject(Napi::Error::New(env, "Too many arguments or incorrect arguments").Value());
             }
         };
         const auto tsfn = Napi::ThreadSafeFunction::New(env, Napi::Function::New(env, callback), callbackName, 0, 1);
@@ -188,14 +188,19 @@ namespace Utils
         return conv.from_bytes(e.Message());
     }
 
-    Napi::Value ReturnAndHandleReject(const Env env, return_value_async *const result, const Napi::Promise::Deferred &deferred, Napi::ThreadSafeFunction tsfn)
+    Napi::Value ReturnAndHandleReject(const Env env, return_value_async *const result, const Napi::Promise::Deferred deferred, Napi::ThreadSafeFunction tsfn)
     {
         LoggerScope logger(__FUNCTION__);
         const del_async del{result};
 
+        if (result == nullptr)
+        {
+            logger.Log("Null result");
+            NAPI_THROW(Error::New(env, String::New(env, "Return value was null!")));
+        }
+
         if (result->error != nullptr)
         {
-            // del_rcbd delCb{cbData};
             const auto error = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(result->error);
             deferred.Reject(Error::New(env, String::New(env, error.get())).Value());
             tsfn.Release();
@@ -209,6 +214,12 @@ namespace Utils
         LoggerScope logger(__FUNCTION__);
         const del_void del{val};
 
+        if (val == nullptr)
+        {
+            logger.Log("Null result");
+            NAPI_THROW(Error::New(env, String::New(env, "Return value was null!")));
+        }
+
         if (val->error == nullptr)
         {
             return;
@@ -221,6 +232,12 @@ namespace Utils
     {
         LoggerScope logger(__FUNCTION__);
         const del_string del{result};
+
+        if (result == nullptr)
+        {
+            logger.Log("Null result");
+            NAPI_THROW(Error::New(env, String::New(env, "Return value was null!")));
+        }
 
         if (result->error == nullptr)
         {
@@ -242,6 +259,12 @@ namespace Utils
         LoggerScope logger(__FUNCTION__);
         const del_json del{result};
 
+        if (result == nullptr)
+        {
+            logger.Log("Null result");
+            NAPI_THROW(Error::New(env, String::New(env, "Return value was null!")));
+        }
+
         if (result->error == nullptr)
         {
             if (result->value == nullptr)
@@ -262,6 +285,12 @@ namespace Utils
         LoggerScope logger(__FUNCTION__);
         const del_bool del{result};
 
+        if (result == nullptr)
+        {
+            logger.Log("Null result");
+            NAPI_THROW(Error::New(env, String::New(env, "Return value was null!")));
+        }
+
         if (result->error == nullptr)
         {
             return Boolean::New(env, result->value);
@@ -274,6 +303,12 @@ namespace Utils
     {
         LoggerScope logger(__FUNCTION__);
         const del_int32 del{result};
+
+        if (result == nullptr)
+        {
+            logger.Log("Null result");
+            NAPI_THROW(Error::New(env, String::New(env, "Return value was null!")));
+        }
 
         if (result->error == nullptr)
         {
@@ -288,6 +323,12 @@ namespace Utils
         LoggerScope logger(__FUNCTION__);
         const del_uint32 del{result};
 
+        if (result == nullptr)
+        {
+            logger.Log("Null result");
+            NAPI_THROW(Error::New(env, String::New(env, "Return value was null!")));
+        }
+
         if (result->error == nullptr)
         {
             return Number::New(env, result->value);
@@ -301,6 +342,12 @@ namespace Utils
         LoggerScope logger(__FUNCTION__);
         const del_ptr del{result};
 
+        if (result == nullptr)
+        {
+            logger.Log("Null result");
+            NAPI_THROW(Error::New(env, String::New(env, "Return value was null!")));
+        }
+
         if (result->error == nullptr)
         {
             return result->value;
@@ -309,164 +356,256 @@ namespace Utils
         NAPI_THROW(Error::New(env, String::New(env, error.get())));
     }
 
-    void HandleVoidResultCallback(param_ptr *handler, return_value_void *returnData)
+    void HandleVoidResultCallback(param_ptr *p_owner, return_value_void *returnData)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        auto *cbData = static_cast<ResultCallbackData *>(handler);
-        del_rcbd delCb{cbData};
-
-        auto tsfn = cbData->tsfn;
-
-        const auto lambda = [functionName](Napi::Env env, Napi::Function jsCallback, return_value_void *returnData)
+        try
         {
-            LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
+            auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
+            del_rcbd del{manager};
 
-            del_void del{returnData};
-
-            if (returnData->error != nullptr)
+            const auto callback = [functionName, manager, returnData](Napi::Env env, Napi::Function jsCallback)
             {
-                callbackLogger.Log("Error");
-                const auto isError = Napi::Boolean::New(env, true);
-                const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
-                const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
-                jsCallback.Call({isError, error});
-            }
-            else
-            {
-                callbackLogger.Log("Resolving");
-                jsCallback.Call({});
-            }
-        };
+                LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
 
-        tsfn.BlockingCall(returnData, lambda);
-        tsfn.Release();
-    }
-    void HandleJsonResultCallback(param_ptr *handler, return_value_json *returnData)
-    {
-        const auto functionName = __FUNCTION__;
-        LoggerScope logger(functionName);
+                del_void del{returnData};
 
-        auto *cbData = static_cast<ResultCallbackData *>(handler);
-        del_rcbd delCb{cbData};
-        auto tsfn = cbData->tsfn;
-
-        const auto lambda = [functionName](Napi::Env env, Napi::Function jsCallback, return_value_json *returnData)
-        {
-            LoggerScope lambdaLogger(NAMEOFWITHCALLBACK(functionName, lambda));
-
-            del_json del{returnData};
-
-            if (returnData->error != nullptr)
-            {
-                lambdaLogger.Log("Error");
-                const auto isError = Napi::Boolean::New(env, true);
-                const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
-                const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
-                jsCallback.Call({isError, error});
-            }
-            else
-            {
-                lambdaLogger.Log("Resolving");
-                const auto isError = Napi::Boolean::New(env, false);
-                if (returnData->value == nullptr)
+                if (returnData == nullptr)
                 {
-                    lambdaLogger.Log("Result is null");
-                    const auto result = env.Null();
-                    jsCallback.Call({isError, result});
+                    callbackLogger.Log("Null return data");
+                    const auto isError = Napi::Boolean::New(env, true);
+                    const auto error = Napi::Error::New(env, "Return value was null!").Value();
+                    jsCallback.Call({isError, error});
+                }
+
+                if (returnData->error != nullptr)
+                {
+                    callbackLogger.Log("Error");
+                    const auto isError = Napi::Boolean::New(env, true);
+                    const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
+                    const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
+                    jsCallback.Call({isError, error});
                 }
                 else
                 {
-                    lambdaLogger.Log("Result is not null");
-                    const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
-                    const auto result = JSONParse(Napi::String::New(env, resultStr.get()));
-                    jsCallback.Call({isError, result});
+                    callbackLogger.Log("Resolving");
+                    jsCallback.Call({});
                 }
-            }
-        };
-        tsfn.BlockingCall(returnData, lambda);
-        tsfn.Release();
+            };
+
+            manager->tsfn.BlockingCall(callback);
+            manager->tsfn.Release();
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.Log("Error: " + std::string(e.Message()));
+        }
+        catch (const std::exception &e)
+        {
+            logger.Log("Exception: " + std::string(e.what()));
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+        }
     }
-    void HandleStringResultCallback(param_ptr *handler, return_value_string *returnData)
+    void HandleJsonResultCallback(param_ptr *p_owner, return_value_json *returnData)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-
-        auto *cbData = static_cast<ResultCallbackData *>(handler);
-        del_rcbd delCb{cbData};
-
-        const auto deferred = cbData->deferred;
-        auto tsfn = cbData->tsfn;
-
-        const auto lambda = [functionName](Napi::Env env, Napi::Function jsCallback, return_value_string *returnData)
+        try
         {
-            LoggerScope lambdaLogger(NAMEOFWITHCALLBACK(functionName, lambda));
+            auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
+            del_rcbd del{manager};
 
-            del_string del{returnData};
+            const auto callback = [functionName, manager, returnData](Napi::Env env, Napi::Function jsCallback)
+            {
+                LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
 
-            if (returnData->error != nullptr)
-            {
-                lambdaLogger.Log("Error");
-                const auto isError = Napi::Boolean::New(env, true);
-                const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
-                const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
-                jsCallback.Call({isError, error});
-            }
-            else
-            {
-                lambdaLogger.Log("Resolving");
-                const auto isError = Napi::Boolean::New(env, false);
-                if (returnData->value == nullptr)
+                del_json del{returnData};
+
+                if (returnData == nullptr)
                 {
-                    lambdaLogger.Log("Result is null");
-                    const auto result = env.Null();
-                    jsCallback.Call({isError, result});
+                    callbackLogger.Log("Null return data");
+                    const auto isError = Napi::Boolean::New(env, true);
+                    const auto error = Napi::Error::New(env, "Return value was null!").Value();
+                    jsCallback.Call({isError, error});
+                    return;
+                }
+
+                if (returnData->error != nullptr)
+                {
+                    callbackLogger.Log("Error");
+                    const auto isError = Napi::Boolean::New(env, true);
+                    const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
+                    const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
+                    jsCallback.Call({isError, error});
                 }
                 else
                 {
-                    lambdaLogger.Log("Result is not null");
-                    const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
-                    const auto result = Napi::String::New(env, resultStr.get());
-                    jsCallback.Call({isError, result});
+                    callbackLogger.Log("Resolving");
+                    const auto isError = Napi::Boolean::New(env, false);
+                    if (returnData->value == nullptr)
+                    {
+                        callbackLogger.Log("Result is null");
+                        const auto result = env.Null();
+                        jsCallback.Call({isError, result});
+                    }
+                    else
+                    {
+                        callbackLogger.Log("Result is not null");
+                        const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
+                        const auto result = JSONParse(Napi::String::New(env, resultStr.get()));
+                        jsCallback.Call({isError, result});
+                    }
                 }
-            }
-        };
-        tsfn.BlockingCall(returnData, lambda);
-        tsfn.Release();
+            };
+
+            manager->tsfn.BlockingCall(callback);
+            manager->tsfn.Release();
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.Log("Error: " + std::string(e.Message()));
+        }
+        catch (const std::exception &e)
+        {
+            logger.Log("Exception: " + std::string(e.what()));
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+        }
     }
-    void HandleBooleanResultCallback(param_ptr *handler, return_value_bool *returnData)
+    void HandleStringResultCallback(param_ptr *p_owner, return_value_string *returnData)
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        auto *cbData = static_cast<ResultCallbackData *>(handler);
-        del_rcbd del{cbData};
-        auto tsfn = cbData->tsfn;
-
-        const auto lambda = [functionName](Napi::Env env, Napi::Function jsCallback, return_value_bool *returnData)
+        try
         {
-            LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
+            auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
+            del_rcbd del{manager};
 
-            del_bool del{returnData};
+            const auto callback = [functionName, manager, returnData](Napi::Env env, Napi::Function jsCallback)
+            {
+                LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
 
-            if (returnData->error != nullptr)
+                del_string del{returnData};
+
+                if (returnData == nullptr)
+                {
+                    callbackLogger.Log("Null return data");
+                    const auto isError = Napi::Boolean::New(env, true);
+                    const auto error = Napi::Error::New(env, "Return value was null!").Value();
+                    jsCallback.Call({isError, error});
+                    return;
+                }
+
+                if (returnData->error != nullptr)
+                {
+                    callbackLogger.Log("Error");
+                    const auto isError = Napi::Boolean::New(env, true);
+                    const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
+                    const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
+                    jsCallback.Call({isError, error});
+                }
+                else
+                {
+                    callbackLogger.Log("Resolving");
+                    const auto isError = Napi::Boolean::New(env, false);
+                    if (returnData->value == nullptr)
+                    {
+                        callbackLogger.Log("Result is null");
+                        const auto result = env.Null();
+                        jsCallback.Call({isError, result});
+                    }
+                    else
+                    {
+                        callbackLogger.Log("Result is not null");
+                        const auto resultStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->value);
+                        const auto result = Napi::String::New(env, resultStr.get());
+                        jsCallback.Call({isError, result});
+                    }
+                }
+            };
+
+            manager->tsfn.BlockingCall(callback);
+            manager->tsfn.Release();
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.Log("Error: " + std::string(e.Message()));
+        }
+        catch (const std::exception &e)
+        {
+            logger.Log("Exception: " + std::string(e.what()));
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+        }
+    }
+    void HandleBooleanResultCallback(param_ptr *p_owner, return_value_bool *returnData)
+    {
+        const auto functionName = __FUNCTION__;
+        LoggerScope logger(functionName);
+        try
+        {
+            auto manager = const_cast<ResultCallbackData *>(static_cast<const ResultCallbackData *>(p_owner));
+            del_rcbd del{manager};
+
+            const auto callback = [functionName, manager, returnData](Napi::Env env, Napi::Function jsCallback)
             {
-                callbackLogger.Log("Resolving");
-                const auto isError = Napi::Boolean::New(env, true);
-                const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
-                const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
-                jsCallback.Call({isError, error});
-            }
-            else
-            {
-                callbackLogger.Log("Resolving");
-                const auto isError = Napi::Boolean::New(env, false);
-                const auto result = Boolean::New(env, returnData->value == 1);
-                jsCallback.Call({isError, result});
-            }
-        };
-        tsfn.BlockingCall(returnData, lambda);
-        tsfn.Release();
+                LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
+
+                del_bool del{returnData};
+
+                if (returnData == nullptr)
+                {
+                    callbackLogger.Log("Null return data");
+                    const auto isError = Napi::Boolean::New(env, true);
+                    const auto error = Napi::Error::New(env, "Return value was null!").Value();
+                    jsCallback.Call({isError, error});
+                    return;
+                }
+
+                if (returnData->error != nullptr)
+                {
+                    callbackLogger.Log("Error");
+                    const auto isError = Napi::Boolean::New(env, true);
+                    const auto errorStr = std::unique_ptr<char16_t[], common_deallocor<char16_t>>(returnData->error);
+                    const auto error = Napi::Error::New(env, String::New(env, errorStr.get())).Value();
+                    jsCallback.Call({isError, error});
+                }
+                else
+                {
+                    callbackLogger.Log("Resolving");
+                    const auto isError = Napi::Boolean::New(env, false);
+                    const auto result = Boolean::New(env, returnData->value == 1);
+                    jsCallback.Call({isError, result});
+                }
+            };
+
+            manager->tsfn.BlockingCall(callback);
+            manager->tsfn.Release();
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.Log("Error: " + std::string(e.Message()));
+        }
+        catch (const std::exception &e)
+        {
+            logger.Log("Exception: " + std::string(e.what()));
+            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+        }
     }
 }
 

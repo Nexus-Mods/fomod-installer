@@ -13,19 +13,20 @@ namespace ModInstaller.Native;
 public static unsafe partial class Bindings
 {
     [UnmanagedCallersOnly(EntryPoint = "set_default_file_system_callbacks", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* SetDefaultFileSystemCallbacks()
+    public static int SetDefaultFileSystemCallbacks()
     {
         Logger.LogInput();
         try
         {
             FileSystem.Instance = new DefaultFileSystem();
 
-            return return_value_void.AsValue(false);
+            return 0;
         }
         catch (Exception e)
         {
+            Console.Error.WriteLine(e);
             Logger.LogException(e);
-            return return_value_void.AsException(e, false);
+            return -1;
         }
         finally
         {
@@ -34,7 +35,7 @@ public static unsafe partial class Bindings
     }
     
     [UnmanagedCallersOnly(EntryPoint = "set_file_system_callbacks", CallConvs = [typeof(CallConvCdecl)])]
-    public static return_value_void* SetFileSystemCallbacks(param_ptr* p_owner,
+    public static int SetFileSystemCallbacks(param_ptr* p_owner,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_int, param_int, return_value_data*> p_read_file_content,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_string*, param_int, return_value_json*> p_read_directory_file_list,
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_list
@@ -51,12 +52,13 @@ public static unsafe partial class Bindings
 
             FileSystem.Instance = fileSystemDelegate;
 
-            return return_value_void.AsValue(false);
+            return 0;
         }
         catch (Exception e)
         {
+            Console.Error.WriteLine(e);
             Logger.LogException(e);
-            return return_value_void.AsException(e, false);
+            return -1;
         }
         finally
         {

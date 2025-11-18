@@ -88,7 +88,12 @@ namespace Bindings::FileSystem
         const auto env = info.Env();
 
         const auto result = set_default_file_system_callbacks();
-        return ThrowOrReturn(env, result);
+
+        if (result != 0)
+        {
+            logger.Log("Error setting default file system callbacks");
+            NAPI_THROW(Error::New(env, "Failed to set default file system callbacks"));
+        }
     }
 
     void FileSystem::SetCallbacks(const CallbackInfo &info)
@@ -101,7 +106,12 @@ namespace Bindings::FileSystem
                                                       readFileContent,
                                                       readDirectoryFileList,
                                                       readDirectoryList);
-        return ThrowOrReturn(env, result);
+
+        if (result != 0)
+        {
+            logger.Log("Error setting file system callbacks");
+            NAPI_THROW(Error::New(env, "Failed to set file system callbacks"));
+        }
     }
 
     // Initialize native add-on

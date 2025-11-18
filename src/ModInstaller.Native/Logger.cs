@@ -59,7 +59,7 @@ internal static partial class Logger
         
         Factory = LoggerFactory.Create(logging =>
         {
-#if DEBUG
+#if DEBUG_
             logging.SetMinimumLevel(LogLevel.Trace);
             var configure = (ZLoggerRollingFileOptions options) =>
             {
@@ -76,7 +76,7 @@ internal static partial class Logger
                 });
             };
 #else
-            logging.SetMinimumLevel(LogLevel.Trace);
+            logging.SetMinimumLevel(LogLevel.Information);
             var configure = (ZLoggerRollingFileOptions options) =>
             {
                 options.RollingSizeKB = 8 * 1024 * 1024;

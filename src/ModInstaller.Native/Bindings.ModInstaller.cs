@@ -102,7 +102,11 @@ public static unsafe partial class Bindings
         [IsConst<IsPtrConst>] param_json* p_mod_archive_file_list,
         [IsConst<IsPtrConst>] param_json* p_allowed_types)
     {
+#if DEBUG
         Logger.LogInput(p_mod_archive_file_list, p_allowed_types);
+#else
+        Logger.LogInput();
+#endif
         try
         {
             //if (p_handle is null || NativeCoreDelegatesHandler.FromPointer(p_handle) is not { } handler)
@@ -138,7 +142,11 @@ public static unsafe partial class Bindings
         param_ptr* p_callback_handler,
         delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
     {
+#if DEBUG
         Logger.LogInput(p_mod_archive_file_list, p_stop_patterns, p_plugin_path, p_script_path, p_preset, &validate);
+#else
+        Logger.LogInput();
+#endif
         try
         {
             if (p_handle is null || NativeCoreDelegatesHandler.FromPointer(p_handle) is not { } handler)

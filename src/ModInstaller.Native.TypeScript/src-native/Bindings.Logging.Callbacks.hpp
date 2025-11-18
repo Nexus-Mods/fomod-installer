@@ -18,9 +18,9 @@ using namespace ModInstaller::Native;
 
 namespace Bindings::Logging
 {
-    static param_int log(param_ptr *p_owner,
-                                  param_int level,
-                                  param_string *message) noexcept
+    static int32_t log(param_ptr *p_owner,
+                       param_int level,
+                       param_string *message) noexcept
     {
         try
         {
@@ -43,13 +43,15 @@ namespace Bindings::Logging
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
-                param_int result = 0;
+                int32_t result = 0;
 
-                const auto callback = [manager, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [manager, level, message, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     try
                     {
-                        jsCallback({});
+                        const auto levelValue = Napi::Number::New(env, level);
+                        const auto messageValue = Napi::String::New(env, message);
+                        jsCallback({levelValue, messageValue});
 
                         std::lock_guard<std::mutex> lock(mtx);
                         result = 0;
@@ -58,6 +60,8 @@ namespace Bindings::Logging
                     }
                     catch (const Napi::Error &e)
                     {
+                        std::cerr << "Error in log callback: " << e.what() << std::endl;
+
                         std::lock_guard<std::mutex> lock(mtx);
                         result = -1;
                         completed = true;
@@ -68,6 +72,7 @@ namespace Bindings::Logging
                 const auto status = manager->TSFNLog.BlockingCall(callback);
                 if (status != napi_ok)
                 {
+                    std::cerr << "Error calling ThreadSafeFunction for log callback" << std::endl;
                     return -2;
                 }
 
@@ -80,15 +85,17 @@ namespace Bindings::Logging
         }
         catch (const Napi::Error &e)
         {
+            std::cerr << "Error in log callback: " << e.what() << std::endl;
             return -3;
         }
         catch (const std::exception &e)
         {
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
+            std::cerr << "Error in log callback: " << e.what() << std::endl;
             return -4;
         }
         catch (...)
         {
+            std::cerr << "Unknown error in log callback" << std::endl;
             return -5;
         }
     }

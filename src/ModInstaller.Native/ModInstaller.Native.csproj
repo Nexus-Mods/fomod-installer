@@ -16,8 +16,11 @@
     <TrimMode>full</TrimMode>
     <DebugType>none</DebugType>
     <NativeLib>Shared</NativeLib>
-    <!-- Temporary force TRACK_ALLOCATIONS  -->
-    <DefineConstants>$(DefineConstants);TRACK_ALLOCATIONS;LOGGING;</DefineConstants>
+    <DefineConstants>$(DefineConstants);LOGGING;</DefineConstants>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="$(Configuration) == 'Release'">
+    <DefineConstants>$(DefineConstants);TRACK_ALLOCATIONS;</DefineConstants>
   </PropertyGroup>
   
   <PropertyGroup Condition="$(Configuration) == 'Release'">

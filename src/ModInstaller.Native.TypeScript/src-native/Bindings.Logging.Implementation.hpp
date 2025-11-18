@@ -51,6 +51,8 @@ namespace Bindings::Logging
 
     Logger::Logger(const CallbackInfo &info) : ObjectWrap<Logger>(info)
     {
+        LoggerScope logger(__FUNCTION__);
+
         const auto env = Env();
         this->FLog = Persistent(info[0].As<Function>());
 
@@ -62,6 +64,8 @@ namespace Bindings::Logging
 
     Logger::~Logger()
     {
+        LoggerScope logger(__FUNCTION__);
+
         // Release thread-safe functions
         this->TSFNLog.Release();
 
@@ -71,27 +75,47 @@ namespace Bindings::Logging
 
     void Logger::SetDefaultCallbacks(const CallbackInfo &info)
     {
+        LoggerScope logger(__FUNCTION__);
+
         const auto env = info.Env();
 
         const auto result = set_default_logging_callbacks();
-        return ThrowOrReturn(env, result);
+
+        if (result != 0)
+        {
+            logger.Log("Error setting default logger callbacks");
+            NAPI_THROW(Error::New(env, "Failed to set default logger callbacks"));
+        }
     }
 
     void Logger::SetCallbacks(const CallbackInfo &info)
     {
+        LoggerScope logger(__FUNCTION__);
+
         const auto env = info.Env();
 
         const auto result = set_logging_callbacks(this,
                                                   log);
-        return ThrowOrReturn(env, result);
+
+        if (result != 0)
+        {
+            logger.Log("Error setting logger callbacks");
+            NAPI_THROW(Error::New(env, "Failed to set logger callbacks"));
+        }
     }
 
     void DisposeDefaultLogger(const CallbackInfo &info)
     {
+        LoggerScope logger(__FUNCTION__);
+
         const auto env = info.Env();
 
         const auto result = dispose_default_logger();
-        return ThrowOrReturn(env, result);
+        if (result != 0)
+        {
+            logger.Log("Error disposing default logger");
+            NAPI_THROW(Error::New(env, "Failed to dispose default logger"));
+        }
     }
 
     // Initialize native add-on

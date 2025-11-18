@@ -21,6 +21,9 @@ internal class CallbackLogger : ILogger
     public unsafe void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
     {
         var message = formatter(state, exception);
+        if (exception != null)
+            message += Environment.NewLine + exception;
+        
         fixed (char* pMessage = message)
         {
             try
