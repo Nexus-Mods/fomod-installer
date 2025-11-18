@@ -1,9 +1,11 @@
 export * from './ModInstaller';
 export * from './FileSystem';
+export * from './Logger';
 export * from './SupportedResult';
 export * from './InstallResult';
 
 import { IFileSystemExtension } from './FileSystem';
+import { ILoggerExtension } from './Logger';
 import { IModInstallerExtension } from './ModInstaller';
 
 export type OrderType = 'AlphaAsc' | 'AlphaDesc' | 'Explicit';

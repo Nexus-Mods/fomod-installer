@@ -1,10 +1,6 @@
 #ifndef VE_LIB_LOGGER_GUARD_HPP_
 #define VE_LIB_LOGGER_GUARD_HPP_
 
-#ifdef DEBUG
-#define LOGGING
-#endif
-
 #define NAMEOF(x) #x
 #define NAMEOFWITHCALLBACK(x, y) (std::string(x) + "_" + #y)
 
@@ -106,7 +102,10 @@
 #include <iomanip>
 #include <sstream>
 
+#include "ModInstaller.Native.h"
+
 using namespace Napi;
+using namespace ModInstaller::Native;
 
 class Logger
 {
@@ -134,75 +133,10 @@ private:
 public:
     static void Log(const std::string &message)
     {
-#ifdef LOGGING
-        HANDLE mutex = OpenMutexW(SYNCHRONIZE, FALSE, _mutexName.c_str());
-        if (!mutex)
-            mutex = CreateMutexW(NULL, FALSE, _mutexName.c_str());
-
-        if (mutex)
-        {
-            // Calculate timeout (1 second from now)
-            auto timeout = std::chrono::steady_clock::now() + std::chrono::seconds(1);
-
-            while (std::chrono::steady_clock::now() < timeout)
-            {
-                // Ensure directory exists
-                try
-                {
-                    size_t lastSlash = _logFilePath.find_last_of("\\/");
-                    if (lastSlash != std::string::npos)
-                    {
-                        std::string directory = _logFilePath.substr(0, lastSlash);
-                        // Create directory (SHCreateDirectoryExA handles nested directories)
-                        SHCreateDirectoryExA(NULL, directory.c_str(), NULL);
-                    }
-                }
-                catch (...) { /* ignore */ }
-
-                try
-                {
-                    DWORD waitResult = WaitForSingleObject(mutex, 100); // 100 ms timeout
-                    if (waitResult != WAIT_OBJECT_0)
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        std::ofstream fs(_logFilePath, std::ios::app);
-                        if (fs.is_open())
-                        {
-                            auto now = std::chrono::system_clock::now();
-                            auto in_time_t = std::chrono::system_clock::to_time_t(now);
-
-                            std::tm buf;
-                            gmtime_s(&buf, &in_time_t);
-
-                            char timeStr[100];
-                            strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", &buf);
-
-                            auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
-
-                            fs << "[C++][" << timeStr << "." << std::setfill('0') << std::setw(3) << milliseconds << "] " << message << std::endl;
-                        }
-                        ReleaseMutex(mutex);
-                        CloseHandle(mutex);
-                        return;
-                    }
-                    catch (...)
-                    {
-                        ReleaseMutex(mutex);
-                        throw;
-                    }
-                }
-                catch (...)
-                {
-                    Sleep(50);
-                }
-            }
-            CloseHandle(mutex);
-        }
-#endif
+        // Convert UTF-8 string to UTF-16 for the log function
+        std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+        std::u16string utf16_message = convert.from_bytes(message);
+        ModInstaller::Native::log(2, const_cast<char16_t*>(utf16_message.c_str()));
     }
 
     static void Log(const std::string &caller, const std::string &message)
@@ -342,17 +276,4 @@ public:
     }
 };
 
-const std::string Logger::_logFilePath = []() {
-    const char* appData = std::getenv("APPDATA");
-    if (appData != nullptr) {
-#ifdef DEBUG
-        return std::string(appData) + "\\vortex_devel\\FOMOD.ModInstaller.log";
-#else
-        return std::string(appData) + "\\vortex\\FOMOD.ModInstaller.log";
-#endif
-    }
-    return std::string("FOMOD.ModInstaller.log"); // Fallback to current directory
-}();
-const std::wstring Logger::_mutexName = L"Global\\FOMODLoggerMutex";
-
-#endif
+#endif // VE_LIB_LOGGER_GUARD_HPP_

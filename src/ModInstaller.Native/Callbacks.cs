@@ -107,3 +107,8 @@ internal unsafe delegate return_value_json* N_ReadDirectoryFileList(param_ptr* p
 [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 internal unsafe delegate return_value_json* N_ReadDirectoryList(param_ptr* p_owner,
     param_string* p_directory_path);
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+internal unsafe delegate param_int N_Log(param_ptr* p_owner,
+    param_int level,
+    param_string* p_messsage);
