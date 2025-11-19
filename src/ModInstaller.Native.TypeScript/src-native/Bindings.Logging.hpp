@@ -1,18 +1,10 @@
 #ifndef VE_LOGGING_GUARD_HPP_
 #define VE_LOGGING_GUARD_HPP_
 
-#include "utils.hpp"
-#include "Utils.Callback.hpp"
-#include "Utils.Async.hpp"
+#include <napi.h>
 #include "ModInstaller.Native.h"
-#include <codecvt>
-#include <mutex>
-#include <condition_variable>
 
 using namespace Napi;
-using namespace Utils;
-using namespace Utils::Async;
-using namespace Utils::Callback;
 using namespace ModInstaller::Native;
 
 namespace Bindings::Logging

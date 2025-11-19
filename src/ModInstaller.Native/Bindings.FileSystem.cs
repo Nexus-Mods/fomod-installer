@@ -15,7 +15,12 @@ public static unsafe partial class Bindings
     [UnmanagedCallersOnly(EntryPoint = "set_default_file_system_callbacks", CallConvs = [typeof(CallConvCdecl)])]
     public static int SetDefaultFileSystemCallbacks()
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
+        
         try
         {
             FileSystem.Instance = new DefaultFileSystem();
@@ -25,12 +30,8 @@ public static unsafe partial class Bindings
         catch (Exception e)
         {
             Console.Error.WriteLine(e);
-            Logger.LogException(e);
+            logger.LogException(e);
             return -1;
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
     
@@ -41,7 +42,12 @@ public static unsafe partial class Bindings
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, return_value_json*> p_read_directory_list
     )
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
+        
         try
         {
             var fileSystemDelegate = new CallbackFileSystem(p_owner,
@@ -57,12 +63,8 @@ public static unsafe partial class Bindings
         catch (Exception e)
         {
             Console.Error.WriteLine(e);
-            Logger.LogException(e);
+            logger.LogException(e);
             return -1;
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
 }

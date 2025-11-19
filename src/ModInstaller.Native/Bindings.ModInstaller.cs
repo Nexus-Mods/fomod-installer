@@ -28,7 +28,12 @@ public static unsafe partial class Bindings
         delegate* unmanaged[Cdecl]<param_ptr*, param_json*, param_int, return_value_void*> p_ui_update_state
         )
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
+        
         try
         {
             var pluginsDelegate = new CallbackPluginDelegates(p_owner,
@@ -63,19 +68,20 @@ public static unsafe partial class Bindings
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_ptr.AsException(e, false);
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
 
     [UnmanagedCallersOnly(EntryPoint = "dispose_handler", CallConvs = [typeof(CallConvCdecl)])]
     public static return_value_void* DisposeHandler(param_ptr* p_handle)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
+        
         try
         {
             if (p_handle is null || NativeCoreDelegatesHandler.FromPointer(p_handle) is not { } handler)
@@ -87,12 +93,8 @@ public static unsafe partial class Bindings
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_void.AsException(e, false);
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
 
@@ -103,10 +105,11 @@ public static unsafe partial class Bindings
         [IsConst<IsPtrConst>] param_json* p_allowed_types)
     {
 #if DEBUG
-        Logger.LogInput(p_mod_archive_file_list, p_allowed_types);
+        using var logger = LogMethod(p_mod_archive_file_list, p_allowed_types);
 #else
-        Logger.LogInput();
+        using var logger = LogMethod();
 #endif
+        
         try
         {
             //if (p_handle is null || NativeCoreDelegatesHandler.FromPointer(p_handle) is not { } handler)
@@ -121,12 +124,8 @@ public static unsafe partial class Bindings
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_json.AsException(e, false);
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
 
@@ -143,10 +142,11 @@ public static unsafe partial class Bindings
         delegate* unmanaged[Cdecl]<param_ptr*, return_value_json*, void> p_callback)
     {
 #if DEBUG
-        Logger.LogInput(p_mod_archive_file_list, p_stop_patterns, p_plugin_path, p_script_path, p_preset, &validate);
+        using var logger = LogMethod(p_mod_archive_file_list, p_stop_patterns, p_plugin_path, p_script_path, p_preset, &validate);
 #else
-        Logger.LogInput();
+        using var logger = LogMethod();
 #endif
+        
         try
         {
             if (p_handle is null || NativeCoreDelegatesHandler.FromPointer(p_handle) is not { } handler)
@@ -162,30 +162,33 @@ public static unsafe partial class Bindings
 
             Installer.Install(modArchiveFileList.ToList(), stopPatterns.ToList(), pluginPath, scriptPath, preset, validate, progressDelegate, handler).ContinueWith(result =>
             {
-                Logger.LogAsyncInput($"{nameof(Install)}_Callback");
-
+#if DEBUG
+                using var logger = LogMethod($"{nameof(Install)}_Callback");
+#else
+                using var logger = LogMethod($"{nameof(Install)}_Callback");
+#endif
+                
                 try
                 {
                     if (result.Exception is not null)
                     {
                         p_callback(p_callback_handler, return_value_json.AsException(result.Exception, false));
-                        Logger.LogException(result.Exception, $"{nameof(Install)}_Callback");
+                        logger.LogException(result.Exception);
                     }
                     else if (result.IsCanceled)
                     {
                         p_callback(p_callback_handler, return_value_json.AsValue(null, CustomSourceGenerationContext.InstallResult, false));
-                        Logger.LogMessage("Installation cancelled", $"{nameof(Install)}_Callback");
+                        logger.Log("Installation cancelled");
                     }
                     else
                     {
                         p_callback(p_callback_handler, return_value_json.AsValue(result.Result, CustomSourceGenerationContext.InstallResult, false));
-                        Logger.LogOutput(result.Result.Instructions.Count > 0 ? result.Result.Instructions[0].type : "", $"{nameof(Install)}_Callback");
                     }
                 }
                 catch (Exception e)
                 {
                     p_callback(p_callback_handler, return_value_json.AsException(e, false));
-                    Logger.LogException(e, $"{nameof(Install)}_Callback");
+                    logger.LogException(e);
                 }
             });
 
@@ -193,12 +196,8 @@ public static unsafe partial class Bindings
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             return return_value_async.AsException(e, false);
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
 }

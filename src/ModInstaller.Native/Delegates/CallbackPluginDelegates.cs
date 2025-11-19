@@ -4,9 +4,6 @@ using FomodInstaller.Interface;
 
 using System;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace ModInstaller.Native.Adapters;
 
@@ -27,19 +24,20 @@ internal class CallbackPluginDelegates : PluginDelegates
 
     public override unsafe string[] GetAll(bool activeOnly)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod(activeOnly.ToFormattable());
+#else
+        using var logger = LogMethod();
+#endif
+
         try
         {
             using var result = SafeStructMallocHandle.Create(_getAll(_pOwner, activeOnly), true);
-            var value = result.ValueAsJson(SourceGenerationContext.Default.StringArray);
-
-            Logger.LogOutput();
-            
-            return value;
+            return result.ValueAsJson(SourceGenerationContext.Default.StringArray) ?? [];
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             throw;
         }
     }
@@ -47,12 +45,12 @@ internal class CallbackPluginDelegates : PluginDelegates
     public override bool IsActive(string pluginName)
     {
         mActiveCache ??= GetAll(true);
-        return mActiveCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default;
+        return mActiveCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != null;
     }
 
     public override bool IsPresent(string pluginName)
     {
         mPresentCache ??= GetAll(false);
-        return mPresentCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != default;
+        return mPresentCache.FirstOrDefault(p => p.Equals(pluginName, StringComparison.OrdinalIgnoreCase)) != null;
     }
 }

@@ -1,19 +1,17 @@
 #ifndef VE_FILESYSTEM_CB_GUARD_HPP_
 #define VE_FILESYSTEM_CB_GUARD_HPP_
 
-#include "utils.hpp"
-#include "Utils.Callback.hpp"
-#include "Utils.Async.hpp"
-#include "ModInstaller.Native.h"
-#include "Bindings.FileSystem.hpp"
-#include <codecvt>
 #include <mutex>
 #include <condition_variable>
+#include <thread>
+#include "ModInstaller.Native.h"
+#include "Logger.hpp"
+#include "Utils.Converters.hpp"
+#include "Utils.Callbacks.hpp"
+#include "Bindings.FileSystem.hpp"
 
 using namespace Napi;
 using namespace Utils;
-using namespace Utils::Async;
-using namespace Utils::Callback;
 using namespace ModInstaller::Native;
 
 namespace Bindings::FileSystem
@@ -36,7 +34,7 @@ namespace Bindings::FileSystem
                 const auto offset = Number::New(env, v_offset);
                 const auto length = Number::New(env, v_length);
                 const auto jsResult = manager->FReadFileContent({filePath, offset, length});
-                return ConvertToDataResult(logger, jsResult);
+                return ConvertToDataResult(jsResult);
             }
             else
             {
@@ -60,14 +58,13 @@ namespace Bindings::FileSystem
                         const auto jsResult = jsCallback({filePath, offset, length});
 
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = ConvertToDataResult(callbackLogger, jsResult);
+                        result = ConvertToDataResult(jsResult);
                         completed = true;
                         cv.notify_one();
                     }
                     catch (const Napi::Error &e)
                     {
-                        callbackLogger.Log("Error: " + std::string(e.Message()));
-
+                        callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
                         result = Create(return_value_data{Copy(GetErrorMessage(e)), nullptr, 0});
                         completed = true;
@@ -92,12 +89,12 @@ namespace Bindings::FileSystem
         }
         catch (const Napi::Error &e)
         {
-            logger.Log("Error: " + std::string(e.Message()));
+            logger.LogError(e);
             return Create(return_value_data{Copy(GetErrorMessage(e)), nullptr, 0});
         }
         catch (const std::exception &e)
         {
-            logger.Log("Exception: " + std::string(e.what()));
+            logger.LogException(e);
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return Create(return_value_data{Copy(conv.from_bytes(e.what())), nullptr, 0});
         }
@@ -107,6 +104,7 @@ namespace Bindings::FileSystem
             return Create(return_value_data{Copy(u"Unknown exception"), nullptr, 0});
         }
     }
+
     static return_value_json *readDirectoryFileList(param_ptr *p_owner,
                                                     param_string *p_directory_path,
                                                     param_string *p_pattern,
@@ -125,7 +123,7 @@ namespace Bindings::FileSystem
                 const auto pattern = p_pattern == nullptr ? env.Null() : String::New(env, p_pattern);
                 const auto searchType = Number::New(env, search_type);
                 const auto jsResult = manager->FReadDirectoryFileList({directoryPath, pattern, searchType});
-                return ConvertToJsonResult(logger, jsResult);
+                return ConvertToJsonResult(jsResult);
             }
             else
             {
@@ -149,14 +147,13 @@ namespace Bindings::FileSystem
                         const auto jsResult = jsCallback({directoryPath, pattern, searchType});
 
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = ConvertToJsonResult(callbackLogger, jsResult);
+                        result = ConvertToJsonResult(jsResult);
                         completed = true;
                         cv.notify_one();
                     }
                     catch (const Napi::Error &e)
                     {
-                        callbackLogger.Log("Error: " + std::string(e.Message()));
-
+                        callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
                         result = Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
                         completed = true;
@@ -181,12 +178,12 @@ namespace Bindings::FileSystem
         }
         catch (const Napi::Error &e)
         {
-            logger.Log("Error: " + std::string(e.Message()));
+            logger.LogError(e);
             return Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
         }
         catch (const std::exception &e)
         {
-            logger.Log("Exception: " + std::string(e.what()));
+            logger.LogException(e);
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
@@ -196,6 +193,7 @@ namespace Bindings::FileSystem
             return Create(return_value_json{Copy(u"Unknown exception"), nullptr});
         }
     }
+
     static return_value_json *readDirectoryList(param_ptr *p_owner,
                                                 param_string *p_directory_path) noexcept
     {
@@ -210,7 +208,7 @@ namespace Bindings::FileSystem
                 const auto env = manager->FReadDirectoryList.Env();
                 const auto directoryPath = String::New(env, p_directory_path);
                 const auto jsResult = manager->FReadDirectoryList({directoryPath});
-                return ConvertToJsonResult(logger, jsResult);
+                return ConvertToJsonResult(jsResult);
             }
             else
             {
@@ -232,14 +230,13 @@ namespace Bindings::FileSystem
                         const auto jsResult = jsCallback({directoryPath});
 
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = ConvertToJsonResult(callbackLogger, jsResult);
+                        result = ConvertToJsonResult(jsResult);
                         completed = true;
                         cv.notify_one();
                     }
                     catch (const Napi::Error &e)
                     {
-                        callbackLogger.Log("Error: " + std::string(e.Message()));
-
+                        callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
                         result = Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
                         completed = true;
@@ -264,12 +261,12 @@ namespace Bindings::FileSystem
         }
         catch (const Napi::Error &e)
         {
-            logger.Log("Error: " + std::string(e.Message()));
+            logger.LogError(e);
             return Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
         }
         catch (const std::exception &e)
         {
-            logger.Log("Exception: " + std::string(e.what()));
+            logger.LogException(e);
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }

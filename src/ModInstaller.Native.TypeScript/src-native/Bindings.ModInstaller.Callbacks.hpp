@@ -1,20 +1,17 @@
 #ifndef VE_MODINSTALLER_CB_GUARD_HPP_
 #define VE_MODINSTALLER_CB_GUARD_HPP_
 
-#include "utils.hpp"
-#include "Utils.Callback.hpp"
-#include "Utils.Async.hpp"
-#include "ModInstaller.Native.h"
-#include "Bindings.ModInstaller.hpp"
-#include <codecvt>
 #include <mutex>
 #include <condition_variable>
 #include <thread>
+#include "ModInstaller.Native.h"
+#include "Logger.hpp"
+#include "Utils.Callbacks.hpp"
+#include "Utils.Converters.hpp"
+#include "Bindings.ModInstaller.hpp"
 
 using namespace Napi;
 using namespace Utils;
-using namespace Utils::Async;
-using namespace Utils::Callback;
 using namespace ModInstaller::Native;
 
 namespace Bindings::ModInstaller
@@ -35,7 +32,7 @@ namespace Bindings::ModInstaller
                 const auto activeOnly = Boolean::New(env, active_only != 0);
                 const auto jsResult = manager->FPluginsGetAll({activeOnly});
 
-                return ConvertToJsonResult(logger, jsResult);
+                return ConvertToJsonResult(jsResult);
             }
             else
             {
@@ -58,14 +55,13 @@ namespace Bindings::ModInstaller
                         const auto jsResult = jsCallback({activeOnly});
 
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = ConvertToJsonResult(callbackLogger, jsResult);
+                        result = ConvertToJsonResult(jsResult);
                         completed = true;
                         cv.notify_one();
                     }
                     catch (const Napi::Error &e)
                     {
-                        callbackLogger.Log("Error: " + std::string(e.Message()));
-
+                        callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
                         result = Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
                         completed = true;
@@ -90,12 +86,12 @@ namespace Bindings::ModInstaller
         }
         catch (const Napi::Error &e)
         {
-            logger.Log("Error: " + std::string(e.Message()));
+            logger.LogError(e);
             return Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
         }
         catch (const std::exception &e)
         {
-            logger.Log("Exception: " + std::string(e.what()));
+            logger.LogException(e);
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
         }
@@ -105,6 +101,7 @@ namespace Bindings::ModInstaller
             return Create(return_value_json{Copy(u"Unknown exception"), nullptr});
         }
     }
+
     static return_value_string *contextGetAppVersion(param_ptr *p_owner) noexcept
     {
         const auto functionName = __FUNCTION__;
@@ -117,7 +114,7 @@ namespace Bindings::ModInstaller
             {
                 const auto env = manager->FContextGetAppVersion.Env();
                 const auto jsResult = manager->FContextGetAppVersion({});
-                return ConvertToStringResult(logger, jsResult);
+                return ConvertToStringResult(jsResult);
             }
             else
             {
@@ -138,14 +135,13 @@ namespace Bindings::ModInstaller
                         const auto jsResult = jsCallback({});
 
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = ConvertToStringResult(callbackLogger, jsResult);
+                        result = ConvertToStringResult(jsResult);
                         completed = true;
                         cv.notify_one();
                     }
                     catch (const Napi::Error &e)
                     {
-                        callbackLogger.Log("Error: " + std::string(e.Message()));
-
+                        callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
                         result = Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
                         completed = true;
@@ -170,12 +166,12 @@ namespace Bindings::ModInstaller
         }
         catch (const Napi::Error &e)
         {
-            logger.Log("Error: " + std::string(e.Message()));
+            logger.LogError(e);
             return Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
         }
         catch (const std::exception &e)
         {
-            logger.Log("Exception: " + std::string(e.what()));
+            logger.LogException(e);
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
         }
@@ -185,6 +181,7 @@ namespace Bindings::ModInstaller
             return Create(return_value_string{Copy(u"Unknown exception"), nullptr});
         }
     }
+
     static return_value_string *contextGetCurrentGameVersion(param_ptr *p_owner) noexcept
     {
         const auto functionName = __FUNCTION__;
@@ -197,7 +194,7 @@ namespace Bindings::ModInstaller
             {
                 const auto env = manager->FContextGetCurrentGameVersion.Env();
                 const auto jsResult = manager->FContextGetCurrentGameVersion({});
-                return ConvertToStringResult(logger, jsResult);
+                return ConvertToStringResult(jsResult);
             }
             else
             {
@@ -218,14 +215,13 @@ namespace Bindings::ModInstaller
                         const auto jsResult = jsCallback({});
 
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = ConvertToStringResult(callbackLogger, jsResult);
+                        result = ConvertToStringResult(jsResult);
                         completed = true;
                         cv.notify_one();
                     }
                     catch (const Napi::Error &e)
                     {
-                        callbackLogger.Log("Error: " + std::string(e.Message()));
-
+                        callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
                         result = Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
                         completed = true;
@@ -250,12 +246,12 @@ namespace Bindings::ModInstaller
         }
         catch (const Napi::Error &e)
         {
-            logger.Log("Error: " + std::string(e.Message()));
+            logger.LogError(e);
             return Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
         }
         catch (const std::exception &e)
         {
-            logger.Log("Exception: " + std::string(e.what()));
+            logger.LogException(e);
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
         }
@@ -265,6 +261,7 @@ namespace Bindings::ModInstaller
             return Create(return_value_string{Copy(u"Unknown exception"), nullptr});
         }
     }
+
     static return_value_string *contextGetExtenderVersion(param_ptr *p_owner,
                                                           param_string *p_extender) noexcept
     {
@@ -279,7 +276,7 @@ namespace Bindings::ModInstaller
                 const auto env = manager->FContextGetExtenderVersion.Env();
                 const auto extender = p_extender == nullptr ? env.Null() : String::New(env, p_extender);
                 const auto jsResult = manager->FContextGetExtenderVersion({extender});
-                return ConvertToStringResult(logger, jsResult);
+                return ConvertToStringResult(jsResult);
             }
             else
             {
@@ -301,14 +298,13 @@ namespace Bindings::ModInstaller
                         const auto jsResult = jsCallback({extender});
 
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = ConvertToStringResult(callbackLogger, jsResult);
+                        result = ConvertToStringResult(jsResult);
                         completed = true;
                         cv.notify_one();
                     }
                     catch (const Napi::Error &e)
                     {
-                        callbackLogger.Log("Error: " + std::string(e.Message()));
-
+                        callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
                         result = Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
                         completed = true;
@@ -333,12 +329,12 @@ namespace Bindings::ModInstaller
         }
         catch (const Napi::Error &e)
         {
-            logger.Log("Error: " + std::string(e.Message()));
+            logger.LogError(e);
             return Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
         }
         catch (const std::exception &e)
         {
-            logger.Log("Exception: " + std::string(e.what()));
+            logger.LogException(e);
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
         }
@@ -348,6 +344,7 @@ namespace Bindings::ModInstaller
             return Create(return_value_string{Copy(u"Unknown exception"), nullptr});
         }
     }
+
     static return_value_void *uiStartDialog(param_ptr *p_owner,
                                             param_string *p_module_name,
                                             param_json *p_image,
@@ -378,7 +375,7 @@ namespace Bindings::ModInstaller
                 }
                 catch (const std::exception &e)
                 {
-                    selectLogger.Log("Exception: " + std::string(e.what()));
+                    selectLogger.LogException(e);
                     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
                     auto errorResult = Create(return_value_void{Copy(conv.from_bytes(e.what()))});
                     p_select_callback(p_callback_handler, 0, 0, nullptr, errorResult);
@@ -397,7 +394,7 @@ namespace Bindings::ModInstaller
                 }
                 catch (const std::exception &e)
                 {
-                    contLogger.Log("Exception: " + std::string(e.what()));
+                    contLogger.LogException(e);
                     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
                     auto errorResult = Create(return_value_void{Copy(conv.from_bytes(e.what()))});
                     p_const_callback(p_callback_handler, 0, 0, errorResult);
@@ -413,7 +410,7 @@ namespace Bindings::ModInstaller
                 }
                 catch (const std::exception &e)
                 {
-                    cancelLogger.Log("Exception: " + std::string(e.what()));
+                    cancelLogger.LogException(e);
                     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
                     auto errorResult = Create(return_value_void{Copy(conv.from_bytes(e.what()))});
                     p_cancel_callback(p_callback_handler, errorResult);
@@ -463,8 +460,7 @@ namespace Bindings::ModInstaller
                     }
                     catch (const Napi::Error &e)
                     {
-                        callbackLogger.Log("Error: " + std::string(e.Message()));
-
+                        callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
                         result = Create(return_value_void{Copy(GetErrorMessage(e))});
                         completed = true;
@@ -489,12 +485,12 @@ namespace Bindings::ModInstaller
         }
         catch (const Napi::Error &e)
         {
-            logger.Log("Error: " + std::string(e.Message()));
+            logger.LogError(e);
             return Create(return_value_void{Copy(GetErrorMessage(e))});
         }
         catch (const std::exception &e)
         {
-            logger.Log("Exception: " + std::string(e.what()));
+            logger.LogException(e);
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
         }
@@ -504,6 +500,7 @@ namespace Bindings::ModInstaller
             return Create(return_value_void{Copy(u"Unknown exception")});
         }
     }
+
     static return_value_void *uiEndDialog(param_ptr *p_owner) noexcept
     {
         const auto functionName = __FUNCTION__;
@@ -543,8 +540,7 @@ namespace Bindings::ModInstaller
                     }
                     catch (const Napi::Error &e)
                     {
-                        callbackLogger.Log("Error: " + std::string(e.Message()));
-
+                        callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
                         result = Create(return_value_void{Copy(GetErrorMessage(e))});
                         completed = true;
@@ -569,12 +565,12 @@ namespace Bindings::ModInstaller
         }
         catch (const Napi::Error &e)
         {
-            logger.Log("Error: " + std::string(e.Message()));
+            logger.LogError(e);
             return Create(return_value_void{Copy(GetErrorMessage(e))});
         }
         catch (const std::exception &e)
         {
-            logger.Log("Exception: " + std::string(e.what()));
+            logger.LogException(e);
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
         }
@@ -584,6 +580,7 @@ namespace Bindings::ModInstaller
             return Create(return_value_void{Copy(u"Unknown exception")});
         }
     }
+
     static return_value_void *uiUpdateState(param_ptr *p_owner,
                                             param_json *p_install_steps,
                                             param_int current_step) noexcept
@@ -630,8 +627,7 @@ namespace Bindings::ModInstaller
                     }
                     catch (const Napi::Error &e)
                     {
-                        callbackLogger.Log("Error: " + std::string(e.Message()));
-
+                        callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
                         result = Create(return_value_void{Copy(GetErrorMessage(e))});
                         completed = true;
@@ -656,12 +652,12 @@ namespace Bindings::ModInstaller
         }
         catch (const Napi::Error &e)
         {
-            logger.Log("Error: " + std::string(e.Message()));
+            logger.LogError(e);
             return Create(return_value_void{Copy(GetErrorMessage(e))});
         }
         catch (const std::exception &e)
         {
-            logger.Log("Exception: " + std::string(e.what()));
+            logger.LogException(e);
             std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
             return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
         }

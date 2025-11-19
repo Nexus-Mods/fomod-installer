@@ -1,25 +1,108 @@
 #ifndef VE_MODINSTALLER_IMPL_GUARD_HPP_
 #define VE_MODINSTALLER_IMPL_GUARD_HPP_
 
-#include "utils.hpp"
-#include "Utils.Callback.hpp"
-#include "Utils.Async.hpp"
+#include <thread>
 #include "ModInstaller.Native.h"
+#include "Logger.hpp"
+#include "Utils.Return.hpp"
 #include "Bindings.ModInstaller.hpp"
 #include "Bindings.ModInstaller.Callbacks.hpp"
-#include <codecvt>
-#include <mutex>
-#include <condition_variable>
-#include <thread>
 
 using namespace Napi;
 using namespace Utils;
-using namespace Utils::Async;
-using namespace Utils::Callback;
 using namespace ModInstaller::Native;
 
 namespace Bindings::ModInstaller
 {
+    static void TSFNFunction(const Napi::CallbackInfo &info)
+    {
+        LoggerScope logger(__FUNCTION__);
+
+        try
+        {
+            const auto length = info.Length();
+            logger.Log("Length: " + std::to_string(length));
+
+            if (length == 0)
+            {
+                logger.Log("No arguments provided");
+                return;
+            }
+
+            const auto env = info.Env();
+            const auto firstArg = info[0];
+
+            // Check if first argument is a Promise
+            // Using IsPromise() if available, otherwise duck typing with 'then' check
+            bool isPromise = false;
+            if (firstArg.IsObject())
+            {
+                const auto obj = firstArg.As<Napi::Object>();
+                isPromise = obj.Has("then") && obj.Get("then").IsFunction();
+            }
+
+            if (length == 3 && isPromise)
+            {
+                // Promise case: jsCallback.Call({promise, onResolveCallback, onRejectCallback})
+                // info[0] = promise
+                // info[1] = onResolve callback
+                // info[2] = onReject callback
+                const auto promise = firstArg.As<Napi::Object>();
+                const auto onResolve = info[1].As<Napi::Function>();
+                const auto onReject = info[2].As<Napi::Function>();
+                const auto then = promise.Get("then").As<Napi::Function>();
+                then.Call(promise, {onResolve, onReject});
+                logger.Log("Attached resolve and reject handlers to promise");
+            }
+            else if (length == 2 && isPromise)
+            {
+                // Promise case with only resolve handler
+                // info[0] = promise
+                // info[1] = onResolve callback
+                const auto promise = firstArg.As<Napi::Object>();
+                const auto onResolve = info[1].As<Napi::Function>();
+                const auto then = promise.Get("then").As<Napi::Function>();
+                then.Call(promise, {onResolve});
+                logger.Log("Attached resolve handler to promise");
+            }
+            else if (length == 1 && !isPromise)
+            {
+                // Synchronous case: jsCallback.Call({result})
+                // info[0] = synchronous result value
+                // No handlers needed - value is already resolved
+                logger.Log("Synchronous result provided (length=1, no handlers)");
+                // Nothing to do - the synchronous result was already provided
+            }
+            else if (length == 1 && isPromise)
+            {
+                // Promise without handlers - let it execute but results ignored
+                logger.Log("Promise provided without handlers (results will be ignored)");
+            }
+            else
+            {
+                // Unexpected calling pattern
+                logger.Log("Unexpected TSFNFunction call pattern: length=" + std::to_string(length) +
+                           ", isPromise=" + (isPromise ? "true" : "false"));
+            }
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.LogError(e);
+            ;
+            throw;
+        }
+        catch (const std::exception &e)
+        {
+            logger.LogException(e);
+            throw;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+            throw;
+        }
+    }
+
     Object ModInstaller::Init(const Napi::Env env, Object exports)
     {
         // This method is used to hook the accessor and method callbacks
@@ -116,54 +199,89 @@ namespace Bindings::ModInstaller
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
 
-        const auto env = info.Env();
-        const auto files = JSONStringify(info[0].As<Object>());
-        const auto stopPatterns = JSONStringify(info[1].As<Object>());
-        const auto pluginPathRaw = info[2];
-        const auto scriptPath = info[3].As<String>();
-        const auto presetRaw = info[4];
-        const auto validate = info[5].As<Boolean>();
+        try
+        {
+            const auto env = info.Env();
+            const auto files = JSONStringify(info[0].As<Object>());
+            const auto stopPatterns = JSONStringify(info[1].As<Object>());
+            const auto pluginPathRaw = info[2];
+            const auto scriptPath = info[3].As<String>();
+            const auto presetRaw = info[4];
+            const auto validate = info[5].As<Boolean>();
 
-        const auto filesCopy = CopyWithFree(files.Utf16Value());
-        const auto stopPatternsCopy = CopyWithFree(stopPatterns.Utf16Value());
-        const auto pluginPathCopy = pluginPathRaw.IsNull() ? NullStringCopy() : CopyWithFree(pluginPathRaw.As<String>().Utf16Value());
-        const auto scriptPathCopy = CopyWithFree(scriptPath.Utf16Value());
-        const auto presetCopy = presetRaw.IsUndefined() || presetRaw.IsNull() ? NullStringCopy() : CopyWithFree(JSONStringify(presetRaw.As<Object>()));
-        const auto validateCopy = validate.Value() ? (uint8_t)1 : (uint8_t)0;
+            const auto filesCopy = CopyWithFree(files.Utf16Value());
+            const auto stopPatternsCopy = CopyWithFree(stopPatterns.Utf16Value());
+            const auto pluginPathCopy = pluginPathRaw.IsNull() ? NullStringCopy() : CopyWithFree(pluginPathRaw.As<String>().Utf16Value());
+            const auto scriptPathCopy = CopyWithFree(scriptPath.Utf16Value());
+            const auto presetCopy = presetRaw.IsUndefined() || presetRaw.IsNull() ? NullStringCopy() : CopyWithFree(JSONStringify(presetRaw.As<Object>()));
+            const auto validateCopy = validate.Value() ? (uint8_t)1 : (uint8_t)0;
 
-        auto cbData = CreateResultCallbackData(env, NAMEOFWITHCALLBACK(functionName, HandleJsonResultCallback));
-        const auto deferred = cbData->deferred;
-        const auto tsfn = cbData->tsfn;
+            auto cbData = CreateResultCallbackData(env, functionName);
+            const auto deferred = cbData->deferred;
+            const auto tsfn = cbData->tsfn;
 
-        const auto result = install(
-            this->_pInstance,
-            filesCopy.get(),
-            stopPatternsCopy.get(),
-            pluginPathCopy.get(),
-            scriptPathCopy.get(),
-            presetCopy.get(),
-            validateCopy,
-            cbData,
-            HandleJsonResultCallback);
-        return ReturnAndHandleReject(env, result, deferred, tsfn);
+            const auto result = install(
+                this->_pInstance,
+                filesCopy.get(),
+                stopPatternsCopy.get(),
+                pluginPathCopy.get(),
+                scriptPathCopy.get(),
+                presetCopy.get(),
+                validateCopy,
+                cbData,
+                HandleJsonResultCallback);
+            return ReturnAndHandleReject(env, result, deferred, tsfn);
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.LogError(e);
+            throw;
+        }
+        catch (const std::exception &e)
+        {
+            logger.LogException(e);
+            throw;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+            throw;
+        }
     }
 
     Value ModInstaller::TestSupported(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
 
-        const auto env = info.Env();
-        const auto modArchiveFileList = JSONStringify(info[0].As<Object>());
-        const auto allowedTypes = JSONStringify(info[1].As<Object>());
+        try
+        {
+            const auto env = info.Env();
+            const auto modArchiveFileList = JSONStringify(info[0].As<Object>());
+            const auto allowedTypes = JSONStringify(info[1].As<Object>());
 
-        const auto modArchiveFileListCopy = CopyWithFree(modArchiveFileList.Utf16Value());
-        const auto allowedTypesCopy = CopyWithFree(allowedTypes.Utf16Value());
+            const auto modArchiveFileListCopy = CopyWithFree(modArchiveFileList.Utf16Value());
+            const auto allowedTypesCopy = CopyWithFree(allowedTypes.Utf16Value());
 
-        const auto result = test_supported(modArchiveFileListCopy.get(), allowedTypesCopy.get());
-        return ThrowOrReturnJson(env, result);
+            const auto result = test_supported(modArchiveFileListCopy.get(), allowedTypesCopy.get());
+            return ThrowOrReturnJson(env, result);
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.LogError(e);
+            throw;
+        }
+        catch (const std::exception &e)
+        {
+            logger.LogException(e);
+            throw;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+            throw;
+        }
     }
 
-    // Initialize native add-on
     Napi::Object Init(const Napi::Env env, const Napi::Object exports)
     {
         ModInstaller::Init(env, exports);

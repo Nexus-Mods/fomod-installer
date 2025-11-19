@@ -1,20 +1,14 @@
 #ifndef VE_FILESYSTEM_IMPL_GUARD_HPP_
 #define VE_FILESYSTEM_IMPL_GUARD_HPP_
 
-#include "utils.hpp"
-#include "Utils.Callback.hpp"
-#include "Utils.Async.hpp"
+#include <thread>
 #include "ModInstaller.Native.h"
+#include "Logger.hpp"
 #include "Bindings.FileSystem.hpp"
 #include "Bindings.FileSystem.Callbacks.hpp"
-#include <codecvt>
-#include <mutex>
-#include <condition_variable>
 
 using namespace Napi;
 using namespace Utils;
-using namespace Utils::Async;
-using namespace Utils::Callback;
 using namespace ModInstaller::Native;
 
 namespace Bindings::FileSystem
@@ -85,14 +79,32 @@ namespace Bindings::FileSystem
     {
         LoggerScope logger(__FUNCTION__);
 
-        const auto env = info.Env();
-
-        const auto result = set_default_file_system_callbacks();
-
-        if (result != 0)
+        try
         {
-            logger.Log("Error setting default file system callbacks");
-            NAPI_THROW(Error::New(env, "Failed to set default file system callbacks"));
+            const auto env = info.Env();
+
+            const auto result = set_default_file_system_callbacks();
+
+            if (result != 0)
+            {
+                logger.Log("Error setting default file system callbacks");
+                NAPI_THROW(Error::New(env, "Failed to set default file system callbacks"));
+            }
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.LogError(e);
+            throw;
+        }
+        catch (const std::exception &e)
+        {
+            logger.LogException(e);
+            throw;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+            throw;
         }
     }
 
@@ -100,21 +112,38 @@ namespace Bindings::FileSystem
     {
         LoggerScope logger(__FUNCTION__);
 
-        const auto env = info.Env();
-
-        const auto result = set_file_system_callbacks(this,
-                                                      readFileContent,
-                                                      readDirectoryFileList,
-                                                      readDirectoryList);
-
-        if (result != 0)
+        try
         {
-            logger.Log("Error setting file system callbacks");
-            NAPI_THROW(Error::New(env, "Failed to set file system callbacks"));
+            const auto env = info.Env();
+
+            const auto result = set_file_system_callbacks(this,
+                                                          readFileContent,
+                                                          readDirectoryFileList,
+                                                          readDirectoryList);
+
+            if (result != 0)
+            {
+                logger.Log("Error setting file system callbacks");
+                NAPI_THROW(Error::New(env, "Failed to set file system callbacks"));
+            }
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.LogError(e);
+            throw;
+        }
+        catch (const std::exception &e)
+        {
+            logger.LogException(e);
+            throw;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+            throw;
         }
     }
 
-    // Initialize native add-on
     Napi::Object Init(const Napi::Env env, const Napi::Object exports)
     {
         FileSystem::Init(env, exports);

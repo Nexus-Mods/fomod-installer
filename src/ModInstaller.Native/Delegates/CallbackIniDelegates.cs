@@ -24,50 +24,70 @@ internal class CallbackIniDelegates : IniDelegates
         _getIniInt = getIniInt;
     }
 
-    public override async Task<string> GetIniString(string iniFilename, string iniSection, string iniKey)
+    public override Task<string> GetIniString(string iniFilename, string iniSection, string iniKey)
     {
-        var tcs = new TaskCompletionSource<string>();
-        GetIniStringNative(iniFilename, iniSection, iniKey, tcs);
-        return await tcs.Task;
+#if DEBUG
+        using var logger = LogMethod(iniFilename.ToFormattable(), iniSection.ToFormattable(), iniKey.ToFormattable());
+#else
+        using var logger = LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource<string>();
+            GetIniStringNative(iniFilename, iniSection, iniKey, tcs);
+            return tcs.Task;
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void GetIniStringCallback(param_ptr* pOwner, return_value_string* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = LogCallbackMethod(pResult);
+#else
+        using var logger = LogCallbackMethod();
+#endif
+
         try
         {
 
             if (pOwner == null)
             {
-                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
                 return;
             }
 
             if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: TaskCompletionSource<string?> tcs} handle)
             {
-                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
                 return;
             }
 
             using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
             result.SetAsString(tcs);
             handle.Free();
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             throw;
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
 
     private unsafe void GetIniStringNative(ReadOnlySpan<char> iniFilename, ReadOnlySpan<char> iniSection, ReadOnlySpan<char> iniKey, TaskCompletionSource<string> tcs)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod(iniFilename.ToString().ToFormattable(), iniSection.ToString().ToFormattable(), iniKey.ToString().ToFormattable());
+#else
+        using var logger = LogMethod();
+#endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
@@ -78,63 +98,82 @@ internal class CallbackIniDelegates : IniDelegates
             try
             {
                 using var result = SafeStructMallocHandle.Create(_getIniString(_pOwner, (param_string*) pIniFilename, (param_string*) pIniSection, (param_string*) pIniKey, (param_ptr*) GCHandle.ToIntPtr(handle), &GetIniStringCallback), true);
+                logger.LogResult(result);
                 result.ValueAsVoid();
-
-                Logger.LogOutput();
             }
             catch (Exception e)
             {
-                Logger.LogException(e);
+                logger.LogException(e);
                 tcs.TrySetException(e);
                 handle.Free();
             }
         }
     }
 
-    public override async Task<int> GetIniInt(string iniFilename, string iniSection, string iniKey)
+    public override Task<int> GetIniInt(string iniFilename, string iniSection, string iniKey)
     {
-        var tcs = new TaskCompletionSource<int>();
-        GetIniIntNative(iniFilename, iniSection, iniKey, tcs);
-        return await tcs.Task;
+#if DEBUG
+        using var logger = LogMethod(iniFilename.ToFormattable(), iniSection.ToFormattable(), iniKey.ToFormattable());
+#else
+        using var logger = LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource<int>();
+            GetIniIntNative(iniFilename, iniSection, iniKey, tcs);
+            return tcs.Task;
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void GetIniIntCallback(param_ptr* pOwner, return_value_int32* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = LogCallbackMethod(pResult);
+#else
+        using var logger = LogCallbackMethod();
+#endif
+
         try
         {
 
             if (pOwner == null)
             {
-                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
                 return;
             }
 
             if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: TaskCompletionSource<int> tcs} handle)
             {
-                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
                 return;
             }
-
+            
             using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
             result.SetAsInt32(tcs);
             handle.Free();
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             throw;
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
 
     private unsafe void GetIniIntNative(ReadOnlySpan<char> iniFilename, ReadOnlySpan<char> iniSection, ReadOnlySpan<char> iniKey, TaskCompletionSource<int> tcs)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod(iniFilename.ToString().ToFormattable(), iniSection.ToString().ToFormattable(), iniKey.ToString().ToFormattable());
+#else
+        using var logger = LogMethod();
+#endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
@@ -145,13 +184,12 @@ internal class CallbackIniDelegates : IniDelegates
             try
             {
                 using var result = SafeStructMallocHandle.Create(_getIniInt(_pOwner, (param_string*) pIniFilename, (param_string*) pIniSection, (param_string*) pIniKey, (param_ptr*) GCHandle.ToIntPtr(handle), &GetIniIntCallback), true);
+                logger.LogResult(result);
                 result.ValueAsVoid();
-
-                Logger.LogOutput();
             }
             catch (Exception e)
             {
-                Logger.LogException(e);
+                logger.LogException(e);
                 tcs.TrySetException(e);
                 handle.Free();
             }

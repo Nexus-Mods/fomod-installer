@@ -9,32 +9,6 @@ using ZLogger.Providers;
 
 namespace ModInstaller.Native;
 
-internal class WrapperLogger : ILogger
-{
-    private readonly ILogger _loggerImplementation;
-    private readonly string type;
-    
-    public WrapperLogger(ILogger loggerImplementation, string type)
-    {
-        _loggerImplementation = loggerImplementation;
-        this.type = type;
-    }
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-    {
-        _loggerImplementation.Log(logLevel, eventId, state, exception, ((state_, exception_) => $"[{type}] {formatter(state_, exception_)}"));
-    }
-
-    public bool IsEnabled(LogLevel logLevel)
-    {
-        return _loggerImplementation.IsEnabled(logLevel);
-    }
-
-    public IDisposable? BeginScope<TState>(TState state) where TState : notnull
-    {
-        return _loggerImplementation.BeginScope(state);
-    }
-}
-
 internal static partial class Logger
 {
     private static string[] _logLevel4Letters =
@@ -106,14 +80,14 @@ internal static partial class Logger
         NativeInstance   = new WrapperLogger(logger, "FOMOD C# ");
         ExternalInstance = new WrapperLogger(logger, "FOMOD C++");
     }
+
+    public static void ExternalLog(LogLevel level, string message)
+    {
+        ExternalInstance?.Log(level, message, null!);
+    }
     
     public static void Dispose()
     {
         Factory?.Dispose();
-    }
-
-    public static void Log(LogLevel level, string message)
-    {
-        ExternalInstance?.Log(level, message, null!);
     }
 }
