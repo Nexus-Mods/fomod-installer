@@ -13,20 +13,24 @@ public static unsafe partial class Bindings
     public static void* CommonAlloc(nuint size)
     {
 #if DEBUG
-        Logger.LogInput(size);
+        using var logger = LogMethod(size);
 #endif
+        
         try
         {
             var result = Allocator.Alloc(size);
-
 #if DEBUG
-            Logger.LogOutput(new IntPtr(result).ToString("x16"), nameof(CommonAlloc));
+            logger.LogResult(new IntPtr(result), "x16");
 #endif
             return result;
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+#if DEBUG
+            logger.LogException(e);
+#else
+            LogMethod(size).LogException(e);
+#endif
             return null;
         }
     }
@@ -35,19 +39,20 @@ public static unsafe partial class Bindings
     public static void CommonDealloc([IsConst<IsPtrConst>] param_ptr* ptr)
     {
 #if DEBUG
-        Logger.LogInput();
+        using var logger = LogMethod(ptr);
 #endif
+        
         try
         {
             Allocator.Free(ptr);
-
-#if DEBUG
-            Logger.LogOutput(new IntPtr(ptr).ToString("x16"), nameof(CommonDealloc));
-#endif
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+#if DEBUG
+            logger.LogException(e);
+#else
+            LogMethod(ptr).LogException(e);
+#endif
         }
     }
 
@@ -55,8 +60,9 @@ public static unsafe partial class Bindings
     public static int CommonAllocAliveCount()
     {
 #if DEBUG
-        Logger.LogInput();
+        using var logger = LogMethod();
 #endif
+        
         try
         {
 #if TRACK_ALLOCATIONS
@@ -66,13 +72,17 @@ public static unsafe partial class Bindings
 #endif
 
 #if DEBUG
-            Logger.LogOutput(result);
+            logger.LogResult(result);
 #endif
             return result;
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+#if DEBUG
+            logger.LogException(e);
+#else
+            LogMethod().LogException(e);
+#endif
             return -1;
         }
     }

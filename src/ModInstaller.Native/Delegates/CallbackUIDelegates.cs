@@ -40,7 +40,11 @@ internal class CallbackUIDelegates : UIDelegates
 
     public override unsafe void StartDialog(string moduleName, HeaderImage image, Action<int, int, int[]> select, Action<bool, int> cont, Action cancel)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod(moduleName.ToFormattable());
+#else
+        using var logger = LogMethod();
+#endif
 
         if (_currentDialogHandle is not null)
             throw new Exception("Should be null");
@@ -58,13 +62,12 @@ internal class CallbackUIDelegates : UIDelegates
             try
             {
                 using var result = SafeStructMallocHandle.Create(_startDialog(_pOwner, (param_string*) pModuleName, (param_json*) pImage, (param_ptr*) GCHandle.ToIntPtr(_currentDialogHandle.Value), &StartDialogSelectCallback, &StartDialogContinueCallback, &StartDialogCancelCallback), true);
+                logger.LogResult(result);
                 result.ValueAsVoid();
-
-                Logger.LogOutput();
             }
             catch (Exception e)
             {
-                Logger.LogException(e);
+                logger.LogException(e);
                 _currentDialogHandle?.Free();
                 _currentDialogHandle = null;
             }
@@ -74,102 +77,111 @@ internal class CallbackUIDelegates : UIDelegates
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void StartDialogSelectCallback(param_ptr* pOwner, param_int stepId, param_int groupId, param_json* optionIdsJson, return_value_void* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = LogCallbackMethod(&stepId, &groupId, optionIdsJson, pResult);
+#else
+        using var logger = LogCallbackMethod(pResult);
+#endif
+
         try
         {
 
             if (pOwner == null)
             {
-                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
                 return;
             }
 
             if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: StartDialogCallbacksData callbacksData})
             {
-                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
                 return;
             }
 
             using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            result.ValueAsVoid();
 
             var optionIds = BUTR.NativeAOT.Shared.Utils.DeserializeJson<int[]>(optionIdsJson, Bindings.CustomSourceGenerationContext.Int32Array);
             callbacksData.Select(stepId, groupId, optionIds);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             throw;
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void StartDialogContinueCallback(param_ptr* pOwner, param_bool forward, param_int currentStepId, return_value_void* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = LogCallbackMethod(&forward, &currentStepId, pResult);
+#else
+        using var logger = LogCallbackMethod(pResult);
+#endif
+
         try
         {
 
             if (pOwner == null)
             {
-                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
                 return;
             }
 
             if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: StartDialogCallbacksData callbacksData})
             {
-                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
                 return;
             }
 
             using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            result.ValueAsVoid();
 
             callbacksData.Continue(forward, currentStepId);
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             throw;
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void StartDialogCancelCallback(param_ptr* pOwner, return_value_void* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = LogCallbackMethod(pResult);
+#else
+        using var logger = LogCallbackMethod(pResult);
+#endif
+
         try
         {
             if (pOwner == null)
             {
-                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
                 return;
             }
 
             if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: StartDialogCallbacksData callbacksData})
             {
-                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
                 return;
             }
 
             using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
+            result.ValueAsVoid();
 
             callbacksData.Cancel();
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             throw;
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
 
@@ -177,88 +189,110 @@ internal class CallbackUIDelegates : UIDelegates
 
     public override unsafe void EndDialog()
     {
-        Logger.LogInput();
-        
+#if DEBUG
+        using var logger = LogMethod();
+#else
+        using var logger = LogMethod();
+#endif
+
         try
         {
             using var result = SafeStructMallocHandle.Create(_endDialog(_pOwner), true);
+            logger.LogResult(result);
             result.ValueAsVoid();
-
-            Logger.LogOutput();
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
         }
     }
 
     public override unsafe void UpdateState(InstallerStep[] installSteps, int currentStepId)
     {
-        Logger.LogInput();
-        
+#if DEBUG
+        using var logger = LogMethod(currentStepId);
+#else
+        using var logger = LogMethod();
+#endif
+
         fixed (char* pInstallSteps = BUTR.NativeAOT.Shared.Utils.SerializeJson(installSteps, Bindings.CustomSourceGenerationContext.InstallerStepArray))
         {
             try
             {
                 using var result = SafeStructMallocHandle.Create(_updateState(_pOwner, (param_json*) pInstallSteps, (param_int) currentStepId), true);
+                logger.LogResult(result);
                 result.ValueAsVoid();
-
-                Logger.LogOutput();
             }
             catch (Exception e)
             {
-                Logger.LogException(e);
+                logger.LogException(e);
             }
         }
     }
 
     public override void ReportError(string title, string message, string details)
     {
-        Logger.LogInput();
-        
-        var tcs = new TaskCompletionSource();
-        ReportErrorNative(title, message, details, tcs);
-        
-        Logger.LogOutput();
+#if DEBUG
+        using var logger = LogMethod(title.ToFormattable(), message.ToFormattable(), details.ToFormattable());
+#else
+        using var logger = LogMethod();
+#endif
+
+        try
+        {
+            var tcs = new TaskCompletionSource();
+            ReportErrorNative(title, message, details, tcs);
+        }
+        catch (Exception e)
+        {
+            logger.LogException(e);
+            throw;
+        }
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static unsafe void ReportErrorCallback(param_ptr* pOwner, return_value_void* pResult)
     {
-        Logger.LogCallbackInput(pResult);
+#if DEBUG
+        using var logger = LogCallbackMethod(pResult);
+#else
+        using var logger = LogCallbackMethod(pResult);
+#endif
+
         try
         {
 
             if (pOwner == null)
             {
-                Logger.LogException(new ArgumentNullException(nameof(pOwner)));
+                logger.LogException(new ArgumentNullException(nameof(pOwner)));
                 return;
             }
 
             if (GCHandle.FromIntPtr((IntPtr) pOwner) is not {Target: TaskCompletionSource tcs} handle)
             {
-                Logger.LogException(new InvalidOperationException("Invalid GCHandle."));
+                logger.LogException(new InvalidOperationException("Invalid GCHandle."));
                 return;
             }
 
             using var result = SafeStructMallocHandle.Create(pResult, true);
+            logger.LogResult(result);
             result.SetAsVoid(tcs);
             handle.Free();
         }
         catch (Exception e)
         {
-            Logger.LogException(e);
+            logger.LogException(e);
             throw;
-        }
-        finally
-        {
-            Logger.LogOutput();
         }
     }
 
     private unsafe void ReportErrorNative(ReadOnlySpan<char> title, ReadOnlySpan<char> message, ReadOnlySpan<char> details, TaskCompletionSource tcs)
     {
-        Logger.LogInput();
+#if DEBUG
+        using var logger = LogMethod(title.ToString().ToFormattable(), message.ToString().ToFormattable(), details.ToString().ToFormattable());
+#else
+        using var logger = LogMethod();
+#endif
 
         var handle = GCHandle.Alloc(tcs, GCHandleType.Normal);
 
@@ -269,13 +303,12 @@ internal class CallbackUIDelegates : UIDelegates
             try
             {
                 using var result = SafeStructMallocHandle.Create(_reportError(_pOwner, (param_string*) pTitle, (param_string*) pMessage, (param_string*) pDetails, (param_ptr*) GCHandle.ToIntPtr(handle), &ReportErrorCallback), true);
+                logger.LogResult(result);
                 result.ValueAsVoid();
-
-                Logger.LogOutput();
             }
             catch (Exception e)
             {
-                Logger.LogException(e);
+                logger.LogException(e);
                 tcs.TrySetException(e);
                 handle.Free();
             }

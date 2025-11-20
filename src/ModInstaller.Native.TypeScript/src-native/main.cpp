@@ -1,10 +1,10 @@
 #define NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED // Thanks Electron
 
+#include <napi.h>
 #include "Bindings.Common.hpp"
 #include "Bindings.Logging.Implementation.hpp"
 #include "Bindings.ModInstaller.Implementation.hpp"
 #include "Bindings.FileSystem.Implementation.hpp"
-#include <napi.h>
 
 using namespace Napi;
 

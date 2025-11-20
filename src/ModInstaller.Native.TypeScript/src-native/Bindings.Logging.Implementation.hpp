@@ -1,20 +1,13 @@
 #ifndef VE_LOGGING_IMPL_GUARD_HPP_
 #define VE_LOGGING_IMPL_GUARD_HPP_
 
-#include "utils.hpp"
-#include "Utils.Callback.hpp"
-#include "Utils.Async.hpp"
+#include <thread>
 #include "ModInstaller.Native.h"
+#include "Logger.hpp"
 #include "Bindings.Logging.hpp"
 #include "Bindings.Logging.Callbacks.hpp"
-#include <codecvt>
-#include <mutex>
-#include <condition_variable>
 
 using namespace Napi;
-using namespace Utils;
-using namespace Utils::Async;
-using namespace Utils::Callback;
 using namespace ModInstaller::Native;
 
 namespace Bindings::Logging
@@ -77,14 +70,32 @@ namespace Bindings::Logging
     {
         LoggerScope logger(__FUNCTION__);
 
-        const auto env = info.Env();
-
-        const auto result = set_default_logging_callbacks();
-
-        if (result != 0)
+        try
         {
-            logger.Log("Error setting default logger callbacks");
-            NAPI_THROW(Error::New(env, "Failed to set default logger callbacks"));
+            const auto env = info.Env();
+
+            const auto result = set_default_logging_callbacks();
+
+            if (result != 0)
+            {
+                logger.Log("Error setting default logger callbacks");
+                NAPI_THROW(Error::New(env, "Failed to set default logger callbacks"));
+            }
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.LogError(e);
+            throw;
+        }
+        catch (const std::exception &e)
+        {
+            logger.LogException(e);
+            throw;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+            throw;
         }
     }
 
@@ -92,33 +103,68 @@ namespace Bindings::Logging
     {
         LoggerScope logger(__FUNCTION__);
 
-        const auto env = info.Env();
-
-        const auto result = set_logging_callbacks(this,
-                                                  log);
-
-        if (result != 0)
+        try
         {
-            logger.Log("Error setting logger callbacks");
-            NAPI_THROW(Error::New(env, "Failed to set logger callbacks"));
+            const auto env = info.Env();
+
+            const auto result = set_logging_callbacks(this,
+                                                      log);
+
+            if (result != 0)
+            {
+                logger.Log("Error setting logger callbacks");
+                NAPI_THROW(Error::New(env, "Failed to set logger callbacks"));
+            }
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.LogError(e);
+            throw;
+        }
+        catch (const std::exception &e)
+        {
+            logger.LogException(e);
+            throw;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+            throw;
         }
     }
 
-    void DisposeDefaultLogger(const CallbackInfo &info)
+    void Logger::DisposeDefaultLogger(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
 
-        const auto env = info.Env();
-
-        const auto result = dispose_default_logger();
-        if (result != 0)
+        try
         {
-            logger.Log("Error disposing default logger");
-            NAPI_THROW(Error::New(env, "Failed to dispose default logger"));
+            const auto env = info.Env();
+
+            const auto result = dispose_default_logger();
+            if (result != 0)
+            {
+                logger.Log("Error disposing default logger");
+                NAPI_THROW(Error::New(env, "Failed to dispose default logger"));
+            }
+        }
+        catch (const Napi::Error &e)
+        {
+            logger.LogError(e);
+            throw;
+        }
+        catch (const std::exception &e)
+        {
+            logger.LogException(e);
+            throw;
+        }
+        catch (...)
+        {
+            logger.Log("Unknown exception");
+            throw;
         }
     }
 
-    // Initialize native add-on
     Napi::Object Init(const Napi::Env env, const Napi::Object exports)
     {
         Logger::Init(env, exports);
