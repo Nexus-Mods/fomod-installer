@@ -145,11 +145,11 @@ public:
     }
     static void LogInput(const std::string &caller, uint8_t val)
     {
-        Log(caller, "Parameter: " + (val ? "true" : "false"));
+        Log(caller, std::string("Parameter: ") + (val ? "true" : "false"));
     }
     static void LogInput(const std::string &caller, int32_t val)
     {
-        Log(caller, "Parameter: " + std::to_string(val));
+        Log(caller, std::string("Parameter: ") + std::to_string(val));
     }
     static void LogInput(const std::string &caller, param_uint val)
     {
