@@ -88,7 +88,6 @@ namespace Bindings::ModInstaller
         catch (const Napi::Error &e)
         {
             logger.LogError(e);
-            ;
             throw;
         }
         catch (const std::exception &e)
