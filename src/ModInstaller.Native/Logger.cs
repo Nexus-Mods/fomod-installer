@@ -3,6 +3,7 @@
 using ModInstaller.Native.Adapters;
 
 using System;
+using System.Buffers;
 
 using ZLogger;
 using ZLogger.Providers;
@@ -61,8 +62,8 @@ internal static partial class Logger
                 options.IncludeScopes = true;
                 options.UsePlainTextFormatter(formatter =>
                 {
-                    formatter.SetPrefixFormatter($"[{2}] {0:yyyy-MM-dd'T'HH:mm:ss.fff'Z'} [{1}] ", (in template, in info) => template.Format(info.Timestamp.Utc, _logLevel4Letters[(int) info.LogLevel], info.Category.Name));
-                    formatter.SetExceptionFormatter((writer, ex) => Utf8StringInterpolation.Utf8String.Format(writer, $"{ex.Message}"));
+                    formatter.SetPrefixFormatter($"[{2}] {0:yyyy-MM-dd'T'HH:mm:ss.fff'Z'} [{1}] ", PrefixFormatter);
+                    formatter.SetExceptionFormatter(ExceptionFormatter);
                 });
             };
 #endif
@@ -71,6 +72,16 @@ internal static partial class Logger
         
         NativeInstance   = Factory.CreateLogger("C# ");
         ExternalInstance = Factory.CreateLogger("C++");
+    }
+
+    private static void PrefixFormatter(in MessageTemplate template, in LogInfo info)
+    {
+        template.Format(info.Timestamp.Utc, _logLevel4Letters[(int) info.LogLevel], info.Category.Name);
+    }
+
+    private static void ExceptionFormatter(IBufferWriter<byte> writer, Exception ex)
+    {
+        Utf8StringInterpolation.Utf8String.Format(writer, $"{ex.Message}");
     }
 
     public static void Create(CallbackLogger logger)
