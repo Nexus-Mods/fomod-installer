@@ -5,7 +5,7 @@
  * Builds TypeScript sources and packages the C# IPC executable
  *
  * Usage: node build.js [type] [configuration]
- * Types: build, clean, build-csharp, build-webpack, build-content
+ * Types: build, clean, build-csharp, build-webpack
  * Configuration: Release (default) or Debug
  */
 
@@ -18,8 +18,7 @@ const VALID_TYPES = [
   'build',
   'clean',
   'build-csharp',
-  'build-webpack',
-  'build-content'
+  'build-webpack'
 ];
 
 // Parse command line arguments
@@ -286,8 +285,8 @@ async function main() {
         'publish',
         ipcDir,
         '-c', configuration,
-        '-f', 'net9.0-windows',
-        '-o', outputDir
+        '-o', outputDir,
+        '/p:EnableWindowsTargeting=true',
       ];
 
       try {
@@ -303,20 +302,6 @@ async function main() {
       const exePath = path.join(outputDir, 'ModInstallerIPC.exe');
       if (fs.existsSync(exePath)) {
         await sign(exePath);
-      }
-
-      console.log('');
-    }
-
-    // Copy content to dist (for build-content type)
-    if (['build-content'].includes(type)) {
-      console.log('Copying content to dist');
-
-      const exePath = path.resolve('../ModInstaller.IPC/bin/Release/net9.0-windows/ModInstallerIPC.exe');
-      if (fs.existsSync(exePath)) {
-        copyItem(exePath, 'dist/ModInstallerIPC.exe');
-      } else {
-        console.log('  Warning: ModInstallerIPC.exe not found, skipping copy');
       }
 
       console.log('');

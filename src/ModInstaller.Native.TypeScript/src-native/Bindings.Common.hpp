@@ -1,7 +1,10 @@
 #ifndef VE_COMMON_GUARD_HPP_
 #define VE_COMMON_GUARD_HPP_
 
+#include "Platform.hpp"
 #include <napi.h>
+#include <codecvt>
+#include <locale>
 #include "ModInstaller.Native.h"
 #include "Logger.hpp"
 

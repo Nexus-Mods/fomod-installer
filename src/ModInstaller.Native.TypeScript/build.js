@@ -5,7 +5,7 @@
  * Converted from commands.ps1 to native JavaScript
  *
  * Usage: node build.js [type] [configuration]
- * Types: build, test, clear, build-native, build-napi, build-webpack, build-content, test-build
+ * Types: build, test, clear, build-native, build-napi, build-webpack, test-build
  * Configuration: Release (default) or Debug
  */
 
@@ -21,7 +21,6 @@ const VALID_TYPES = [
   'build-native',
   'build-napi',
   'build-webpack',
-  'build-content',
   'test-build'
 ];
 
@@ -269,6 +268,7 @@ async function main() {
         '*.h',
         '*.dll',
         '*.lib',
+        '*.so',
         'build',
         'dist',
         'coverage',
@@ -287,12 +287,18 @@ async function main() {
         throw new Error(`ModInstaller.Native directory not found at: ${nativeDir}`);
       }
 
+      // Create directory if it doesn't exist
+      const dotnetArtifacts = path.resolve('build-dotnet');
+      if (!fs.existsSync(dotnetArtifacts)) {
+        fs.mkdirSync(dotnetArtifacts, { recursive: true });
+      }
+
       // Run dotnet publish with retry logic
       const buildArgs = [
         'publish',
-        '-r', 'win-x64',
         '--self-contained',
         '-c', configuration,
+        '-o', dotnetArtifacts,
         '../ModInstaller.Native'
       ];
 
@@ -306,10 +312,16 @@ async function main() {
       }
 
       // Copy native artifacts
-      const basePath = `../ModInstaller.Native`;
-      copyItem(`${basePath}/bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.dll`, 'ModInstaller.Native.dll');
-      copyItem(`${basePath}/bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`, 'ModInstaller.Native.lib');
-      copyItem(`${basePath}/ModInstaller.Native.h`, 'ModInstaller.Native.h');
+      const artifactFiles = fs.readdirSync(dotnetArtifacts);
+      const nativeFiles = artifactFiles.filter(file => file.startsWith('ModInstaller.Native.'));
+
+      if (nativeFiles.length === 0) {
+        throw new Error(`No ModInstaller.Native.* files found in ${dotnetArtifacts}`);
+      }
+
+      nativeFiles.forEach(file => {
+        copyItem(path.join(dotnetArtifacts, file), file);
+      });
 
       // Sign the DLL if signing is configured
       if (fs.existsSync('ModInstaller.Native.dll')) {

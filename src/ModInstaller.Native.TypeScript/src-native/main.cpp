@@ -1,5 +1,6 @@
 #define NODE_API_NO_EXTERNAL_BUFFERS_ALLOWED // Thanks Electron
 
+#include "Platform.hpp"
 #include <napi.h>
 #include "Bindings.Common.hpp"
 #include "Bindings.Logging.Implementation.hpp"

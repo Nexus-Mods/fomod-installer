@@ -83,6 +83,7 @@
 
 #include <napi.h>
 #include <codecvt>
+#include <locale>
 #include <string>
 #include <sstream>
 #include "ModInstaller.Native.h"
