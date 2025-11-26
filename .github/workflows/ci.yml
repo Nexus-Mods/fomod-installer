@@ -38,20 +38,19 @@ jobs:
           echo "Using Node.js version: $nodeVersion"
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ steps.node-version.outputs.NODE_VERSION }}
-          cache: "yarn"
 
       - name: Build IPC
         working-directory: src/ModInstaller.IPC.TypeScript
         run: |
-          yarn --frozen-lockfile install
+          yarn install
           yarn build
 
       - name: Build Native
         working-directory: src/ModInstaller.Native.TypeScript
         run: |
-          yarn --frozen-lockfile install
+          yarn install
           yarn build
 
