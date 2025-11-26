@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FomodInstaller.Scripting;
-using FomodInstaller.Scripting.CSharpScript;
 using FomodInstaller.Scripting.XmlScript;
 using Utils;
 
@@ -44,7 +43,9 @@ namespace FomodInstaller.ModInstaller
         public async Task<IList<string>> GetRequirements(IList<string> modFiles, bool includeAssets, IList<string> allowedTypes)
         {
             CurrentScriptTypeRegistry = new ScriptTypeRegistry();
-            CurrentScriptTypeRegistry.RegisterType(new CSharpScriptType());
+#if USE_CSHARP_SCRIPT
+            CurrentScriptTypeRegistry.RegisterType(new FomodInstaller.Scripting.CSharpScript.CSharpScriptType());
+#endif
             CurrentScriptTypeRegistry.RegisterType(new XmlScriptType());
             // CurrentScriptTypeRegistry = await ScriptTypeRegistry.DiscoverScriptTypes(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             // TODO: I don't think there is a good way to determine which image files are referenced by the installer script without
@@ -114,7 +115,9 @@ namespace FomodInstaller.ModInstaller
         public async Task<IScriptType> GetScriptType(IList<string> modFiles, string extractedFilePath = null)
         {
             CurrentScriptTypeRegistry = new ScriptTypeRegistry();
-            CurrentScriptTypeRegistry.RegisterType(new CSharpScriptType());
+#if USE_CSHARP_SCRIPT
+            CurrentScriptTypeRegistry.RegisterType(new FomodInstaller.Scripting.CSharpScript.CSharpScriptType());
+#endif
             CurrentScriptTypeRegistry.RegisterType(new XmlScriptType());
             // CurrentScriptTypeRegistry = await ScriptTypeRegistry.DiscoverScriptTypes(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             IScriptType FoundScriptType = null;

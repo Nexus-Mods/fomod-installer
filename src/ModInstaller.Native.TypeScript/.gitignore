@@ -9,3 +9,4 @@ coverage
 *.tgz
 *.log
 ModInstaller.Native.*
+build-dotnet/

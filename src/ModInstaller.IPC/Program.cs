@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
-using System.Windows.Forms;
 
 namespace ModInstallerIPC
 {
@@ -39,13 +38,6 @@ namespace ModInstallerIPC
 
         static int Main(string[] args)
         {
-#if NET9_0_OR_GREATER
-            Application.SetHighDpiMode(HighDpiMode.DpiUnawareGdiScaled);
-#endif
-            Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-
             // oh dear god .NET, make the bloody localized error messages stop, it's the dumbest thing ever...
             Thread.CurrentThread.CurrentCulture
                 = Thread.CurrentThread.CurrentUICulture

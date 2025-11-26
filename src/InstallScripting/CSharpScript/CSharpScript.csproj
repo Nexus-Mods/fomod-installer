@@ -1,12 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
-    <TargetFrameworks>net9.0-windows;net48</TargetFrameworks>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <LangVersion>preview</LangVersion>
-    <OutputType>Library</OutputType>
     <RootNamespace>Nexus.Client.ModManagement.Scripting.CSharpScript</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
-    
+
     <Title>C# Script</Title>
     <Copyright>Copyright ©  2016</Copyright>
   </PropertyGroup>
