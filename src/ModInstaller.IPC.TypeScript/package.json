@@ -34,5 +34,8 @@
     "webpack": "^5.95.0",
     "webpack-cli": "^5.1.4"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "engines": {
+    "node": "22.19"
+  },
 }
