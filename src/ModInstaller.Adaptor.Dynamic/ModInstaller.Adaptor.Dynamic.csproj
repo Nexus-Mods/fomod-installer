@@ -1,20 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
-    <TargetFrameworks>net9.0-windows;net48</TargetFrameworks>
+    <TargetFramework>net9.0</TargetFramework>
     <LangVersion>preview</LangVersion>
-    <OutputType>Library</OutputType>
     <RootNamespace>ModInstaller</RootNamespace>
-    
+
     <Copyright>Copyright ©  2016</Copyright>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <ProjectReference Include="..\FomodInstaller.Interface\FomodInstaller.Interface.csproj" />
-    <ProjectReference Include="..\InstallScripting\CSharpScript\CSharpScript.csproj" />
-    <ProjectReference Include="..\InstallScripting\Scripting\Scripting.csproj" />
-    <ProjectReference Include="..\InstallScripting\XmlScript\XmlScript.csproj" />
-    <ProjectReference Include="..\Utils\Utils.csproj" />
-  </ItemGroup>
-  
+
+    <ItemGroup>
+        <ProjectReference Include="..\FomodInstaller.Interface\FomodInstaller.Interface.csproj" />
+        <ProjectReference Include="..\InstallScripting\Scripting\Scripting.csproj" />
+        <ProjectReference Include="..\InstallScripting\XmlScript\XmlScript.csproj" />
+        <ProjectReference Include="..\Utils\Utils.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
+        <ProjectReference Include="..\InstallScripting\CSharpScript\CSharpScript.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+        <DefineConstants>$(DefineConstants);USE_CSHARP_SCRIPT</DefineConstants>
+    </PropertyGroup>
+
 </Project>

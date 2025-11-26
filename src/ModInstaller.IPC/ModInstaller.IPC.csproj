@@ -1,20 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
     <LangVersion>preview</LangVersion>
     <OutputType>Exe</OutputType>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    
-    <UseWindowsForms>true</UseWindowsForms>
-
     <RootNamespace>ModInstallerIPC</RootNamespace>
     <AssemblyName>ModInstallerIPC</AssemblyName>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(OS) == 'Windows_NT'">
-    <TargetFramework>net9.0-windows</TargetFramework>
-
+  <PropertyGroup>
     <SelfContained>true</SelfContained>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <PublishSingleFile>true</PublishSingleFile>
@@ -27,9 +23,6 @@
     <PublishTrimmed>true</PublishTrimmed>
     <InvariantGlobalization>true</InvariantGlobalization>
     -->
-  </PropertyGroup>
-  <PropertyGroup Condition="$(OS) != 'Windows_NT'">
-    <TargetFramework>net48</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(Configuration) == 'Release'">
