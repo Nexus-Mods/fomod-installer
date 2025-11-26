@@ -51,6 +51,7 @@ jobs:
       - name: Build Native
         working-directory: src/ModInstaller.Native.TypeScript
         run: |
+          yarn build-native
           yarn install
           yarn build
 
