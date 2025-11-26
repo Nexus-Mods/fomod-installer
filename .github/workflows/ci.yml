@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+      branches: [ master ]
+  pull_request:
+      branches: [ master ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '9.x'
+
+      - run: dotnet --info
+
+      - name: Build IPC
+        working-directory: src/ModInstaller.IPC.TypeScript
+        run: |
+          yarn install
+          yarn build
+
+      - name: Build Native
+        working-directory: src/ModInstaller.Native.TypeScript
+        run: |
+          yarn install
+          yarn build
+
