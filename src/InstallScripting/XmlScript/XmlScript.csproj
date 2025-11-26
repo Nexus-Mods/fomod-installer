@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   
   <PropertyGroup>
-    <TargetFrameworks>net9.0;net48</TargetFrameworks>
+    <TargetFramework>net9.0</TargetFramework>
     <LangVersion>preview</LangVersion>
-    <OutputType>Library</OutputType>
     <RootNamespace>FomodInstaller.Scripting.XmlScript</RootNamespace>
-    
+
     <Title>XML Script</Title>
     <Copyright>Copyright ©  2016</Copyright>
   </PropertyGroup>
@@ -15,7 +14,7 @@
       <HintPath>..\..\..\lib\Antlr\Antlr3.Runtime.dll</HintPath>
     </Reference>
   </ItemGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\..\AntlrUtil\AntlrUtil.csproj" />
     <ProjectReference Include="..\..\FomodInstaller.Interface\FomodInstaller.Interface.csproj" />

@@ -23,3 +23,6 @@ test_cases
 
 AnalysisReport.sarif
 /src/ModInstaller.Native/ModInstaller.Native.h
+
+# JetBrains
+.idea/
