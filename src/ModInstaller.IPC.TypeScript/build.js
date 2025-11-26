@@ -9,34 +9,29 @@
  * Configuration: Release (default) or Debug
  */
 
-const { execSync, spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { execSync, spawn } = require("child_process");
+const fs = require("fs");
+const path = require("path");
 
 // Valid build types
-const VALID_TYPES = [
-  'build',
-  'clean',
-  'build-csharp',
-  'build-webpack'
-];
+const VALID_TYPES = ["build", "clean", "build-csharp", "build-webpack"];
 
 // Parse command line arguments
 const args = process.argv.slice(2);
-const type = args[0] || 'build';
-const configuration = args[1] || 'Release';
+const type = args[0] || "build";
+const configuration = args[1] || "Release";
 
 // Validate build type
 if (!VALID_TYPES.includes(type)) {
   console.error(`Error: Invalid build type '${type}'`);
-  console.error(`Valid types: ${VALID_TYPES.join(', ')}`);
+  console.error(`Valid types: ${VALID_TYPES.join(", ")}`);
   process.exit(1);
 }
 
 // Validate configuration
-if (!['Release', 'Debug'].includes(configuration)) {
+if (!["Release", "Debug"].includes(configuration)) {
   console.error(`Error: Invalid configuration '${configuration}'`);
-  console.error('Valid configurations: Release, Debug');
+  console.error("Valid configurations: Release, Debug");
   process.exit(1);
 }
 
@@ -45,8 +40,10 @@ if (!['Release', 'Debug'].includes(configuration)) {
  */
 class MissingDotNetSDKException extends Error {
   constructor() {
-    super('Missing .NET SDK - Install a .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/9.0');
-    this.name = 'MissingDotNetSDKException';
+    super(
+      "Missing .NET SDK - Install a .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/9.0",
+    );
+    this.name = "MissingDotNetSDKException";
   }
 }
 
@@ -69,20 +66,20 @@ const ERROR_CODE_HANDLER = {
  */
 function spawnAsync(exe, args, options = {}, out = console) {
   return new Promise((resolve, reject) => {
-    const desc = `${options.cwd || '.'}/${exe} ${args.join(' ')}`;
-    out.log('started: ' + desc);
+    const desc = `${options.cwd || "."}/${exe} ${args.join(" ")}`;
+    out.log("started: " + desc);
     const outBufs = [];
 
     try {
       const proc = spawn(exe, args, options);
-      proc.stdout.on('data', (data) => outBufs.push(data));
-      proc.stderr.on('data', (data) => out.error(data.toString()));
-      proc.on('error', (err) => {
+      proc.stdout.on("data", (data) => outBufs.push(data));
+      proc.stderr.on("data", (data) => out.error(data.toString()));
+      proc.on("error", (err) => {
         out.log(Buffer.concat(outBufs).toString());
         reject(err);
       });
-      proc.on('close', (code) => {
-        out.log('done: ' + desc + ': ' + code);
+      proc.on("close", (code) => {
+        out.log("done: " + desc + ": " + code);
         if (code === 0) {
           resolve();
         } else {
@@ -103,19 +100,20 @@ function spawnAsync(exe, args, options = {}, out = console) {
  * @returns {Promise<void>}
  */
 async function sign(filePath) {
-  if (process.env['SIGN_TOOL'] !== undefined) {
+  if (process.env["SIGN_TOOL"] !== undefined) {
     console.log(`  Signing: ${filePath}`);
-    return spawnAsync(
-      process.env['SIGN_TOOL'],
-      [
-        'sign',
-        '/sha1', process.env['SIGN_THUMBPRINT'],
-        '/td', 'sha256',
-        '/fd', 'sha256',
-        '/tr', 'http://timestamp.comodoca.com',
-        filePath
-      ]
-    );
+    return spawnAsync(process.env["SIGN_TOOL"], [
+      "sign",
+      "/sha1",
+      process.env["SIGN_THUMBPRINT"],
+      "/td",
+      "sha256",
+      "/fd",
+      "sha256",
+      "/tr",
+      "http://timestamp.comodoca.com",
+      filePath,
+    ]);
   } else {
     console.log(`  Skipping signing (SIGN_TOOL not configured)`);
   }
@@ -152,15 +150,17 @@ function copyItem(sourcePath, destPath) {
  * @param {string[]} patterns - File patterns to remove
  */
 function removeItems(patterns) {
-  patterns.forEach(pattern => {
+  patterns.forEach((pattern) => {
     try {
       // Handle glob patterns (*.tgz, *.dll, etc.)
-      if (pattern.includes('*')) {
+      if (pattern.includes("*")) {
         const dir = process.cwd();
-        const regex = new RegExp('^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
+        const regex = new RegExp(
+          "^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$",
+        );
 
         const files = fs.readdirSync(dir);
-        files.forEach(file => {
+        files.forEach((file) => {
           if (regex.test(file)) {
             try {
               const fullPath = path.join(dir, file);
@@ -205,9 +205,9 @@ function removeItems(patterns) {
  */
 function commandExists(command) {
   try {
-    const isWindows = process.platform === 'win32';
+    const isWindows = process.platform === "win32";
     const checkCommand = isWindows ? `where ${command}` : `which ${command}`;
-    execSync(checkCommand, { stdio: 'ignore' });
+    execSync(checkCommand, { stdio: "ignore" });
     return true;
   } catch {
     return false;
@@ -223,9 +223,9 @@ function execCommand(command, options = {}) {
   console.log(`  Running: ${command}`);
   try {
     execSync(command, {
-      stdio: 'inherit',
+      stdio: "inherit",
       cwd: process.cwd(),
-      ...options
+      ...options,
     });
   } catch (err) {
     console.error(`  Command failed: ${command}`);
@@ -245,102 +245,100 @@ async function main() {
     console.log(`===========================\n`);
 
     // Validate prerequisites
-    if (['build', 'build-csharp'].includes(type)) {
-      if (!commandExists('dotnet')) {
-        throw new Error('dotnet CLI not found. Please install .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/9.0');
+    if (["build", "build-csharp"].includes(type)) {
+      if (!commandExists("dotnet")) {
+        throw new Error(
+          "dotnet CLI not found. Please install .NET SDK from https://dotnet.microsoft.com/en-us/download/dotnet/9.0",
+        );
       }
     }
 
-    if (['build', 'build-webpack'].includes(type)) {
-      if (!commandExists('npx')) {
-        throw new Error('npx not found. Please install Node.js and npm.');
+    if (["build", "build-webpack"].includes(type)) {
+      if (!commandExists("npx")) {
+        throw new Error("npx not found. Please install Node.js and npm.");
       }
     }
 
     // Clean
-    if (['build', 'clean'].includes(type)) {
-      console.log('Cleaning build artifacts...');
-      removeItems([
-        '*.tgz',
-        'dist',
-        'coverage',
-        '.nyc_output'
-      ]);
-      console.log('');
+    if (["build", "clean"].includes(type)) {
+      console.log("Cleaning build artifacts...");
+      removeItems(["*.tgz", "dist", "coverage", ".nyc_output"]);
+      console.log("");
     }
 
     // Build C# IPC Module
-    if (['build', 'build-csharp'].includes(type)) {
+    if (["build", "build-csharp"].includes(type)) {
       console.log(`Building ModInstaller.IPC (${configuration})`);
 
       // Verify source directory exists
-      const ipcDir = path.resolve('../ModInstaller.IPC');
+      const ipcDir = path.resolve("../ModInstaller.IPC");
       if (!fs.existsSync(ipcDir)) {
         throw new Error(`ModInstaller.IPC directory not found at: ${ipcDir}`);
       }
 
       // Run dotnet publish with retry logic (handles locked files)
-      const outputDir = path.resolve('dist');
+      const outputDir = path.resolve("dist");
       const buildArgs = [
-        'publish',
+        "publish",
         ipcDir,
-        '-c', configuration,
-        '-o', outputDir,
-        '/p:EnableWindowsTargeting=true',
+        "-c",
+        configuration,
+        "-o",
+        outputDir,
       ];
 
       try {
-        await spawnAsync('dotnet', buildArgs);
+        await spawnAsync("dotnet", buildArgs);
       } catch (err) {
         // The build may fail because of locked files (sigh) so just try again...
-        console.log('  Build failed, retrying after 500ms...');
+        console.log("  Build failed, retrying after 500ms...");
         await new Promise((resolve) => setTimeout(resolve, 500));
-        await spawnAsync('dotnet', buildArgs);
+        await spawnAsync("dotnet", buildArgs);
       }
 
       // Sign the executable if signing is configured
-      const exePath = path.join(outputDir, 'ModInstallerIPC.exe');
+      const exePath = path.join(outputDir, "ModInstallerIPC.exe");
       if (fs.existsSync(exePath)) {
         await sign(exePath);
       }
 
-      console.log('');
+      console.log("");
     }
 
     // Build Webpack Bundle
-    if (['build', 'build-webpack'].includes(type)) {
-      console.log('Building Webpack bundle');
+    if (["build", "build-webpack"].includes(type)) {
+      console.log("Building Webpack bundle");
 
       // Verify TypeScript config exists
-      if (!fs.existsSync('tsconfig.json')) {
-        throw new Error('tsconfig.json not found');
+      if (!fs.existsSync("tsconfig.json")) {
+        throw new Error("tsconfig.json not found");
       }
 
       // Verify webpack config exists
-      if (!fs.existsSync('webpack.config.js')) {
-        throw new Error('webpack.config.js not found');
+      if (!fs.existsSync("webpack.config.js")) {
+        throw new Error("webpack.config.js not found");
       }
 
       // Compile TypeScript declarations
-      execCommand('npx tsc --emitDeclarationOnly');
+      execCommand("npx tsc --emitDeclarationOnly");
 
       // Build with webpack
-      execCommand('npx webpack --config webpack.config.js');
-      console.log('');
+      execCommand("npx webpack --config webpack.config.js");
+      console.log("");
     }
 
-    console.log('✓ Build completed successfully!');
+    console.log("✓ Build completed successfully!");
     process.exit(0);
-
   } catch (err) {
     // Handle specific error codes
-    const error = ERROR_CODE_HANDLER[err?.code] !== undefined
-      ? ERROR_CODE_HANDLER[err.code].genError()
-      : err;
+    const error =
+      ERROR_CODE_HANDLER[err?.code] !== undefined
+        ? ERROR_CODE_HANDLER[err.code].genError()
+        : err;
 
-    console.error('\n✗ Build failed:', error.message);
+    console.error("\n✗ Build failed:", error.message);
     if (process.env.DEBUG) {
-      console.error('\nStack trace:', error.stack);
+      console.error("\nStack trace:", error.stack);
     }
 
     const exitCode = err?.code || -1;
