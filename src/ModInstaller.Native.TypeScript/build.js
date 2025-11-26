@@ -338,6 +338,11 @@ async function main() {
         copyItem(path.join(dotnetArtifacts, file), file);
       });
 
+      copyItem(
+        path.join(nativeDir, "ModInstaller.Native.h"),
+        "ModInstaller.Native.h",
+      );
+
       // Sign the DLL if signing is configured
       if (fs.existsSync("ModInstaller.Native.dll")) {
         await sign("ModInstaller.Native.dll");

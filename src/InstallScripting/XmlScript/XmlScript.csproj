@@ -60,7 +60,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
-  
+
   <PropertyGroup>
     <AntlrBuildTaskPath>$(NuGetPackageRoot)\antlr3.codegenerator\3.5.2-rc1\tools\netstandard</AntlrBuildTaskPath>
     <AntlrToolPath>$(NuGetPackageRoot)\antlr3.codegenerator\3.5.2-rc1\tools\net40\Antlr3.exe</AntlrToolPath>

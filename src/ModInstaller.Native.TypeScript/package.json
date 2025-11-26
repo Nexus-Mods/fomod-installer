@@ -30,7 +30,7 @@
     "watch:build": "tsc -p tsconfig.json -w"
   },
   "engines": {
-    "node": ">=22"
+    "node": "22.19"
   },
   "binary": {
     "napi_versions": [

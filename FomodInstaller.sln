@@ -45,6 +45,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.IPC.Tests", "t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModInstaller.Adaptor.Tests.Shared", "test\ModInstaller.Adaptor.Tests.Shared\ModInstaller.Adaptor.Tests.Shared.csproj", "{74C81B92-7ADF-454A-9B09-EE4353F8B44E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".solutionItems", ".solutionItems", "{1F13B3C7-2406-4EB8-938B-D81AAE30BFFE}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+		LICENSE.md = LICENSE.md
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
