@@ -19,12 +19,14 @@
     </PropertyGroup>
 
   <PropertyGroup>
+    <!--
     <SelfContained>true</SelfContained>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <IncludeRuntimeForSelfExtract>true</IncludeRuntimeForSelfExtract>
+    -->
     <!--
     <PublishAot>true</PublishAot>
     <TrimMode>link</TrimMode>
