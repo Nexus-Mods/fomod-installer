@@ -256,21 +256,6 @@ export abstract class BaseIPCConnection {
         detached: true,
         stdio: ['ignore', 'pipe', 'pipe'],
         windowsHide: false,
-        env: {
-          PATH: process.env.PATH,
-          TEMP: process.env.TEMP || process.env.TMP || os.tmpdir(),
-          TMP: process.env.TMP || process.env.TEMP || os.tmpdir(),
-          USERPROFILE: process.env.USERPROFILE,
-          APPDATA: process.env.APPDATA,
-          LOCALAPPDATA: process.env.LOCALAPPDATA,
-          COMPlus_EnableDiagnostics: '0', // Disable diagnostics which can cause issues
-          // Add .NET specific environment variables if they exist
-          ...(process.env.DOTNET_ROOT && { DOTNET_ROOT: process.env.DOTNET_ROOT }),
-          ...(process.env.DOTNET_HOST_PATH && { DOTNET_HOST_PATH: process.env.DOTNET_HOST_PATH }),
-          ...(process.env.DOTNET_SYSTEM_GLOBALIZATION_INVARIANT && {
-            DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: process.env.DOTNET_SYSTEM_GLOBALIZATION_INVARIANT
-          }),
-        },
         cwd,
       };
 

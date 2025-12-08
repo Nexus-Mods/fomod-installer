@@ -51,7 +51,7 @@ export interface ProcessLaunchOptions {
   /**
    * Environment variables
    */
-  env: NodeJS.ProcessEnv;
+  env?: NodeJS.ProcessEnv;
 
   /**
    * Standard I/O configuration
