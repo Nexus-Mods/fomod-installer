@@ -186,15 +186,19 @@ export class SandboxProcessLauncher implements IProcessLauncher {
     // Build command line
     const commandLine = `"${exePath}" ${args.join(' ')}`;
 
+    log('info', '[PROCESS] Launching sandboxed process', {
+      exePath,
+      args,
+      argsJoined: args.join(' '),
+      commandLine,
+      cwd: options.cwd,
+      containerName: this.containerName
+    });
+
     // Create a pseudo-ChildProcess object to maintain API compatibility
     const pseudoProcess = this.createPseudoProcess();
 
     // Run in container using winapi-bindings API
-    log('debug', 'Running process in App Container', {
-      containerName: this.containerName,
-      commandLine
-    });
-
     winapi.RunInContainer(
       this.containerName,
       commandLine,
@@ -202,18 +206,26 @@ export class SandboxProcessLauncher implements IProcessLauncher {
       (code: number) => {
         pseudoProcess.exitCode = code;
         pseudoProcess.emit('exit', code, null);
-        log('debug', 'Sandboxed process exited', {
-          code,
+        log('info', '[PROCESS] Sandboxed process exited', {
+          exitCode: code,
           containerName: this.containerName
         });
       },
       (message: string) => {
+        // Log all output from the sandboxed process
+        const output = message.trim();
+        if (output) {
+          log('info', '[PROCESS] STDOUT (sandboxed)', {
+            containerName: this.containerName,
+            output: output
+          });
+        }
         // Emit to stdout (winapi doesn't distinguish stdout/stderr)
         pseudoProcess.stdout.emit('data', Buffer.from(message, 'utf8'));
       }
     );
 
-    log('info', 'Process launched successfully in App Container', {
+    log('info', '[PROCESS] Process launched successfully in App Container', {
       containerName: this.containerName
     });
 

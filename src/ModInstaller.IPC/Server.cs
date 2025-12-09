@@ -333,21 +333,32 @@ namespace ModInstallerIPC
             try
             {
                 if (mUsePipe) {
+                    Console.Out.WriteLine("[C#] Creating inbound pipe client for: " + mId);
+                    Console.Out.Flush();
                     pipeIn = new NamedPipeClientStream(".", mId, PipeDirection.In);
-                    Console.Out.WriteLine("in pipe ready: " + mId);
+                    Console.Out.WriteLine("[C#] Inbound pipe created, connecting...");
+                    Console.Out.Flush();
                     pipeIn.Connect(30000);
-                    Console.Out.WriteLine("in pipe connected");
+                    Console.Out.WriteLine("[C#] Inbound pipe connected successfully");
+                    Console.Out.Flush();
 
                     // In an appcontainer we can't host the pipe,
                     // in a low integrity process we can't create a client stream with direction out.
 
+                    Console.Out.WriteLine("[C#] Creating outbound pipe client for: " + mId + "_reply");
+                    Console.Out.Flush();
                     pipeOut = new NamedPipeClientStream(".", mId + "_reply", PipeDirection.Out);
-                    Console.Out.WriteLine("out pipe ready: " + mId + "_reply");
+                    Console.Out.WriteLine("[C#] Outbound pipe created, connecting...");
+                    Console.Out.Flush();
                     pipeOut.Connect(30000);
-                    Console.Out.WriteLine("out pipe connected");
+                    Console.Out.WriteLine("[C#] Outbound pipe connected successfully");
+                    Console.Out.Flush();
 
                     streamIn = pipeIn;
                     streamOut = pipeOut;
+
+                    Console.Out.WriteLine("[C#] Both pipes connected, writing handshake...");
+                    Console.Out.Flush();
                 } else
                 {
                     // use a single network socket
@@ -370,45 +381,68 @@ namespace ModInstallerIPC
 
                 mEnqueue = msg => outgoing.Add(msg);
 
+                Console.Out.WriteLine("[C#] Writing handshake 'connected'...");
+                Console.Out.Flush();
                 byte[] input = "connected"u8.ToArray();
                 streamOut.Write(input, 0, input.Length);
+                streamOut.Flush();
+                Console.Out.WriteLine("[C#] Handshake written and flushed");
+                Console.Out.Flush();
 
                 cancelSignal = new CancellationTokenSource();
 
                 Exception cancelEx = null;
 
+                Console.Out.WriteLine("[C#] Starting reader/writer tasks...");
+                Console.Out.Flush();
+
                 Task readerTask = Task.Run(() => {
                     Thread.CurrentThread.Name = "reader loop";
+                    Console.Out.WriteLine("[C#] Reader task started");
+                    Console.Out.Flush();
                     try
                     {
                         ReaderLoop(streamIn, mEnqueue);
+                        Console.Out.WriteLine("[C#] Reader loop exited normally");
+                        Console.Out.Flush();
                         outgoing.CompleteAdding();
                     }
                     catch (Exception e)
                     {
-                        Console.Error.WriteLine("read loop failed: {0}", e.Message);
+                        Console.Error.WriteLine("[C#] Read loop failed: {0}\n{1}", e.Message, e.StackTrace);
+                        Console.Error.Flush();
                         cancelSignal.Cancel();
                         cancelEx = e;
                     };
                 });
                 Task writerTask = Task.Run(() => {
                     Thread.CurrentThread.Name = "writer loop";
+                    Console.Out.WriteLine("[C#] Writer task started");
+                    Console.Out.Flush();
                     try
                     {
                         WriterLoop(streamOut, outgoing);
+                        Console.Out.WriteLine("[C#] Writer loop exited normally");
+                        Console.Out.Flush();
                     }
                     catch (Exception e)
                     {
-                        Console.Error.WriteLine("write loop failed: {0}", e.Message);
+                        Console.Error.WriteLine("[C#] Write loop failed: {0}\n{1}", e.Message, e.StackTrace);
+                        Console.Error.Flush();
                         cancelSignal.Cancel();
                         cancelEx = e;
                     }
                 });
 
+                Console.Out.WriteLine("[C#] Waiting for reader/writer tasks to complete...");
+                Console.Out.Flush();
+
                 // run until either reader or writer signal for termination
                 try
                 {
                     Task.WaitAll(new Task[] { readerTask, writerTask }, cancelSignal.Token);
+                    Console.Out.WriteLine("[C#] Tasks completed normally");
+                    Console.Out.Flush();
                 } catch (Exception err)
                 {
                     throw cancelEx ?? err;
@@ -464,6 +498,9 @@ namespace ModInstallerIPC
 
         private void ReaderLoop(Stream stream, Action<OutMessage> onSend)
         {
+            Console.Out.WriteLine("[C#] ReaderLoop: entering loop, waiting for data...");
+            Console.Out.Flush();
+
             bool running = true;
 
             int bufferSize = 64 * 1024;
@@ -475,10 +512,16 @@ namespace ModInstallerIPC
             {
                 int left = bufferSize - offset;
 
+                Console.Out.WriteLine("[C#] ReaderLoop: calling stream.Read()...");
+                Console.Out.Flush();
                 // int numRead = reader.Read(buffer, offset, left);
                 int numRead = stream.Read(buffer, offset, left);
+                Console.Out.WriteLine("[C#] ReaderLoop: stream.Read() returned " + numRead + " bytes");
+                Console.Out.Flush();
                 if (numRead == 0)
                 {
+                    Console.Out.WriteLine("[C#] ReaderLoop: received 0 bytes, exiting loop");
+                    Console.Out.Flush();
                     running = false;
                 }
                 else if (numRead == left)

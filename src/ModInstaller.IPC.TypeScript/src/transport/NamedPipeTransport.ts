@@ -247,12 +247,17 @@ export class NamedPipeTransport implements ITransport {
         existingSocket: !!this.socketOut
       });
 
-      // If we already have a socket, this is a spurious connection - reject it
+      // If we already have a socket, this is a spurious connection - just ignore it
+      // DO NOT destroy the socket - on Windows named pipes, destroying can affect the pipe server
       if (this.socketOut) {
-        log('warn', 'Rejecting duplicate outbound connection', {
-          pipePath: this.pipePathOut
+        const isSameSocket = socket === this.socketOut;
+        log('debug', 'Ignoring additional outbound connection (already have one)', {
+          pipePath: this.pipePathOut,
+          isSameSocket,
+          newSocketDestroyed: socket.destroyed,
+          existingSocketDestroyed: this.socketOut.destroyed
         });
-        socket.destroy();
+        // Don't destroy - just ignore. The socket will be cleaned up naturally.
         return;
       }
 
@@ -308,12 +313,17 @@ export class NamedPipeTransport implements ITransport {
         existingSocket: !!this.socketIn
       });
 
-      // If we already have a socket, this is a spurious connection - reject it
+      // If we already have a socket, this is a spurious connection - just ignore it
+      // DO NOT destroy the socket - on Windows named pipes, destroying can affect the pipe server
       if (this.socketIn) {
-        log('warn', 'Rejecting duplicate inbound connection', {
-          pipePath: this.pipePathIn
+        const isSameSocket = socket === this.socketIn;
+        log('debug', 'Ignoring additional inbound connection (already have one)', {
+          pipePath: this.pipePathIn,
+          isSameSocket,
+          newSocketDestroyed: socket.destroyed,
+          existingSocketDestroyed: this.socketIn.destroyed
         });
-        socket.destroy();
+        // Don't destroy - just ignore. The socket will be cleaned up naturally.
         return;
       }
 

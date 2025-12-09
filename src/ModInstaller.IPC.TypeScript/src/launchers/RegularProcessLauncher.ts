@@ -17,16 +17,61 @@ export class RegularProcessLauncher implements IProcessLauncher {
     args: string[],
     options: ProcessLaunchOptions
   ): Promise<ChildProcess> {
-    log('debug', 'Launching process with regular security', {
+    log('info', '[PROCESS] Launching process with regular security', {
       exePath,
       args,
+      argsJoined: args.join(' '),
       cwd: options.cwd
     });
 
     const process = spawn(exePath, args, options);
 
-    log('info', 'Process launched successfully (regular security)', {
+    log('info', '[PROCESS] Process launched successfully (regular security)', {
       pid: process.pid
+    });
+
+    // Log stdout
+    if (process.stdout) {
+      process.stdout.on('data', (data: Buffer) => {
+        const output = data.toString().trim();
+        if (output) {
+          log('info', '[PROCESS] STDOUT', {
+            pid: process.pid,
+            output: output
+          });
+        }
+      });
+    }
+
+    // Log stderr
+    if (process.stderr) {
+      process.stderr.on('data', (data: Buffer) => {
+        const output = data.toString().trim();
+        if (output) {
+          log('warn', '[PROCESS] STDERR', {
+            pid: process.pid,
+            output: output
+          });
+        }
+      });
+    }
+
+    // Log process exit
+    process.on('exit', (code, signal) => {
+      log('info', '[PROCESS] Process exited', {
+        pid: process.pid,
+        exitCode: code,
+        signal: signal
+      });
+    });
+
+    // Log process errors
+    process.on('error', (err) => {
+      log('error', '[PROCESS] Process error', {
+        pid: process.pid,
+        error: err.message,
+        stack: err.stack
+      });
     });
 
     return process;
