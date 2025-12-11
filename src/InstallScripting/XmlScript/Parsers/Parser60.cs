@@ -45,7 +45,8 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
                     {
                         Version verMinLoaderVersion = ParseVersion(p_xelCondition.Attribute("version").Value);
                         string loaderType = p_xelCondition.Attribute("type").Value;
-                        return new LoaderVersionCondition(verMinLoaderVersion, loaderType);
+                        string comparison = p_xelCondition.Attribute("comparison")?.Value ?? "e";
+                        return new LoaderVersionCondition(verMinLoaderVersion, loaderType, Enum.TryParse(comparison, true, out VersionComparisonType comparisonType) ? comparisonType : VersionComparisonType.E);
                     }
                     default:
                         return base.LoadCondition(p_xelCondition);

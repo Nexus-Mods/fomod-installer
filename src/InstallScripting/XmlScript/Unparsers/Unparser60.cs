@@ -36,8 +36,9 @@ namespace FomodInstaller.Scripting.XmlScript.Unparsers
 			if (p_cndCondition is LoaderVersionCondition condition)
 			{
 				XElement xelGameVersion = new XElement("loaderDependency",
-                    new XAttribute("type", condition.MinimumVersion.ToString()),
-                    new XAttribute("version", condition.MinimumVersion.ToString()));
+                    new XAttribute("type", condition.Type),
+                    new XAttribute("version", condition.MinimumVersion.ToString()),
+                    new XAttribute("comparison", condition.VersionComparisonType.ToString().ToLowerInvariant()));
 				return xelGameVersion;
 			}
 			return base.UnparseCondition(p_cndCondition, p_strNodeName);

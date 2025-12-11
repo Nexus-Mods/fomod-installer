@@ -12,6 +12,8 @@ namespace FomodInstaller.Scripting.XmlScript
 
         public string Type { get; private set; }
 
+        public VersionComparisonType VersionComparisonType { get; private set; }
+
         #endregion
 
         #region Constructors
@@ -21,10 +23,11 @@ namespace FomodInstaller.Scripting.XmlScript
         /// </summary>
         /// <param name="p_verVersion">The minimum required version the script extender.</param>
         /// <param name="p_strExtender">Identifier for the game, which is the 4 letters name like "fose" or "nvse" or "skse"</param>
-        public LoaderVersionCondition(Version p_verVersion, string p_strExtender)
+        public LoaderVersionCondition(Version p_verVersion, string p_strExtender, VersionComparisonType p_comp_type)
             : base(p_verVersion)
         {
             Type = p_strExtender;
+            VersionComparisonType = p_comp_type;
         }
 
         #endregion
@@ -47,7 +50,15 @@ namespace FomodInstaller.Scripting.XmlScript
             
             if (!Version.TryParse(versionString, out var version)) return false;
 
-            return version >= MinimumVersion;
+            return VersionComparisonType switch
+            {
+                VersionComparisonType.E => version == MinimumVersion,
+                VersionComparisonType.GT => version > MinimumVersion,
+                VersionComparisonType.GTE => version >= MinimumVersion,
+                VersionComparisonType.LT => version < MinimumVersion,
+                VersionComparisonType.LTE => version <= MinimumVersion,
+                _ => false,
+            };
         }
 
         /// <summary>
