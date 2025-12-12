@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using FomodInstaller.Interface;
 using FomodInstaller.ModInstaller;
 
@@ -68,12 +70,15 @@ public class InstallTests
         
         var progressDelegate = new ProgressDelegate((perc) => { });
         var installer = new Installer();
+        // Convert JsonDocument preset to IEnumerable<Dictionary<string, object>> for the executor
+        var presetExpando = data.Preset is not null ? JsonUtils.ParseJsonArray(data.Preset).ToList() : null;
+
         var result = await installer.Install(
             data.ModArchive.Entries.Select(x => x.GetNormalizedName()).ToList(),
             data.StopPatterns,
             data.PluginPath,
             tempDir,
-            null,
+            presetExpando,
             data.Validate,
             progressDelegate,
             coreDelegates
@@ -81,5 +86,62 @@ public class InstallTests
 
         await Assert.That(((List<Instruction>) result["instructions"]).Order()).IsEquivalentTo(data.Instructions.Order());
         await Assert.That(result["message"]).IsEquivalentTo(data.Message);
-    }   
+    }
+}
+
+file static class JsonUtils
+{
+    public static IEnumerable<Dictionary<string, object>> ParseJsonArray(JsonDocument document)
+    {
+        var root = document.RootElement;
+
+        if (root.ValueKind != JsonValueKind.Array)
+            throw new ArgumentException("JSON root must be an array.");
+
+        foreach (var element in root.EnumerateArray())
+        {
+            if (element.ValueKind != JsonValueKind.Object)
+                throw new ArgumentException("Each array element must be an object.");
+
+            yield return ReadObject(element);
+        }
+    }
+
+    private static Dictionary<string, object> ReadObject(JsonElement element)
+    {
+        var dict = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var property in element.EnumerateObject())
+        {
+            dict[property.Name] = ConvertValue(property.Value)!;
+        }
+
+        return dict;
+    }
+
+    private static object? ConvertValue(JsonElement value)
+    {
+        return value.ValueKind switch
+        {
+            JsonValueKind.String => value.GetString(),
+            JsonValueKind.Number => value.TryGetInt64(out var l) ? l :
+                value.TryGetDouble(out var d) ? d : (object?) null,
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            JsonValueKind.Null => null,
+            JsonValueKind.Object => ReadObject(value),
+            JsonValueKind.Array => ReadArray(value),
+            _ => null
+        };
+    }
+
+    private static List<object?> ReadArray(JsonElement array)
+    {
+        var list = new List<object?>();
+        foreach (var item in array.EnumerateArray())
+        {
+            list.Add(ConvertValue(item));
+        }
+        return list;
+    }
 }

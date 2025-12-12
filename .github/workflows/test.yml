@@ -1,0 +1,114 @@
+name: Tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+jobs:
+  csharp-tests:
+    name: C# Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      - name: Run Adaptor.Typed Tests
+        run: dotnet test test/ModInstaller.Adaptor.Typed.Tests --no-build -c Release --verbosity normal
+
+      - name: Run Adaptor.Dynamic Tests
+        run: dotnet test test/ModInstaller.Adaptor.Dynamic.Tests --no-build -c Release --verbosity normal
+
+      - name: Run Native Tests
+        run: dotnet test test/ModInstaller.Native.Tests --no-build -c Release --verbosity normal
+
+  js-native-tests:
+    name: JS Native Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup Python (for node-gyp)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install build tools (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential
+
+      - name: Install dependencies
+        run: yarn install
+        working-directory: src/ModInstaller.Native.TypeScript
+
+      - name: Build native module and run tests
+        run: yarn test
+        working-directory: src/ModInstaller.Native.TypeScript
+
+  js-ipc-tests:
+    name: JS IPC Tests
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install dependencies
+        run: yarn install
+        working-directory: src/ModInstaller.IPC.TypeScript
+
+      - name: Build C# IPC module
+        run: yarn build-csharp
+        working-directory: src/ModInstaller.IPC.TypeScript
+
+      - name: Run tests
+        run: yarn test-ava
+        working-directory: src/ModInstaller.IPC.TypeScript

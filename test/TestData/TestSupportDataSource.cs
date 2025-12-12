@@ -6,17 +6,6 @@ namespace TestData;
 
 public class TestSupportDataSource
 {
-    public static IEnumerable<Func<TestSupportData>> SkyrimData()
-    {
-        yield return () =>
-        {
-            var skyrimMod = SkyrimTestData.ModBetterMessageBoxControls;
-            var mod = SkyrimTestData.GetSkyrimMod(skyrimMod.ModFile);
-            var files = mod.Entries.Select(x => x.GetNormalizedName()).ToList();
-            return new(files, ["Basic"], true, []);
-        };
-    }
-
     public static IEnumerable<Func<TestSupportData>> BasicData()
     {
         yield return () => new(["test.esm", "test.esp"], ["Basic"], true, []);

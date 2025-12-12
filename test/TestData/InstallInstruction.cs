@@ -1,5 +1,6 @@
 ﻿using FomodInstaller.Interface;
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -28,7 +29,35 @@ public static class InstallInstructionExtensions
         section = x.section,
         key = x.key,
         value = x.value,
-        //data = x.Data,
+        data = ConvertJsonDocumentToByteArray(x.data),
         priority = x.priority,
     });
+
+    private static byte[] ConvertJsonDocumentToByteArray(JsonDocument doc)
+    {
+        if (doc == null)
+            return null;
+
+        var root = doc.RootElement;
+
+        // Handle Node.js Buffer format: {"type": "Buffer", "data": "base64string"}
+        if (root.ValueKind == JsonValueKind.Object &&
+            root.TryGetProperty("type", out var typeElement) &&
+            typeElement.GetString() == "Buffer" &&
+            root.TryGetProperty("data", out var dataElement))
+        {
+            if (dataElement.ValueKind == JsonValueKind.String)
+            {
+                // Base64 encoded data
+                return Convert.FromBase64String(dataElement.GetString());
+            }
+            else if (dataElement.ValueKind == JsonValueKind.Array)
+            {
+                // Array of bytes
+                return dataElement.EnumerateArray().Select(e => (byte)e.GetInt32()).ToArray();
+            }
+        }
+
+        return null;
+    }
 }

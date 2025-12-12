@@ -1,0 +1,25 @@
+{
+  "$schema": "./install-test-schema.json",
+  "game": "CSharp",
+  "stopPatterns": [
+    "(^|/)fomod(/|$)"
+  ],
+  "testCases": [
+    {
+      "name": "C# Script - Generate file",
+      "mod": "C# Script Test Case",
+      "archiveFile": "CSharpTestCase.zip",
+      "pluginPath": "Data",
+      "appVersion": "1.0.0",
+      "gameVersion": "1.0.0",
+      "extenderVersion": "1.0.0",
+      "installedPlugins": [],
+      "validate": true,
+      "installerType": "CSharpScript",
+      "expectedMessage": "Installation successful",
+      "expectedInstructions": [
+        { "type": "generatefile", "destination": "dummy.esp", "data": {"type": "Buffer", "data": "YWJj"} }
+      ]
+    }
+  ]
+}

@@ -21,8 +21,8 @@ using TestClass = IEnumerable<InstallData>;
 
 public sealed partial class InstallTests : BaseTests
 {
-        [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvStdcall)])]
-    private static unsafe partial return_value_void* set_file_system_callbacks(
+    [LibraryImport(DllPath), UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe partial int set_file_system_callbacks(
         param_ptr* p_owner,
         // FileSystem Delegates
         delegate* unmanaged[Cdecl]<param_ptr*, param_string*, param_int, param_int, return_value_data*> p_read_file_content,
@@ -81,10 +81,11 @@ public sealed partial class InstallTests : BaseTests
         var wrapper = new ModInstallerWrapper(data);
         var handle = GCHandle.ToIntPtr(GCHandle.Alloc(wrapper, GCHandleType.Normal));
 
-        GetResult(set_file_system_callbacks((param_ptr*) handle.ToPointer(),
+        var fsResult = set_file_system_callbacks((param_ptr*) handle.ToPointer(),
             p_read_file_content: &ModInstallerWrapper.ReadFileContent,
             p_read_directory_file_list: &ModInstallerWrapper.ReadDirectoryFileList,
-            p_read_directory_list: &ModInstallerWrapper.ReadDirectoryList));
+            p_read_directory_list: &ModInstallerWrapper.ReadDirectoryList);
+        if (fsResult != 0) throw new Exception($"set_file_system_callbacks failed with code {fsResult}");
         
         var ptr = GetResult(create_handler((param_ptr*) handle.ToPointer(),
             p_plugins_get_all: &ModInstallerWrapper.PluginsGetAll,
@@ -154,7 +155,7 @@ public sealed partial class InstallTests : BaseTests
 
             result.Should().NotBeNull();
             result.Instructions.Order().Should().BeEquivalentTo(data.Instructions.Order());
-            result.Message.Order().Should().BeEquivalentTo(result.Message);
+            result.Message.Order().Should().BeEquivalentTo(data.Message);
         }
 
         LibraryAliveCount().Should().Be(0);

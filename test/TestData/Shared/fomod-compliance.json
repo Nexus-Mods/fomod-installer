@@ -1,0 +1,38 @@
+{
+  "$schema": "./install-test-schema.json",
+  "game": "FOMOD",
+  "stopPatterns": [
+    "(^|/)fomod(/|$)"
+  ],
+  "testCases": [
+    {
+      "name": "Compliance - Unattended mode",
+      "mod": "FOMOD Compliance Tests",
+      "archiveFile": "FomodComplianceTests.zip",
+      "pluginPath": "Data",
+      "appVersion": "1.0.0",
+      "gameVersion": "1.0.0",
+      "extenderVersion": "1.0.0",
+      "installedPlugins": [],
+      "validate": true,
+      "expectedMessage": "Installation successful",
+      "expectedInstructions": [
+        { "type": "copy", "source": "conditionals\\test_conditionals_ignore_name.txt", "destination": "test_conditionals_ignore_name.txt", "priority": 1000000000 },
+        { "type": "copy", "source": "conditionals\\test_conditionals_ignore_priority.txt", "destination": "test_conditionals_ignore_priority.txt", "priority": 1000000000 },
+        { "type": "copy", "source": "conditionals\\test_conditionals_ignore_required_priority.txt", "destination": "test_conditionals_ignore_required_priority.txt", "priority": 1000000000 },
+        { "type": "copy", "source": "g1p1_alwayson\\test_pluginorder.txt", "destination": "test_pluginorder.txt", "priority": 0 },
+        { "type": "copy", "source": "g1p1_alwayson\\test_priority.txt", "destination": "test_priority_over_alwaysinstall.txt", "priority": 5 },
+        { "type": "copy", "source": "g1p1_alwayson\\test_priority.txt", "destination": "test_priority.txt", "priority": 5 },
+        { "type": "copy", "source": "g1p1_alwayson\\test_steps_ignore_required_priority.txt", "destination": "test_steps_ignore_required_priority.txt", "priority": 0 },
+        { "type": "copy", "source": "g2p1_alwayson\\test_grouporder.txt", "destination": "test_grouporder.txt", "priority": 0 },
+        { "type": "copy", "source": "g3p1_notusable\\test_alwaysinstall.txt", "destination": "test_alwaysinstall.txt", "priority": 5 },
+        { "type": "copy", "source": "g4p1_leavedisabled\\test_installifusable.txt", "destination": "test_installifusable.txt", "priority": 3 },
+        { "type": "copy", "source": "g6p1_selectall\\test_required1.txt", "destination": "test_required1.txt", "priority": 5 },
+        { "type": "copy", "source": "g6p2_selectall\\test_required2.txt", "destination": "test_required2.txt", "priority": 0 },
+        { "type": "copy", "source": "shared\\folder_aaa\\test_filebeforefolder.txt", "destination": "test_filebeforefolder.txt", "priority": 0 },
+        { "type": "copy", "source": "shared\\folder_zzz\\test_alphabetical.txt", "destination": "test_alphabetical.txt", "priority": 0 },
+        { "type": "enableallplugins", "priority": 0 }
+      ]
+    }
+  ]
+}
