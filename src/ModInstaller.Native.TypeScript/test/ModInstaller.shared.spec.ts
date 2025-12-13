@@ -214,11 +214,6 @@ async function runTestCase(t: any, testCase: TestCase): Promise<void> {
 // Generate tests from shared JSON data (supports both .zip and .7z)
 for (const testCase of getAllTestCases()) {
   test(`${testCase.game}: ${testCase.name}`, async (t) => {
-    try {
-      await runTestCase(t, testCase);
-    } catch (err) {
-      t.log('Test failed with error:', err);
-      throw err;
-    }
+    await runTestCase(t, testCase);
   });
 }

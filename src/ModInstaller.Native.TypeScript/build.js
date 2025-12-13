@@ -488,8 +488,8 @@ async function main() {
       }
       copyItem(`build/${configuration}/modinstaller.node`, "dist/build/modinstaller.node");
 
-      // Run AVA tests with verbose output
-      execCommand("npx ava --verbose");
+      // Run AVA tests
+      execCommand("npx ava");
       console.log("");
     }
 
