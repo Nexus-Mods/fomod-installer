@@ -10,11 +10,11 @@
  * - https://github.com/avajs/ava/blob/main/docs/08-common-pitfalls.md
  */
 
+// On Linux, add an exit handler that forces process exit after a short delay
+// This prevents Node.js from attempting to cleanly unload the Native AOT library
 if (process.platform === 'linux') {
-  const { registerCompletionHandler } = require('ava');
-
-  registerCompletionHandler(() => {
-    // Force immediate exit on Linux to avoid Native AOT unload segfault
+  process.on('beforeExit', () => {
+    // Force immediate exit to prevent Native AOT unload segfault
     process.exit(0);
   });
 }
