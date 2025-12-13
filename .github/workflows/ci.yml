@@ -54,4 +54,6 @@ jobs:
           yarn build-native
           yarn install
           yarn build
+        env:
+          GYP_MSVS_VERSION: 2022
 
