@@ -97,6 +97,11 @@ jobs:
         run: yarn install --ignore-scripts
         working-directory: src/ModInstaller.Native.TypeScript
 
+      - name: Fix 7zip permissions (Linux)
+        if: runner.os == 'Linux'
+        run: chmod +x node_modules/7zip-bin/linux/x64/7za
+        working-directory: src/ModInstaller.Native.TypeScript
+
       - name: Build and run tests
         run: yarn test
         working-directory: src/ModInstaller.Native.TypeScript
