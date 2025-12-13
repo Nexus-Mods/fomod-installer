@@ -31,7 +31,9 @@ jobs:
 
       - name: Restore dependencies (Linux)
         if: runner.os == 'Linux'
-        run: dotnet restore test/ModInstaller.Adaptor.Typed.Tests test/ModInstaller.Native.Tests
+        run: |
+          dotnet restore test/ModInstaller.Adaptor.Typed.Tests
+          dotnet restore test/ModInstaller.Native.Tests
 
       - name: Build (Windows)
         if: runner.os == 'Windows'
@@ -39,7 +41,9 @@ jobs:
 
       - name: Build (Linux)
         if: runner.os == 'Linux'
-        run: dotnet build test/ModInstaller.Adaptor.Typed.Tests test/ModInstaller.Native.Tests --no-restore -c Release
+        run: |
+          dotnet build test/ModInstaller.Adaptor.Typed.Tests --no-restore -c Release
+          dotnet build test/ModInstaller.Native.Tests --no-restore -c Release
 
       - name: Run Adaptor.Typed Tests
         run: dotnet test test/ModInstaller.Adaptor.Typed.Tests --no-build -c Release --verbosity normal
@@ -86,11 +90,11 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y build-essential
 
-      - name: Install dependencies
-        run: yarn install
+      - name: Install dependencies (ignore scripts to avoid premature gyp build)
+        run: yarn install --ignore-scripts
         working-directory: src/ModInstaller.Native.TypeScript
 
-      - name: Build native module and run tests
+      - name: Build C# native module and node addon, then run tests
         run: yarn test
         working-directory: src/ModInstaller.Native.TypeScript
 
