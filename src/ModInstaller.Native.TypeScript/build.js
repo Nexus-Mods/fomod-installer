@@ -323,7 +323,10 @@ async function main() {
       }
 
       // Copy native artifacts
+      console.log(`  Checking artifacts in: ${dotnetArtifacts}`);
       const artifactFiles = fs.readdirSync(dotnetArtifacts);
+      console.log(`  Found files: ${artifactFiles.join(", ")}`);
+
       const nativeFiles = artifactFiles.filter((file) =>
         file.startsWith("ModInstaller.Native."),
       );
@@ -334,9 +337,54 @@ async function main() {
         );
       }
 
+      console.log(`  Native files to copy: ${nativeFiles.join(", ")}`);
       nativeFiles.forEach((file) => {
         copyItem(path.join(dotnetArtifacts, file), file);
       });
+
+      // Also check for .lib file in the native subfolder (Windows AOT build)
+      const nativeSubfolder = path.join(dotnetArtifacts, "native");
+      console.log(`  Checking native subfolder: ${nativeSubfolder}`);
+      if (fs.existsSync(nativeSubfolder)) {
+        const nativeSubfolderFiles = fs.readdirSync(nativeSubfolder);
+        console.log(`  Native subfolder files: ${nativeSubfolderFiles.join(", ")}`);
+        nativeSubfolderFiles
+          .filter((file) => file.startsWith("ModInstaller.Native."))
+          .forEach((file) => {
+            const destPath = file;
+            if (!fs.existsSync(destPath)) {
+              copyItem(path.join(nativeSubfolder, file), destPath);
+            }
+          });
+      } else {
+        console.log(`  Native subfolder does not exist`);
+      }
+
+      // Fallback: Check the original build location if .lib is still missing
+      if (process.platform === "win32" && !fs.existsSync("ModInstaller.Native.lib")) {
+        const fallbackLibPath = path.resolve(nativeDir, `bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`);
+        console.log(`  Checking fallback lib path: ${fallbackLibPath}`);
+        if (fs.existsSync(fallbackLibPath)) {
+          copyItem(fallbackLibPath, "ModInstaller.Native.lib");
+        } else {
+          console.log(`  Fallback lib path does not exist`);
+          // List what's in the native dir bin folder for debugging
+          const binDir = path.resolve(nativeDir, "bin");
+          if (fs.existsSync(binDir)) {
+            console.log(`  Contents of ${binDir}:`);
+            const listDirRecursive = (dir, indent = "    ") => {
+              const items = fs.readdirSync(dir, { withFileTypes: true });
+              items.forEach(item => {
+                console.log(`${indent}${item.name}${item.isDirectory() ? "/" : ""}`);
+                if (item.isDirectory() && indent.length < 16) {
+                  listDirRecursive(path.join(dir, item.name), indent + "  ");
+                }
+              });
+            };
+            listDirRecursive(binDir);
+          }
+        }
+      }
 
       copyItem(
         path.join(nativeDir, "ModInstaller.Native.h"),
@@ -409,6 +457,25 @@ async function main() {
 
       // Build with webpack
       execCommand("npx webpack --config webpack.config.js");
+      console.log("");
+    }
+
+    // Run tests
+    if (type === "test") {
+      console.log("Running tests");
+
+      // Compile TypeScript tests
+      execCommand("npx tsc -p tsconfig.test.json");
+
+      // Copy native module to dist for tests
+      const buildDir = path.resolve("dist/build");
+      if (!fs.existsSync(buildDir)) {
+        fs.mkdirSync(buildDir, { recursive: true });
+      }
+      copyItem(`build/${configuration}/modinstaller.node`, "dist/build/modinstaller.node");
+
+      // Run AVA tests
+      execCommand("npx ava");
       console.log("");
     }
 

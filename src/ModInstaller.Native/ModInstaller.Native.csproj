@@ -69,9 +69,15 @@
   </ItemGroup>
   
   <Target Name="CopyNativeContent" AfterTargets="Publish">
+    <PropertyGroup>
+      <NativeOutputDir>$(MSBuildProjectDirectory)\bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\native\</NativeOutputDir>
+    </PropertyGroup>
     <ItemGroup>
-      <NativeOutputFiles Include="bin\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\native\**\*.*" />
+      <NativeOutputFiles Include="$(NativeOutputDir)**\*.*" />
     </ItemGroup>
+    <Message Importance="high" Text="CopyNativeContent: NativeOutputDir=$(NativeOutputDir)" />
+    <Message Importance="high" Text="CopyNativeContent: PublishDir=$(PublishDir)" />
+    <Message Importance="high" Text="CopyNativeContent: Files=@(NativeOutputFiles)" />
     <Copy SourceFiles="@(NativeOutputFiles)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" />
   </Target>
 

@@ -94,7 +94,7 @@ jobs:
         run: yarn install --ignore-scripts
         working-directory: src/ModInstaller.Native.TypeScript
 
-      - name: Build C# native module and node addon, then run tests
+      - name: Build and run tests
         run: yarn test
         working-directory: src/ModInstaller.Native.TypeScript
 
