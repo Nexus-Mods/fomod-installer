@@ -203,8 +203,13 @@ class ZipArchiveFileSystem {
   getFileList(): string[] {
     const result: string[] = [];
     for (const [_, entry] of this.entries) {
-      if (!entry.isDirectory) {
-        result.push(entry.name.replace(/\\/g, '/'));
+      // Include both files and directories
+      // Directories should end with '/' to match C# GetNormalizedName behavior
+      const name = entry.name.replace(/\\/g, '/');
+      if (entry.isDirectory) {
+        result.push(name.endsWith('/') ? name : name + '/');
+      } else {
+        result.push(name);
       }
     }
     return result;
@@ -266,6 +271,8 @@ class SevenZipArchiveFileSystem {
     for (const entry of entries) {
       const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
       if (entry.isDirectory()) {
+        // Include directories with trailing slash to match C# GetNormalizedName behavior
+        this.files.push(relativePath + '/');
         this.scanFiles(path.join(dir, entry.name), relativePath);
       } else {
         this.files.push(relativePath);
