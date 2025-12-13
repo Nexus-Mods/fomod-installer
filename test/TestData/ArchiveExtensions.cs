@@ -14,9 +14,18 @@ public static class ArchiveExtensions
     // Archive entries typically use "/" but Windows code expects "\"
     public static string? GetNormalizedName(this IArchiveEntry entry)
     {
-        var name = entry.IsDirectory ? $"{entry.Key}/" : entry.Key;
-        return name?.Replace("/", Path.DirectorySeparatorChar.ToString())
-                    .Replace("\\", Path.DirectorySeparatorChar.ToString());
+        var key = entry.Key;
+        if (key == null) return null;
+
+        // For directories, ensure trailing separator (but don't double it if already present)
+        if (entry.IsDirectory && !key.EndsWith("/") && !key.EndsWith("\\"))
+        {
+            key += "/";
+        }
+
+        // Normalize all separators to platform-specific
+        return key.Replace("/", Path.DirectorySeparatorChar.ToString())
+                  .Replace("\\", Path.DirectorySeparatorChar.ToString());
     }
 
     public static List<Instruction> Order(this IEnumerable<Instruction> instructions)

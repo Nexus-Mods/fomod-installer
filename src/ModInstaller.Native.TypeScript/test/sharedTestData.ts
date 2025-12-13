@@ -337,9 +337,14 @@ export async function preloadArchive(archiveFile: string, game: string): Promise
     }
   }
 
-  // Convert to backslash-separated paths for the native library
-  // This matches C# GetNormalizedName() which does: entry.Key?.Replace("/", "\\")
-  const files = rawFiles.map(f => f.replace(/\//g, '\\'));
+  // Convert to platform-specific path separators for the native library
+  // This matches C# GetNormalizedName() which uses Path.DirectorySeparatorChar
+  // On Windows: forward slashes -> backslashes
+  // On Linux: keep forward slashes (Path.DirectorySeparatorChar is '/')
+  const isWindows = process.platform === 'win32';
+  const files = isWindows
+    ? rawFiles.map(f => f.replace(/\//g, '\\'))
+    : rawFiles; // Keep forward slashes on Linux
 
   return {
     files,
