@@ -59,27 +59,24 @@ namespace Utils
         public static string NormalizePath(string path, bool dirTerminate = false, bool alternateSeparators = false, bool toLower = true)
         {
             string temp = string.Empty;
+            char targetSep = alternateSeparators ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar;
 
-            if (alternateSeparators)
-            {
-                temp = path
-                    .Replace(Path.DirectorySeparatorChar.ToString() + Path.DirectorySeparatorChar.ToString(), Path.DirectorySeparatorChar.ToString())
-                    .Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                    .Trim(Path.AltDirectorySeparatorChar);
-            }
-            else
-            {
-                temp = path
-                    .Replace(Path.AltDirectorySeparatorChar.ToString() + Path.AltDirectorySeparatorChar.ToString(), Path.AltDirectorySeparatorChar.ToString())
-                    .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
-                    .Trim(Path.DirectorySeparatorChar);
-            }
+            // Always normalize both forward and back slashes to the target separator
+            // This is needed because on Linux, AltDirectorySeparatorChar is also '/',
+            // so backslashes from FOMOD XML wouldn't be converted otherwise
+            temp = path
+                .Replace("\\\\", "\\")  // Collapse double backslashes first
+                .Replace("//", "/")     // Collapse double forward slashes
+                .Replace('\\', targetSep)
+                .Replace('/', targetSep)
+                .Trim(targetSep);
+
             if (toLower)
                 temp = temp.ToLowerInvariant();
 
             if (dirTerminate && (temp.Length > 0))
             {
-                temp += (alternateSeparators ? Path.AltDirectorySeparatorChar : Path.DirectorySeparatorChar);
+                temp += targetSep;
             }
 
             return temp;
