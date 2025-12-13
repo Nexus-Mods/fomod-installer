@@ -362,12 +362,26 @@ async function main() {
 
       // Fallback: Check the original build location if .lib is still missing
       if (process.platform === "win32" && !fs.existsSync("ModInstaller.Native.lib")) {
-        const fallbackLibPath = path.resolve(nativeDir, `bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`);
-        console.log(`  Checking fallback lib path: ${fallbackLibPath}`);
-        if (fs.existsSync(fallbackLibPath)) {
-          copyItem(fallbackLibPath, "ModInstaller.Native.lib");
-        } else {
-          console.log(`  Fallback lib path does not exist`);
+        // Try multiple possible paths (MSBuild uses different output structures locally vs CI)
+        const possibleLibPaths = [
+          // Standard path: bin/Release/net9.0/win-x64/native/
+          path.resolve(nativeDir, `bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`),
+          // CI path with platform folder: bin/x64/Release/net9.0/win-x64/native/
+          path.resolve(nativeDir, `bin/x64/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`),
+        ];
+
+        let foundLib = false;
+        for (const libPath of possibleLibPaths) {
+          console.log(`  Checking lib path: ${libPath}`);
+          if (fs.existsSync(libPath)) {
+            copyItem(libPath, "ModInstaller.Native.lib");
+            foundLib = true;
+            break;
+          }
+        }
+
+        if (!foundLib) {
+          console.log(`  .lib file not found in any expected location`);
           // List what's in the native dir bin folder for debugging
           const binDir = path.resolve(nativeDir, "bin");
           if (fs.existsSync(binDir)) {
