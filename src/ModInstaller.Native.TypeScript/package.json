@@ -59,9 +59,6 @@
     "timeout": "60s",
     "files": [
       "dist/test/**/*.spec.js"
-    ],
-    "require": [
-      "./test/ava-completion-handler.js"
     ]
   }
 }
