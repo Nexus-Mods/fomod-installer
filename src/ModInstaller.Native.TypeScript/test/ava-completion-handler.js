@@ -11,9 +11,9 @@
  */
 
 if (process.platform === 'linux') {
-  const ava = require('ava');
+  const { registerCompletionHandler } = require('ava');
 
-  ava.registerCompletionHandler(() => {
+  registerCompletionHandler(() => {
     // Force immediate exit on Linux to avoid Native AOT unload segfault
     process.exit(0);
   });
