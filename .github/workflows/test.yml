@@ -25,16 +25,27 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Restore dependencies
+      - name: Restore dependencies (Windows)
+        if: runner.os == 'Windows'
         run: dotnet restore
 
-      - name: Build
+      - name: Restore dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: dotnet restore test/ModInstaller.Adaptor.Typed.Tests test/ModInstaller.Native.Tests
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
         run: dotnet build --no-restore -c Release
+
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        run: dotnet build test/ModInstaller.Adaptor.Typed.Tests test/ModInstaller.Native.Tests --no-restore -c Release
 
       - name: Run Adaptor.Typed Tests
         run: dotnet test test/ModInstaller.Adaptor.Typed.Tests --no-build -c Release --verbosity normal
 
-      - name: Run Adaptor.Dynamic Tests
+      - name: Run Adaptor.Dynamic Tests (Windows only)
+        if: runner.os == 'Windows'
         run: dotnet test test/ModInstaller.Adaptor.Dynamic.Tests --no-build -c Release --verbosity normal
 
       - name: Run Native Tests
