@@ -3,15 +3,20 @@
 using SharpCompress.Archives;
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace TestData;
 
 public static class ArchiveExtensions
 {
+    // Normalize archive paths to use platform-specific path separators
+    // Archive entries typically use "/" but Windows code expects "\"
     public static string? GetNormalizedName(this IArchiveEntry entry)
     {
-        return (entry.IsDirectory ? $"{entry.Key}/" : entry.Key)?.Replace("/", "\\");
+        var name = entry.IsDirectory ? $"{entry.Key}/" : entry.Key;
+        return name?.Replace("/", Path.DirectorySeparatorChar.ToString())
+                    .Replace("\\", Path.DirectorySeparatorChar.ToString());
     }
 
     public static List<Instruction> Order(this IEnumerable<Instruction> instructions)

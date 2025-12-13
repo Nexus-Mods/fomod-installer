@@ -161,6 +161,17 @@ public static class JsonTestDataLoader
     }
 
     /// <summary>
+    /// Normalizes a path to use the platform-specific separator.
+    /// JSON test data uses Windows-style backslashes, but Linux expects forward slashes.
+    /// </summary>
+    private static string? NormalizePath(string? path)
+    {
+        if (path == null) return null;
+        return path.Replace("/", Path.DirectorySeparatorChar.ToString())
+                   .Replace("\\", Path.DirectorySeparatorChar.ToString());
+    }
+
+    /// <summary>
     /// Converts a JsonTestCase to InstallData for use in tests.
     /// </summary>
     public static InstallData ToInstallData(JsonTestCase testCase, string game, List<string> stopPatterns)
@@ -191,8 +202,8 @@ public static class JsonTestDataLoader
             Instructions = testCase.ExpectedInstructions.Select(i => new InstallInstruction
             {
                 type = i.Type,
-                source = i.Source,
-                destination = i.Destination,
+                source = NormalizePath(i.Source),
+                destination = NormalizePath(i.Destination),
                 section = i.Section,
                 key = i.Key,
                 value = i.Value,

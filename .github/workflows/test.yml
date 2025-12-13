@@ -45,6 +45,9 @@ jobs:
           dotnet build test/ModInstaller.Adaptor.Typed.Tests --no-restore -c Release
           dotnet build test/ModInstaller.Native.Tests --no-restore -c Release
 
+      - name: Publish Native Module
+        run: dotnet publish src/ModInstaller.Native -c Release
+
       - name: Run Adaptor.Typed Tests
         run: dotnet test test/ModInstaller.Adaptor.Typed.Tests --no-build -c Release --verbosity normal
 

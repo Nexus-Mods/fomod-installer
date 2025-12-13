@@ -8,6 +8,15 @@
     <RootNamespace>ModInstaller.Native.Tests</RootNamespace>
   </PropertyGroup>
 
+  <!-- Define WINDOWS constant for Windows builds -->
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  </PropertyGroup>
+  <!-- Define WINDOWS constant for Windows builds -->
+  <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Linux'))">
+    <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="BUTR.NativeAOT.Shared.Source" Version="1.0.99" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <PackageReference Include="FluentAssertions" Version="7.2.0" />
