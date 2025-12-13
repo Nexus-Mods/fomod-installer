@@ -2,9 +2,9 @@ name: Tests
 
 on:
   push:
-    branches: [master, tests]
+    branches: [master]
   pull_request:
-    branches: [master, tests]
+    branches: [master]
   workflow_dispatch:
 
 jobs:
@@ -91,7 +91,7 @@ jobs:
 
       - name: Install build tools (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y build-essential
+        run: sudo apt-get update && sudo apt-get install -y build-essential p7zip-full
 
       - name: Install dependencies (ignore scripts to avoid premature gyp build)
         run: yarn install --ignore-scripts
