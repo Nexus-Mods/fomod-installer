@@ -107,8 +107,16 @@ jobs:
         working-directory: src/ModInstaller.Native.TypeScript
 
   js-ipc-tests:
-    name: JS IPC Tests
-    runs-on: windows-latest
+    name: JS IPC Tests (${{ matrix.runtime }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            runtime: dotnet
+          - os: ubuntu-latest
+            runtime: mono
 
     steps:
       - name: Checkout repository
@@ -120,9 +128,16 @@ jobs:
           node-version: '22'
 
       - name: Setup .NET
+        if: matrix.runtime == 'dotnet'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
+
+      - name: Setup Mono
+        if: matrix.runtime == 'mono'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mono-complete
 
       - name: Install dependencies
         run: yarn install
