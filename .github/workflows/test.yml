@@ -60,20 +60,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
-      - name: Setup Python (for node-gyp)
-        uses: actions/setup-python@v5
+      - name: Read Node.js version from package.json
+        id: node-version
+        shell: pwsh
+        run: |
+          $packageJson = Get-Content src/ModInstaller.Native.TypeScript/package.json | ConvertFrom-Json
+          $nodeVersion = $packageJson.engines.node
+          echo "NODE_VERSION=$nodeVersion" >> $env:GITHUB_OUTPUT
+          echo "Using Node.js version: $nodeVersion"
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
         with:
-          python-version: '3.12'
+          node-version: ${{ steps.node-version.outputs.NODE_VERSION }}
 
       - name: Setup MSVC (Windows)
         if: runner.os == 'Windows'
