@@ -16,6 +16,13 @@ using namespace ModInstaller::Native;
 
 namespace Bindings::FileSystem
 {
+    // Helper to get manager from owner pointer
+    inline auto GetManager(param_ptr *p_owner)
+    {
+        return const_cast<Bindings::FileSystem::FileSystem *>(
+            static_cast<const Bindings::FileSystem::FileSystem *>(p_owner));
+    }
+
     static return_value_data *readFileContent(param_ptr *p_owner,
                                               param_string *p_file_path,
                                               param_int v_offset,
@@ -23,9 +30,10 @@ namespace Bindings::FileSystem
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        try
+
+        return CallbackWithExceptionHandling<return_value_data>(logger, [&]()
         {
-            auto manager = const_cast<Bindings::FileSystem::FileSystem *>(static_cast<const Bindings::FileSystem::FileSystem *>(p_owner));
+            auto manager = GetManager(p_owner);
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
@@ -38,16 +46,12 @@ namespace Bindings::FileSystem
             }
             else
             {
-                // The C# async function called from a non-main JS thread
-                // So we need to use the ThreadSafeFunction to marshal the call to the main JS thread
-                // and wait for the result synchronously
-
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
                 return_value_data *result = nullptr;
 
-                const auto callback = [functionName, manager, p_file_path, v_offset, v_length, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, p_file_path, v_offset, v_length, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
@@ -66,7 +70,7 @@ namespace Bindings::FileSystem
                     {
                         callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_data{Copy(GetErrorMessage(e)), nullptr, 0});
+                        result = CreateErrorResult<return_value_data>(GetErrorMessage(e));
                         completed = true;
                         cv.notify_one();
                     }
@@ -76,7 +80,7 @@ namespace Bindings::FileSystem
                 if (status != napi_ok)
                 {
                     logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_data{Copy(u"Failed to queue async call"), nullptr, 0});
+                    return CreateErrorResult<return_value_data>(u"Failed to queue async call");
                 }
 
                 std::unique_lock<std::mutex> lock(mtx);
@@ -86,23 +90,7 @@ namespace Bindings::FileSystem
                 logger.Log("Blocking call completed");
                 return result;
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            return Create(return_value_data{Copy(GetErrorMessage(e)), nullptr, 0});
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_data{Copy(conv.from_bytes(e.what())), nullptr, 0});
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            return Create(return_value_data{Copy(u"Unknown exception"), nullptr, 0});
-        }
+        });
     }
 
     static return_value_json *readDirectoryFileList(param_ptr *p_owner,
@@ -112,9 +100,10 @@ namespace Bindings::FileSystem
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        try
+
+        return CallbackWithExceptionHandling<return_value_json>(logger, [&]()
         {
-            auto manager = const_cast<Bindings::FileSystem::FileSystem *>(static_cast<const Bindings::FileSystem::FileSystem *>(p_owner));
+            auto manager = GetManager(p_owner);
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
@@ -127,16 +116,12 @@ namespace Bindings::FileSystem
             }
             else
             {
-                // The C# async function called from a non-main JS thread
-                // So we need to use the ThreadSafeFunction to marshal the call to the main JS thread
-                // and wait for the result synchronously
-
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
                 return_value_json *result = nullptr;
 
-                const auto callback = [functionName, manager, p_directory_path, p_pattern, search_type, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, p_directory_path, p_pattern, search_type, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
@@ -155,7 +140,7 @@ namespace Bindings::FileSystem
                     {
                         callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
+                        result = CreateErrorResult<return_value_json>(GetErrorMessage(e));
                         completed = true;
                         cv.notify_one();
                     }
@@ -165,7 +150,7 @@ namespace Bindings::FileSystem
                 if (status != napi_ok)
                 {
                     logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_json{Copy(u"Failed to queue async call"), nullptr});
+                    return CreateErrorResult<return_value_json>(u"Failed to queue async call");
                 }
 
                 std::unique_lock<std::mutex> lock(mtx);
@@ -175,23 +160,7 @@ namespace Bindings::FileSystem
                 logger.Log("Blocking call completed");
                 return result;
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            return Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            return Create(return_value_json{Copy(u"Unknown exception"), nullptr});
-        }
+        });
     }
 
     static return_value_json *readDirectoryList(param_ptr *p_owner,
@@ -199,9 +168,10 @@ namespace Bindings::FileSystem
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        try
+
+        return CallbackWithExceptionHandling<return_value_json>(logger, [&]()
         {
-            auto manager = const_cast<Bindings::FileSystem::FileSystem *>(static_cast<const Bindings::FileSystem::FileSystem *>(p_owner));
+            auto manager = GetManager(p_owner);
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
@@ -212,16 +182,12 @@ namespace Bindings::FileSystem
             }
             else
             {
-                // The C# async function called from a non-main JS thread
-                // So we need to use the ThreadSafeFunction to marshal the call to the main JS thread
-                // and wait for the result synchronously
-
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
                 return_value_json *result = nullptr;
 
-                const auto callback = [functionName, manager, p_directory_path, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, p_directory_path, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
@@ -238,7 +204,7 @@ namespace Bindings::FileSystem
                     {
                         callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
+                        result = CreateErrorResult<return_value_json>(GetErrorMessage(e));
                         completed = true;
                         cv.notify_one();
                     }
@@ -248,7 +214,7 @@ namespace Bindings::FileSystem
                 if (status != napi_ok)
                 {
                     logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_json{Copy(u"Failed to queue async call"), nullptr});
+                    return CreateErrorResult<return_value_json>(u"Failed to queue async call");
                 }
 
                 std::unique_lock<std::mutex> lock(mtx);
@@ -258,23 +224,7 @@ namespace Bindings::FileSystem
                 logger.Log("Blocking call completed");
                 return result;
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            return Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            return Create(return_value_json{Copy(u"Unknown exception"), nullptr});
-        }
+        });
     }
 }
 #endif

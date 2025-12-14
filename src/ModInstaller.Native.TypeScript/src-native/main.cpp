@@ -2,7 +2,7 @@
 
 #include "Platform.hpp"
 #include <napi.h>
-#include "Bindings.Common.hpp"
+#include "Bindings.Common.Implementation.hpp"
 #include "Bindings.Logging.Implementation.hpp"
 #include "Bindings.ModInstaller.Implementation.hpp"
 #include "Bindings.FileSystem.Implementation.hpp"

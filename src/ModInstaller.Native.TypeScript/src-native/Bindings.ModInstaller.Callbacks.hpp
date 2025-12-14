@@ -16,14 +16,22 @@ using namespace ModInstaller::Native;
 
 namespace Bindings::ModInstaller
 {
+    // Helper to get manager from owner pointer
+    inline auto GetManager(param_ptr *p_owner)
+    {
+        return const_cast<Bindings::ModInstaller::ModInstaller *>(
+            static_cast<const Bindings::ModInstaller::ModInstaller *>(p_owner));
+    }
+
     static return_value_json *pluginsGetAll(param_ptr *p_owner,
                                             param_bool active_only) noexcept
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName, active_only);
-        try
+
+        return CallbackWithExceptionHandling<return_value_json>(logger, [&]()
         {
-            auto manager = const_cast<Bindings::ModInstaller::ModInstaller *>(static_cast<const Bindings::ModInstaller::ModInstaller *>(p_owner));
+            auto manager = GetManager(p_owner);
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
@@ -36,22 +44,17 @@ namespace Bindings::ModInstaller
             }
             else
             {
-                // The C# async function called from a non-main JS thread
-                // So we need to use the ThreadSafeFunction to marshal the call to the main JS thread
-                // and wait for the result synchronously
-
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
                 return_value_json *result = nullptr;
 
-                const auto callback = [functionName, manager, active_only, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, active_only, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
                     {
                         const auto activeOnly = Boolean::New(env, active_only != 0);
-
                         const auto jsResult = jsCallback({activeOnly});
 
                         std::lock_guard<std::mutex> lock(mtx);
@@ -63,7 +66,7 @@ namespace Bindings::ModInstaller
                     {
                         callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
+                        result = CreateErrorResult<return_value_json>(GetErrorMessage(e));
                         completed = true;
                         cv.notify_one();
                     }
@@ -73,7 +76,7 @@ namespace Bindings::ModInstaller
                 if (status != napi_ok)
                 {
                     logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_json{Copy(u"Failed to queue async call"), nullptr});
+                    return CreateErrorResult<return_value_json>(u"Failed to queue async call");
                 }
 
                 std::unique_lock<std::mutex> lock(mtx);
@@ -83,32 +86,17 @@ namespace Bindings::ModInstaller
                 logger.Log("Blocking call completed");
                 return result;
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            return Create(return_value_json{Copy(GetErrorMessage(e)), nullptr});
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_json{Copy(conv.from_bytes(e.what())), nullptr});
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            return Create(return_value_json{Copy(u"Unknown exception"), nullptr});
-        }
+        });
     }
 
     static return_value_string *contextGetAppVersion(param_ptr *p_owner) noexcept
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        try
+
+        return CallbackWithExceptionHandling<return_value_string>(logger, [&]()
         {
-            auto manager = const_cast<Bindings::ModInstaller::ModInstaller *>(static_cast<const Bindings::ModInstaller::ModInstaller *>(p_owner));
+            auto manager = GetManager(p_owner);
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
@@ -118,16 +106,12 @@ namespace Bindings::ModInstaller
             }
             else
             {
-                // The C# async function called from a non-main JS thread
-                // So we need to use the ThreadSafeFunction to marshal the call to the main JS thread
-                // and wait for the result synchronously
-
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
                 return_value_string *result = nullptr;
 
-                const auto callback = [functionName, manager, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
@@ -143,7 +127,7 @@ namespace Bindings::ModInstaller
                     {
                         callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
+                        result = CreateErrorResult<return_value_string>(GetErrorMessage(e));
                         completed = true;
                         cv.notify_one();
                     }
@@ -153,7 +137,7 @@ namespace Bindings::ModInstaller
                 if (status != napi_ok)
                 {
                     logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_string{Copy(u"Failed to queue async call"), nullptr});
+                    return CreateErrorResult<return_value_string>(u"Failed to queue async call");
                 }
 
                 std::unique_lock<std::mutex> lock(mtx);
@@ -163,32 +147,17 @@ namespace Bindings::ModInstaller
                 logger.Log("Blocking call completed");
                 return result;
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            return Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            return Create(return_value_string{Copy(u"Unknown exception"), nullptr});
-        }
+        });
     }
 
     static return_value_string *contextGetCurrentGameVersion(param_ptr *p_owner) noexcept
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        try
+
+        return CallbackWithExceptionHandling<return_value_string>(logger, [&]()
         {
-            auto manager = const_cast<Bindings::ModInstaller::ModInstaller *>(static_cast<const Bindings::ModInstaller::ModInstaller *>(p_owner));
+            auto manager = GetManager(p_owner);
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
@@ -198,16 +167,12 @@ namespace Bindings::ModInstaller
             }
             else
             {
-                // The C# async function called from a non-main JS thread
-                // So we need to use the ThreadSafeFunction to marshal the call to the main JS thread
-                // and wait for the result synchronously
-
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
                 return_value_string *result = nullptr;
 
-                const auto callback = [functionName, manager, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
@@ -223,7 +188,7 @@ namespace Bindings::ModInstaller
                     {
                         callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
+                        result = CreateErrorResult<return_value_string>(GetErrorMessage(e));
                         completed = true;
                         cv.notify_one();
                     }
@@ -233,7 +198,7 @@ namespace Bindings::ModInstaller
                 if (status != napi_ok)
                 {
                     logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_string{Copy(u"Failed to queue async call"), nullptr});
+                    return CreateErrorResult<return_value_string>(u"Failed to queue async call");
                 }
 
                 std::unique_lock<std::mutex> lock(mtx);
@@ -243,23 +208,7 @@ namespace Bindings::ModInstaller
                 logger.Log("Blocking call completed");
                 return result;
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            return Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            return Create(return_value_string{Copy(u"Unknown exception"), nullptr});
-        }
+        });
     }
 
     static return_value_string *contextGetExtenderVersion(param_ptr *p_owner,
@@ -267,9 +216,10 @@ namespace Bindings::ModInstaller
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        try
+
+        return CallbackWithExceptionHandling<return_value_string>(logger, [&]()
         {
-            auto manager = const_cast<Bindings::ModInstaller::ModInstaller *>(static_cast<const Bindings::ModInstaller::ModInstaller *>(p_owner));
+            auto manager = GetManager(p_owner);
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
@@ -280,16 +230,12 @@ namespace Bindings::ModInstaller
             }
             else
             {
-                // The C# async function called from a non-main JS thread
-                // So we need to use the ThreadSafeFunction to marshal the call to the main JS thread
-                // and wait for the result synchronously
-
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
                 return_value_string *result = nullptr;
 
-                const auto callback = [functionName, manager, p_extender, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, p_extender, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
@@ -306,7 +252,7 @@ namespace Bindings::ModInstaller
                     {
                         callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
+                        result = CreateErrorResult<return_value_string>(GetErrorMessage(e));
                         completed = true;
                         cv.notify_one();
                     }
@@ -316,7 +262,7 @@ namespace Bindings::ModInstaller
                 if (status != napi_ok)
                 {
                     logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_string{Copy(u"Failed to queue async call"), nullptr});
+                    return CreateErrorResult<return_value_string>(u"Failed to queue async call");
                 }
 
                 std::unique_lock<std::mutex> lock(mtx);
@@ -326,23 +272,7 @@ namespace Bindings::ModInstaller
                 logger.Log("Blocking call completed");
                 return result;
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            return Create(return_value_string{Copy(GetErrorMessage(e)), nullptr});
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_string{Copy(conv.from_bytes(e.what())), nullptr});
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            return Create(return_value_string{Copy(u"Unknown exception"), nullptr});
-        }
+        });
     }
 
     static return_value_void *uiStartDialog(param_ptr *p_owner,
@@ -355,9 +285,10 @@ namespace Bindings::ModInstaller
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        try
+
+        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
         {
-            auto manager = const_cast<Bindings::ModInstaller::ModInstaller *>(static_cast<const Bindings::ModInstaller::ModInstaller *>(p_owner));
+            auto manager = GetManager(p_owner);
 
             // Define callback lambdas that will be used by the JavaScript functions
             const auto selectCallback = [functionName, p_callback_handler, p_select_callback](const CallbackInfo &info)
@@ -377,7 +308,7 @@ namespace Bindings::ModInstaller
                 {
                     selectLogger.LogException(e);
                     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-                    auto errorResult = Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+                    auto errorResult = CreateErrorResult<return_value_void>(conv.from_bytes(e.what()));
                     p_select_callback(p_callback_handler, 0, 0, nullptr, errorResult);
                 }
             };
@@ -396,7 +327,7 @@ namespace Bindings::ModInstaller
                 {
                     contLogger.LogException(e);
                     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-                    auto errorResult = Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+                    auto errorResult = CreateErrorResult<return_value_void>(conv.from_bytes(e.what()));
                     p_const_callback(p_callback_handler, 0, 0, errorResult);
                 }
             };
@@ -412,7 +343,7 @@ namespace Bindings::ModInstaller
                 {
                     cancelLogger.LogException(e);
                     std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-                    auto errorResult = Create(return_value_void{Copy(conv.from_bytes(e.what()))});
+                    auto errorResult = CreateErrorResult<return_value_void>(conv.from_bytes(e.what()));
                     p_cancel_callback(p_callback_handler, errorResult);
                 }
             };
@@ -431,16 +362,12 @@ namespace Bindings::ModInstaller
             }
             else
             {
-                // The C# async function called from a non-main JS thread
-                // So we need to use the ThreadSafeFunction to marshal the call to the main JS thread
-                // and wait for the result synchronously
-
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
                 return_value_void *result = nullptr;
 
-                const auto callback = [functionName, manager, p_module_name, p_image, selectCallback, constCallback, cancelCallback, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, p_module_name, p_image, selectCallback, constCallback, cancelCallback, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
@@ -462,7 +389,7 @@ namespace Bindings::ModInstaller
                     {
                         callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_void{Copy(GetErrorMessage(e))});
+                        result = CreateErrorResult<return_value_void>(GetErrorMessage(e));
                         completed = true;
                         cv.notify_one();
                     }
@@ -472,7 +399,7 @@ namespace Bindings::ModInstaller
                 if (status != napi_ok)
                 {
                     logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_void{Copy(u"Failed to queue async call")});
+                    return CreateErrorResult<return_value_void>(u"Failed to queue async call");
                 }
 
                 std::unique_lock<std::mutex> lock(mtx);
@@ -482,32 +409,17 @@ namespace Bindings::ModInstaller
                 logger.Log("Blocking call completed");
                 return result;
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            return Create(return_value_void{Copy(GetErrorMessage(e))});
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            return Create(return_value_void{Copy(u"Unknown exception")});
-        }
+        });
     }
 
     static return_value_void *uiEndDialog(param_ptr *p_owner) noexcept
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        try
+
+        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
         {
-            auto manager = const_cast<Bindings::ModInstaller::ModInstaller *>(static_cast<const Bindings::ModInstaller::ModInstaller *>(p_owner));
+            auto manager = GetManager(p_owner);
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
@@ -517,16 +429,12 @@ namespace Bindings::ModInstaller
             }
             else
             {
-                // The C# async function called from a non-main JS thread
-                // So we need to use the ThreadSafeFunction to marshal the call to the main JS thread
-                // and wait for the result synchronously
-
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
                 return_value_void *result = nullptr;
 
-                const auto callback = [functionName, manager, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
@@ -542,7 +450,7 @@ namespace Bindings::ModInstaller
                     {
                         callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_void{Copy(GetErrorMessage(e))});
+                        result = CreateErrorResult<return_value_void>(GetErrorMessage(e));
                         completed = true;
                         cv.notify_one();
                     }
@@ -552,7 +460,7 @@ namespace Bindings::ModInstaller
                 if (status != napi_ok)
                 {
                     logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_void{Copy(u"Failed to queue async call")});
+                    return CreateErrorResult<return_value_void>(u"Failed to queue async call");
                 }
 
                 std::unique_lock<std::mutex> lock(mtx);
@@ -562,23 +470,7 @@ namespace Bindings::ModInstaller
                 logger.Log("Blocking call completed");
                 return result;
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            return Create(return_value_void{Copy(GetErrorMessage(e))});
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            return Create(return_value_void{Copy(u"Unknown exception")});
-        }
+        });
     }
 
     static return_value_void *uiUpdateState(param_ptr *p_owner,
@@ -587,9 +479,10 @@ namespace Bindings::ModInstaller
     {
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
-        try
+
+        return CallbackWithExceptionHandling<return_value_void>(logger, [&]()
         {
-            auto manager = const_cast<Bindings::ModInstaller::ModInstaller *>(static_cast<const Bindings::ModInstaller::ModInstaller *>(p_owner));
+            auto manager = GetManager(p_owner);
 
             if (std::this_thread::get_id() == manager->MainThreadId)
             {
@@ -601,16 +494,12 @@ namespace Bindings::ModInstaller
             }
             else
             {
-                // The C# async function called from a non-main JS thread
-                // So we need to use the ThreadSafeFunction to marshal the call to the main JS thread
-                // and wait for the result synchronously
-
                 std::mutex mtx;
                 std::condition_variable cv;
                 bool completed = false;
                 return_value_void *result = nullptr;
 
-                const auto callback = [functionName, manager, p_install_steps, current_step, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
+                const auto callback = [functionName, p_install_steps, current_step, &result, &mtx, &cv, &completed](Napi::Env env, Napi::Function jsCallback)
                 {
                     LoggerScope callbackLogger(NAMEOFWITHCALLBACK(functionName, callback));
                     try
@@ -629,7 +518,7 @@ namespace Bindings::ModInstaller
                     {
                         callbackLogger.LogError(e);
                         std::lock_guard<std::mutex> lock(mtx);
-                        result = Create(return_value_void{Copy(GetErrorMessage(e))});
+                        result = CreateErrorResult<return_value_void>(GetErrorMessage(e));
                         completed = true;
                         cv.notify_one();
                     }
@@ -639,7 +528,7 @@ namespace Bindings::ModInstaller
                 if (status != napi_ok)
                 {
                     logger.Log("BlockingCall failed with status: " + std::to_string(status));
-                    return Create(return_value_void{Copy(u"Failed to queue async call")});
+                    return CreateErrorResult<return_value_void>(u"Failed to queue async call");
                 }
 
                 std::unique_lock<std::mutex> lock(mtx);
@@ -649,23 +538,7 @@ namespace Bindings::ModInstaller
                 logger.Log("Blocking call completed");
                 return result;
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            return Create(return_value_void{Copy(GetErrorMessage(e))});
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_void{Copy(conv.from_bytes(e.what()))});
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            return Create(return_value_void{Copy(u"Unknown exception")});
-        }
+        });
     }
 }
 #endif

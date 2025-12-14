@@ -3,7 +3,6 @@
 
 #include <napi.h>
 #include "ModInstaller.Native.h"
-#include "Logger.hpp"
 
 using namespace Napi;
 using namespace ModInstaller::Native;
@@ -13,6 +12,14 @@ namespace Bindings::ModInstaller
     class ModInstaller : public Napi::ObjectWrap<ModInstaller>
     {
     public:
+        FunctionReference FPluginsGetAll;
+        FunctionReference FContextGetAppVersion;
+        FunctionReference FContextGetCurrentGameVersion;
+        FunctionReference FContextGetExtenderVersion;
+        FunctionReference FUIStartDialog;
+        FunctionReference FUIEndDialog;
+        FunctionReference FUIUpdateState;
+        
         Napi::ThreadSafeFunction TSFN;
         Napi::ThreadSafeFunction TSFNPluginsGetAll;
         Napi::ThreadSafeFunction TSFNContextGetAppVersion;
@@ -21,14 +28,6 @@ namespace Bindings::ModInstaller
         Napi::ThreadSafeFunction TSFNUIStartDialog;
         Napi::ThreadSafeFunction TSFNUIEndDialog;
         Napi::ThreadSafeFunction TSFNUIUpdateState;
-
-        FunctionReference FPluginsGetAll;
-        FunctionReference FContextGetAppVersion;
-        FunctionReference FContextGetCurrentGameVersion;
-        FunctionReference FContextGetExtenderVersion;
-        FunctionReference FUIStartDialog;
-        FunctionReference FUIEndDialog;
-        FunctionReference FUIUpdateState;
 
         std::thread::id MainThreadId;
 

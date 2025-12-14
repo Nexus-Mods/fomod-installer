@@ -18,8 +18,7 @@ namespace Bindings::ModInstaller
     {
         LoggerScope logger(__FUNCTION__);
 
-        try
-        {
+        WithExceptionHandling(logger, [&]() {
             const auto length = info.Length();
             logger.Log("Length: " + std::to_string(length));
 
@@ -84,22 +83,7 @@ namespace Bindings::ModInstaller
                 logger.Log("Unexpected TSFNFunction call pattern: length=" + std::to_string(length) +
                            ", isPromise=" + (isPromise ? "true" : "false"));
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+        });
     }
 
     Object ModInstaller::Init(const Napi::Env env, Object exports)
@@ -137,7 +121,6 @@ namespace Bindings::ModInstaller
         LoggerScope logger(__FUNCTION__);
 
         const auto env = Env();
-        this->TSFN = Napi::ThreadSafeFunction::New(env, Napi::Function::New(env, TSFNFunction), "TSFN", 0, 1);
         this->FPluginsGetAll = Persistent(info[0].As<Function>());
         this->FContextGetAppVersion = Persistent(info[1].As<Function>());
         this->FContextGetCurrentGameVersion = Persistent(info[2].As<Function>());
@@ -147,6 +130,7 @@ namespace Bindings::ModInstaller
         this->FUIUpdateState = Persistent(info[6].As<Function>());
 
         // Initialize thread-safe function wrappers for synchronous callbacks
+        this->TSFN = Napi::ThreadSafeFunction::New(env, Napi::Function::New(env, TSFNFunction), "TSFN", 0, 1);
         this->TSFNPluginsGetAll = Napi::ThreadSafeFunction::New(env, this->FPluginsGetAll.Value(), "PluginsGetAll", 0, 1);
         this->TSFNContextGetAppVersion = Napi::ThreadSafeFunction::New(env, this->FContextGetAppVersion.Value(), "ContextGetAppVersion", 0, 1);
         this->TSFNContextGetCurrentGameVersion = Napi::ThreadSafeFunction::New(env, this->FContextGetCurrentGameVersion.Value(), "ContextGetCurrentGameVersion", 0, 1);
@@ -190,6 +174,7 @@ namespace Bindings::ModInstaller
         this->FUIStartDialog.Unref();
         this->FUIEndDialog.Unref();
         this->FUIUpdateState.Unref();
+        
         dispose_handler(this->_pInstance);
     }
 
@@ -198,8 +183,7 @@ namespace Bindings::ModInstaller
         const auto functionName = __FUNCTION__;
         LoggerScope logger(functionName);
 
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto files = JSONStringify(info[0].As<Object>());
             const auto stopPatterns = JSONStringify(info[1].As<Object>());
@@ -230,30 +214,14 @@ namespace Bindings::ModInstaller
                 cbData,
                 HandleJsonResultCallback);
             return ReturnAndHandleReject(env, result, deferred, tsfn);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+        });
     }
 
     Value ModInstaller::TestSupported(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
 
-        try
-        {
+        return WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
             const auto modArchiveFileList = JSONStringify(info[0].As<Object>());
             const auto allowedTypes = JSONStringify(info[1].As<Object>());
@@ -263,22 +231,7 @@ namespace Bindings::ModInstaller
 
             const auto result = test_supported(modArchiveFileListCopy.get(), allowedTypesCopy.get());
             return ThrowOrReturnJson(env, result);
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+        });
     }
 
     Napi::Object Init(const Napi::Env env, const Napi::Object exports)
