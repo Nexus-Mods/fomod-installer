@@ -40,16 +40,7 @@
                     "ExceptionHandling": 1,
                     "EnablePREfast": "true"
                 }
-            },
-            "msbuild_settings": {
-                "ClCompile": {
-                    "AdditionalOptions": [
-                        "/std:c++17"
-                    ]
-                }
-            },
-            "msvs_configuration_platform": "x64",
-            "msvs_toolset": "v143"
+            }
         }
     ]
 }
