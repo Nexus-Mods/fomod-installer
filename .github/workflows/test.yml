@@ -25,38 +25,28 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Restore dependencies (Windows)
-        if: runner.os == 'Windows'
-        run: dotnet restore
-
-      - name: Restore dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          dotnet restore test/ModInstaller.Adaptor.Typed.Tests
-          dotnet restore test/ModInstaller.Native.Tests
-
       - name: Build (Windows)
         if: runner.os == 'Windows'
-        run: dotnet build --no-restore -c Release
+        run: dotnet build -c Release
 
       - name: Build (Linux)
         if: runner.os == 'Linux'
         run: |
-          dotnet build test/ModInstaller.Adaptor.Typed.Tests --no-restore -c Release
-          dotnet build test/ModInstaller.Native.Tests --no-restore -c Release
+          dotnet build test/ModInstaller.Adaptor.Typed.Tests -c Release
+          dotnet build test/ModInstaller.Native.Tests -c Release
 
       - name: Publish Native Module
         run: dotnet publish src/ModInstaller.Native -c Release
 
       - name: Run Adaptor.Typed Tests
-        run: dotnet test test/ModInstaller.Adaptor.Typed.Tests --no-build -c Release --verbosity normal
+        run: dotnet test test/ModInstaller.Adaptor.Typed.Tests -c Release --verbosity normal
 
       - name: Run Adaptor.Dynamic Tests (Windows only)
         if: runner.os == 'Windows'
-        run: dotnet test test/ModInstaller.Adaptor.Dynamic.Tests --no-build -c Release --verbosity normal
+        run: dotnet test test/ModInstaller.Adaptor.Dynamic.Tests -c Release --verbosity normal
 
       - name: Run Native Tests
-        run: dotnet test test/ModInstaller.Native.Tests --no-build -c Release --verbosity normal
+        run: dotnet test test/ModInstaller.Native.Tests -c Release --verbosity normal
 
   js-native-tests:
     name: JS Native Tests (${{ matrix.os }})
@@ -128,7 +118,6 @@ jobs:
           node-version: '22'
 
       - name: Setup .NET
-        if: matrix.runtime == 'dotnet'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'

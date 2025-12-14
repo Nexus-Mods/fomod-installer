@@ -17,14 +17,28 @@ export class RegularProcessLauncher implements IProcessLauncher {
     args: string[],
     options: ProcessLaunchOptions
   ): Promise<ChildProcess> {
+    // On Linux, use Mono to run .exe files
+    let actualExePath = exePath;
+    let actualArgs = args;
+
+    if (process.platform !== 'win32' && exePath.toLowerCase().endsWith('.exe')) {
+      actualExePath = 'mono';
+      actualArgs = [exePath, ...args];
+
+      log('info', '[PROCESS] Using Mono to launch .exe on non-Windows platform', {
+        originalExePath: exePath,
+        monoPath: actualExePath
+      });
+    }
+
     log('info', '[PROCESS] Launching process with regular security', {
-      exePath,
-      args,
-      argsJoined: args.join(' '),
+      exePath: actualExePath,
+      args: actualArgs,
+      argsJoined: actualArgs.join(' '),
       cwd: options.cwd
     });
 
-    const process = spawn(exePath, args, options);
+    const process = spawn(actualExePath, actualArgs, options);
 
     log('info', '[PROCESS] Process launched successfully (regular security)', {
       pid: process.pid
