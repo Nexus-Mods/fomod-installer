@@ -59,6 +59,9 @@
     "timeout": "60s",
     "files": [
       "dist/test/**/*.spec.js"
+    ],
+    "require": [
+      "./test/_force-exit.js"
     ]
   }
 }
