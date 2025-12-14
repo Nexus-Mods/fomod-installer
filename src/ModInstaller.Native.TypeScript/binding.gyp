@@ -6,7 +6,8 @@
                 "src-native/main.cpp"
             ],
             "include_dirs": [
-                "<!@(node -p \"require('node-addon-api').include\")"
+                "<!@(node -p \"require('node-addon-api').include\")",
+                "<(module_root_dir)"
             ],
             "conditions": [
                 ["OS=='win'", {
