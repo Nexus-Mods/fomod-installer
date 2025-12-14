@@ -38,19 +38,19 @@ export class RegularProcessLauncher implements IProcessLauncher {
       cwd: options.cwd
     });
 
-    const process = spawn(actualExePath, actualArgs, options);
+    const childProcess = spawn(actualExePath, actualArgs, options);
 
     log('info', '[PROCESS] Process launched successfully (regular security)', {
-      pid: process.pid
+      pid: childProcess.pid
     });
 
     // Log stdout
-    if (process.stdout) {
-      process.stdout.on('data', (data: Buffer) => {
+    if (childProcess.stdout) {
+      childProcess.stdout.on('data', (data: Buffer) => {
         const output = data.toString().trim();
         if (output) {
           log('info', '[PROCESS] STDOUT', {
-            pid: process.pid,
+            pid: childProcess.pid,
             output: output
           });
         }
@@ -58,12 +58,12 @@ export class RegularProcessLauncher implements IProcessLauncher {
     }
 
     // Log stderr
-    if (process.stderr) {
-      process.stderr.on('data', (data: Buffer) => {
+    if (childProcess.stderr) {
+      childProcess.stderr.on('data', (data: Buffer) => {
         const output = data.toString().trim();
         if (output) {
           log('warn', '[PROCESS] STDERR', {
-            pid: process.pid,
+            pid: childProcess.pid,
             output: output
           });
         }
@@ -71,24 +71,24 @@ export class RegularProcessLauncher implements IProcessLauncher {
     }
 
     // Log process exit
-    process.on('exit', (code, signal) => {
+    childProcess.on('exit', (code, signal) => {
       log('info', '[PROCESS] Process exited', {
-        pid: process.pid,
+        pid: childProcess.pid,
         exitCode: code,
         signal: signal
       });
     });
 
     // Log process errors
-    process.on('error', (err) => {
+    childProcess.on('error', (err) => {
       log('error', '[PROCESS] Process error', {
-        pid: process.pid,
+        pid: childProcess.pid,
         error: err.message,
         stack: err.stack
       });
     });
 
-    return process;
+    return childProcess;
   }
 
   public async cleanup(): Promise<void> {
