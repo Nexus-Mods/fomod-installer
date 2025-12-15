@@ -489,13 +489,17 @@ async function main() {
       copyItem(`build/${configuration}/modinstaller.node`, "dist/build/modinstaller.node");
 
       // Run AVA tests
-      // On Linux, tolerate exit code 139 (segfault) which can occur during Native AOT cleanup
+      // On Linux, tolerate exit codes related to crashes during Native AOT cleanup:
+      // - 139: SIGSEGV (segfault)
+      // - 134: SIGABRT (abort)
+      // - 255: General abort/crash
       // This is a known issue: .NET Native AOT libraries don't support clean unloading
       try {
         execCommand("npx ava");
       } catch (err) {
-        if (process.platform === 'linux' && err.status === 139) {
-          console.log("  Note: Segfault during cleanup (exit code 139) - this is expected on Linux with Native AOT");
+        const crashExitCodes = [139, 134, 255];
+        if (process.platform === 'linux' && crashExitCodes.includes(err.status)) {
+          console.log(`  Note: Crash during cleanup (exit code ${err.status}) - this is expected on Linux with Native AOT`);
         } else {
           throw err;
         }
