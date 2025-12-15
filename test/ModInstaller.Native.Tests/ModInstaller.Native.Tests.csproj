@@ -12,7 +12,7 @@
   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Windows'))">
     <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
   </PropertyGroup>
-  <!-- Define WINDOWS constant for Windows builds -->
+  <!-- Define LINUX constant for Linux builds -->
   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Linux'))">
     <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
   </PropertyGroup>
