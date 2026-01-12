@@ -163,9 +163,9 @@ public static unsafe partial class Bindings
             Installer.Install(modArchiveFileList.ToList(), stopPatterns.ToList(), pluginPath, scriptPath, preset, validate, progressDelegate, handler).ContinueWith(result =>
             {
 #if DEBUG
-                using var logger = LogMethod($"{nameof(Install)}_Callback");
+                using var logger = LogCallbackMethod(nameof(Install));
 #else
-                using var logger = LogMethod($"{nameof(Install)}_Callback");
+                using var logger = LogCallbackMethod(nameof(Install));
 #endif
                 
                 try

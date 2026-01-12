@@ -4,10 +4,12 @@
 #include <thread>
 #include "ModInstaller.Native.h"
 #include "Logger.hpp"
+#include "Utils.Return.hpp"
 #include "Bindings.Logging.hpp"
 #include "Bindings.Logging.Callbacks.hpp"
 
 using namespace Napi;
+using namespace Utils;
 using namespace ModInstaller::Native;
 
 namespace Bindings::Logging
@@ -70,8 +72,7 @@ namespace Bindings::Logging
     {
         LoggerScope logger(__FUNCTION__);
 
-        try
-        {
+        WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
 
             const auto result = set_default_logging_callbacks();
@@ -81,64 +82,31 @@ namespace Bindings::Logging
                 logger.Log("Error setting default logger callbacks");
                 NAPI_THROW(Error::New(env, "Failed to set default logger callbacks"));
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+        });
     }
 
     void Logger::SetCallbacks(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
 
-        try
-        {
+        WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
 
-            const auto result = set_logging_callbacks(this,
-                                                      log);
+            const auto result = set_logging_callbacks(this, log);
 
             if (result != 0)
             {
                 logger.Log("Error setting logger callbacks");
                 NAPI_THROW(Error::New(env, "Failed to set logger callbacks"));
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+        });
     }
 
     void Logger::DisposeDefaultLogger(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
 
-        try
-        {
+        WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
 
             const auto result = dispose_default_logger();
@@ -147,22 +115,7 @@ namespace Bindings::Logging
                 logger.Log("Error disposing default logger");
                 NAPI_THROW(Error::New(env, "Failed to dispose default logger"));
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+        });
     }
 
     Napi::Object Init(const Napi::Env env, const Napi::Object exports)

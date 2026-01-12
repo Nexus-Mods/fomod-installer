@@ -138,7 +138,7 @@ internal class CallbackContextDelegates : ContextDelegates
 #if DEBUG
         using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = LogCallbackMethod();
+        using var logger = LogCallbackMethod(pResult);
 #endif
 
         try
@@ -219,7 +219,7 @@ internal class CallbackContextDelegates : ContextDelegates
 #if DEBUG
         using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = LogCallbackMethod();
+        using var logger = LogCallbackMethod(pResult);
 #endif
 
         try
@@ -303,7 +303,7 @@ internal class CallbackContextDelegates : ContextDelegates
 #if DEBUG
         using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = LogCallbackMethod();
+        using var logger = LogCallbackMethod(pResult);
 #endif
 
         try
@@ -387,7 +387,7 @@ internal class CallbackContextDelegates : ContextDelegates
 #if DEBUG
         using var logger = LogCallbackMethod(pResult);
 #else
-        using var logger = LogCallbackMethod();
+        using var logger = LogCallbackMethod(pResult);
 #endif
 
         try

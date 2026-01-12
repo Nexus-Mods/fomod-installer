@@ -5,6 +5,7 @@
 #include "Logger.hpp"
 #include "Utils.Generic.hpp"
 #include "Utils.JS.hpp"
+#include "Utils.Utf.hpp"
 
 using namespace Napi;
 
@@ -51,8 +52,7 @@ namespace Utils
         if (!result.IsBuffer())
         {
             Logger::Log(__FUNCTION__, "Value: Not a Buffer<uint8_t>");
-            std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> conv;
-            return Create(return_value_data{Copy(conv.from_bytes("Not a Buffer<uint8_t>")), nullptr, 0});
+            return Create(return_value_data{Copy(Utf8ToUtf16("Not a Buffer<uint8_t>")), nullptr, 0});
         }
 
         auto buffer = result.As<Buffer<uint8_t>>();
@@ -65,5 +65,4 @@ namespace Utils
         return Create(return_value_void{nullptr});
     }
 }
-
 #endif

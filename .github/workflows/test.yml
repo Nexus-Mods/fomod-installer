@@ -4,7 +4,7 @@ on:
   push:
     branches: [master]
   pull_request:
-    branches: [master]
+    branches: [master, tests]
   workflow_dispatch:
 
 jobs:
@@ -122,6 +122,7 @@ jobs:
           node-version: '22'
 
       - name: Setup .NET
+        if: matrix.runtime == 'dotnet'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'

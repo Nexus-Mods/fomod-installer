@@ -1,9 +1,11 @@
 #ifndef VE_FILESYSTEM_IMPL_GUARD_HPP_
 #define VE_FILESYSTEM_IMPL_GUARD_HPP_
 
+#include <napi.h>
 #include <thread>
 #include "ModInstaller.Native.h"
 #include "Logger.hpp"
+#include "Utils.Return.hpp"
 #include "Bindings.FileSystem.hpp"
 #include "Bindings.FileSystem.Callbacks.hpp"
 
@@ -38,7 +40,7 @@ namespace Bindings::FileSystem
         // By default, the value set on the environment here will be destroyed when
         // the add-on is unloaded using the `delete` operator, but it is also
         // possible to supply a custom deleter.
-        const_cast<Napi::Env &>(env).SetInstanceData<FunctionReference>(constructor);
+        env.SetInstanceData<FunctionReference>(constructor);
 
         return exports;
     }
@@ -79,8 +81,7 @@ namespace Bindings::FileSystem
     {
         LoggerScope logger(__FUNCTION__);
 
-        try
-        {
+        WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
 
             const auto result = set_default_file_system_callbacks();
@@ -90,30 +91,14 @@ namespace Bindings::FileSystem
                 logger.Log("Error setting default file system callbacks");
                 NAPI_THROW(Error::New(env, "Failed to set default file system callbacks"));
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+        });
     }
 
     void FileSystem::SetCallbacks(const CallbackInfo &info)
     {
         LoggerScope logger(__FUNCTION__);
 
-        try
-        {
+        WithExceptionHandling(logger, [&]() {
             const auto env = info.Env();
 
             const auto result = set_file_system_callbacks(this,
@@ -126,22 +111,7 @@ namespace Bindings::FileSystem
                 logger.Log("Error setting file system callbacks");
                 NAPI_THROW(Error::New(env, "Failed to set file system callbacks"));
             }
-        }
-        catch (const Napi::Error &e)
-        {
-            logger.LogError(e);
-            throw;
-        }
-        catch (const std::exception &e)
-        {
-            logger.LogException(e);
-            throw;
-        }
-        catch (...)
-        {
-            logger.Log("Unknown exception");
-            throw;
-        }
+        });
     }
 
     Napi::Object Init(const Napi::Env env, const Napi::Object exports)

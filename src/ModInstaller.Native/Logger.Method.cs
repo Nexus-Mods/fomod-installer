@@ -12,9 +12,9 @@ static partial class Logger
     {
         return new LoggerScope(caller);
     }
-    public static LoggerScope LogCallbackMethod([CallerMemberName] string? caller = null)
+    public static LoggerScope LogCallbackMethod(string? caller)
     {
-        return new LoggerScope(caller);
+        return new LoggerScope($"{caller}Callback");
     }
     
     public static LoggerScope LogMethod<T1>(T1 param1, [CallerMemberName] string? caller = null)
