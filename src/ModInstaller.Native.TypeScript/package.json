@@ -27,10 +27,11 @@
     "test": "node build.js test",
     "test-build": "node build.js test-build",
     "test-no-build": "pwsh ./commands.ps1 test-no-build",
+    "test-ava": "tsc -p tsconfig.test.json && node -e \"require('fs').mkdirSync('dist/build', {recursive:true}); require('fs').copyFileSync('build/Release/modinstaller.node', 'dist/build/modinstaller.node');\" && ava",
     "watch:build": "tsc -p tsconfig.json -w"
   },
   "engines": {
-    "node": "22.19"
+    "node": ">=22"
   },
   "binary": {
     "napi_versions": [
@@ -38,14 +39,29 @@
     ]
   },
   "devDependencies": {
+    "7zip-bin": "^5.2.0",
+    "@ava/typescript": "^6.0.0",
     "@types/node": "^22.0.0",
+    "ava": "^6.4.1",
+    "node-7z": "^3.0.0",
     "node-addon-api": "8.5.0",
     "node-gyp": "10.0.0",
+    "node-stream-zip": "^1.15.0",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.0",
     "vortex-api": "Nexus-Mods/vortex-api",
     "webpack": "^5.95.0",
     "webpack-cli": "^5.1.4"
+  },
+  "ava": {
+    "failFast": false,
+    "timeout": "60s",
+    "files": [
+      "dist/test/**/*.spec.js"
+    ],
+    "require": [
+      "./test/_force-exit.js"
+    ]
   }
 }

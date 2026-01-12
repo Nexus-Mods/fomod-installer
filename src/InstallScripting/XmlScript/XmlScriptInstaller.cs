@@ -20,6 +20,16 @@ namespace FomodInstaller.Scripting.XmlScript
 
         #endregion
 
+        /// <summary>
+        /// Normalizes path separators to use the platform-specific separator.
+        /// On Windows this converts / to \, on Linux/Mac this converts \ to /.
+        /// </summary>
+        private static string NormalizeSeparators(string path)
+        {
+            return path.Replace('\\', Path.DirectorySeparatorChar)
+                       .Replace('/', Path.DirectorySeparatorChar);
+        }
+
         #region Constructors
 
         /// <summary>
@@ -121,11 +131,11 @@ namespace FomodInstaller.Scripting.XmlScript
             }
             else
             {
-                string strSource = Path.Combine(ModArchive.Prefix, installableFile.Source);
+                string strSource = NormalizeSeparators(Path.Combine(ModArchive.Prefix, installableFile.Source));
                 int count = ModArchive.GetFileList(strSource, true, false).Count;
                 if (count == 1)
                 {
-                    string strDest = installableFile.Destination;
+                    string strDest = NormalizeSeparators(installableFile.Destination);
                     InstallFileFromMod(strSource, strDest, installableFile.Priority + priorityOffset);
                 }
                 else
@@ -151,10 +161,10 @@ namespace FomodInstaller.Scripting.XmlScript
         {
             IList<string> lstModFiles = ModArchive.GetFileList(Path.Combine(strPrefixPath, installableFile.Source), true, false);
 
-            string strFrom = Path.Combine(strPrefixPath, installableFile.Source).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+            string strFrom = NormalizeSeparators(Path.Combine(strPrefixPath, installableFile.Source));
             if (!strFrom.EndsWith(Path.DirectorySeparatorChar.ToString()))
                 strFrom += Path.DirectorySeparatorChar;
-            string strTo = installableFile.Destination.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+            string strTo = NormalizeSeparators(installableFile.Destination);
             if ((strTo.Length > 0) && (!strTo.EndsWith(Path.DirectorySeparatorChar.ToString())))
                 strTo += Path.DirectorySeparatorChar;
             string strMODFile = null;

@@ -6,6 +6,49 @@ namespace FomodInstaller.Interface
 {
     public record Instruction
     {
+        public virtual bool Equals(Instruction other)
+        {
+            if (other is null) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return type == other.type &&
+                   source == other.source &&
+                   destination == other.destination &&
+                   section == other.section &&
+                   key == other.key &&
+                   value == other.value &&
+                   ByteArrayEquals(data, other.data) &&
+                   priority == other.priority;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + (type?.GetHashCode() ?? 0);
+                hash = hash * 31 + (source?.GetHashCode() ?? 0);
+                hash = hash * 31 + (destination?.GetHashCode() ?? 0);
+                hash = hash * 31 + (section?.GetHashCode() ?? 0);
+                hash = hash * 31 + (key?.GetHashCode() ?? 0);
+                hash = hash * 31 + (value?.GetHashCode() ?? 0);
+                hash = hash * 31 + (data?.Length ?? 0);
+                hash = hash * 31 + priority;
+                return hash;
+            }
+        }
+
+        private static bool ByteArrayEquals(byte[] a, byte[] b)
+        {
+            if (a == null && b == null) return true;
+            if (a == null || b == null) return false;
+            if (a.Length != b.Length) return false;
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] != b[i]) return false;
+            }
+            return true;
+        }
+
         public static Instruction CreateCopy(string source, string destination, int priority)
         {
             return new Instruction

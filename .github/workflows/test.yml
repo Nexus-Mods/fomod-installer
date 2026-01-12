@@ -1,0 +1,145 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  csharp-tests:
+    name: C# Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        run: dotnet build -c Release
+
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          dotnet build test/ModInstaller.Adaptor.Typed.Tests -c Release
+          dotnet build test/ModInstaller.Native.Tests -c Release
+
+      - name: Publish Native Module
+        run: dotnet publish src/ModInstaller.Native -c Release
+
+      - name: Run Adaptor.Typed Tests
+        run: dotnet test test/ModInstaller.Adaptor.Typed.Tests -c Release --verbosity normal
+
+      - name: Run Adaptor.Dynamic Tests (Windows only)
+        if: runner.os == 'Windows'
+        run: dotnet test test/ModInstaller.Adaptor.Dynamic.Tests -c Release --verbosity normal
+
+      - name: Run Native Tests
+        run: dotnet test test/ModInstaller.Native.Tests -c Release --verbosity normal
+
+  js-native-tests:
+    name: JS Native Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Read Node.js version from package.json
+        id: node-version
+        shell: pwsh
+        run: |
+          $packageJson = Get-Content src/ModInstaller.Native.TypeScript/package.json | ConvertFrom-Json
+          $nodeVersion = $packageJson.engines.node
+          echo "NODE_VERSION=$nodeVersion" >> $env:GITHUB_OUTPUT
+          echo "Using Node.js version: $nodeVersion"
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ steps.node-version.outputs.NODE_VERSION }}
+
+      - name: Setup MSVC (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install build tools (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential p7zip-full
+
+      - name: Install dependencies (ignore scripts to avoid premature gyp build)
+        run: yarn install --ignore-scripts
+        working-directory: src/ModInstaller.Native.TypeScript
+
+      - name: Fix 7zip permissions (Linux)
+        if: runner.os == 'Linux'
+        run: chmod +x node_modules/7zip-bin/linux/x64/7za
+        working-directory: src/ModInstaller.Native.TypeScript
+
+      - name: Build and run tests
+        run: yarn test
+        working-directory: src/ModInstaller.Native.TypeScript
+
+  js-ipc-tests:
+    name: JS IPC Tests (${{ matrix.runtime }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            runtime: dotnet
+          - os: ubuntu-latest
+            runtime: mono
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Setup Mono
+        if: matrix.runtime == 'mono'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mono-complete
+
+      - name: Install dependencies
+        run: yarn install
+        working-directory: src/ModInstaller.IPC.TypeScript
+
+      - name: Build C# IPC module
+        run: yarn build-csharp
+        working-directory: src/ModInstaller.IPC.TypeScript
+
+      - name: Run tests
+        run: yarn test-ava
+        working-directory: src/ModInstaller.IPC.TypeScript

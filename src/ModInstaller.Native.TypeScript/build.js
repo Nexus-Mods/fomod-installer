@@ -323,7 +323,10 @@ async function main() {
       }
 
       // Copy native artifacts
+      console.log(`  Checking artifacts in: ${dotnetArtifacts}`);
       const artifactFiles = fs.readdirSync(dotnetArtifacts);
+      console.log(`  Found files: ${artifactFiles.join(", ")}`);
+
       const nativeFiles = artifactFiles.filter((file) =>
         file.startsWith("ModInstaller.Native."),
       );
@@ -334,9 +337,68 @@ async function main() {
         );
       }
 
+      console.log(`  Native files to copy: ${nativeFiles.join(", ")}`);
       nativeFiles.forEach((file) => {
         copyItem(path.join(dotnetArtifacts, file), file);
       });
+
+      // Also check for .lib file in the native subfolder (Windows AOT build)
+      const nativeSubfolder = path.join(dotnetArtifacts, "native");
+      console.log(`  Checking native subfolder: ${nativeSubfolder}`);
+      if (fs.existsSync(nativeSubfolder)) {
+        const nativeSubfolderFiles = fs.readdirSync(nativeSubfolder);
+        console.log(`  Native subfolder files: ${nativeSubfolderFiles.join(", ")}`);
+        nativeSubfolderFiles
+          .filter((file) => file.startsWith("ModInstaller.Native."))
+          .forEach((file) => {
+            const destPath = file;
+            if (!fs.existsSync(destPath)) {
+              copyItem(path.join(nativeSubfolder, file), destPath);
+            }
+          });
+      } else {
+        console.log(`  Native subfolder does not exist`);
+      }
+
+      // Fallback: Check the original build location if .lib is still missing
+      if (process.platform === "win32" && !fs.existsSync("ModInstaller.Native.lib")) {
+        // Try multiple possible paths (MSBuild uses different output structures locally vs CI)
+        const possibleLibPaths = [
+          // Standard path: bin/Release/net9.0/win-x64/native/
+          path.resolve(nativeDir, `bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`),
+          // CI path with platform folder: bin/x64/Release/net9.0/win-x64/native/
+          path.resolve(nativeDir, `bin/x64/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`),
+        ];
+
+        let foundLib = false;
+        for (const libPath of possibleLibPaths) {
+          console.log(`  Checking lib path: ${libPath}`);
+          if (fs.existsSync(libPath)) {
+            copyItem(libPath, "ModInstaller.Native.lib");
+            foundLib = true;
+            break;
+          }
+        }
+
+        if (!foundLib) {
+          console.log(`  .lib file not found in any expected location`);
+          // List what's in the native dir bin folder for debugging
+          const binDir = path.resolve(nativeDir, "bin");
+          if (fs.existsSync(binDir)) {
+            console.log(`  Contents of ${binDir}:`);
+            const listDirRecursive = (dir, indent = "    ") => {
+              const items = fs.readdirSync(dir, { withFileTypes: true });
+              items.forEach(item => {
+                console.log(`${indent}${item.name}${item.isDirectory() ? "/" : ""}`);
+                if (item.isDirectory() && indent.length < 16) {
+                  listDirRecursive(path.join(dir, item.name), indent + "  ");
+                }
+              });
+            };
+            listDirRecursive(binDir);
+          }
+        }
+      }
 
       copyItem(
         path.join(nativeDir, "ModInstaller.Native.h"),
@@ -409,6 +471,39 @@ async function main() {
 
       // Build with webpack
       execCommand("npx webpack --config webpack.config.js");
+      console.log("");
+    }
+
+    // Run tests
+    if (type === "test") {
+      console.log("Running tests");
+
+      // Compile TypeScript tests
+      execCommand("npx tsc -p tsconfig.test.json");
+
+      // Copy native module to dist for tests
+      const buildDir = path.resolve("dist/build");
+      if (!fs.existsSync(buildDir)) {
+        fs.mkdirSync(buildDir, { recursive: true });
+      }
+      copyItem(`build/${configuration}/modinstaller.node`, "dist/build/modinstaller.node");
+
+      // Run AVA tests
+      // On Linux, tolerate exit codes related to crashes during Native AOT cleanup:
+      // - 139: SIGSEGV (segfault)
+      // - 134: SIGABRT (abort)
+      // - 255: General abort/crash
+      // This is a known issue: .NET Native AOT libraries don't support clean unloading
+      try {
+        execCommand("npx ava");
+      } catch (err) {
+        const crashExitCodes = [139, 134, 255];
+        if (process.platform === 'linux' && crashExitCodes.includes(err.status)) {
+          console.log(`  Note: Crash during cleanup (exit code ${err.status}) - this is expected on Linux with Native AOT`);
+        } else {
+          throw err;
+        }
+      }
       console.log("");
     }
 

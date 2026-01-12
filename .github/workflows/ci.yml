@@ -32,7 +32,7 @@ jobs:
         id: node-version
         shell: pwsh
         run: |
-          $packageJson = Get-Content src/ModInstaller.IPC.TypeScript/package.json | ConvertFrom-Json
+          $packageJson = Get-Content src/ModInstaller.Native.TypeScript/package.json | ConvertFrom-Json
           $nodeVersion = $packageJson.engines.node
           echo "NODE_VERSION=$nodeVersion" >> $env:GITHUB_OUTPUT
           echo "Using Node.js version: $nodeVersion"

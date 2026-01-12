@@ -22,10 +22,16 @@
     "buildDev": "node build.js build Debug",
     "cleanup": "node cleanup-processes.js --force",
     "list-processes": "node cleanup-processes.js",
-    "watch:build": "tsc -p tsconfig.json -w"
+    "watch:build": "tsc -p tsconfig.json -w",
+    "test-ava": "tsc -p tsconfig.test.json && ava"
   },
   "devDependencies": {
+    "7zip-bin": "^5.2.0",
+    "@ava/typescript": "^6.0.0",
     "@types/node": "^22.0.0",
+    "ava": "^6.4.1",
+    "node-7z": "^3.0.0",
+    "node-stream-zip": "^1.15.0",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.0",
@@ -36,6 +42,16 @@
   },
   "packageManager": "yarn@1.22.19",
   "engines": {
-    "node": "22.19"
+    "node": ">=22"
+  },
+  "ava": {
+    "failFast": false,
+    "timeout": "120s",
+    "files": [
+      "dist/test/**/*.spec.js"
+    ],
+    "require": [
+      "./dist/test/setup.js"
+    ]
   }
 }

@@ -1,4 +1,4 @@
-﻿using FomodInstaller.ModInstaller;
+using FomodInstaller.ModInstaller;
 
 using ModInstaller.Adaptor.Tests.Shared.Delegates;
 using ModInstaller.Lite;
@@ -67,7 +67,7 @@ public class InstallTests
     {
         if (data.Preset is not null)
             return;
-        
+
         var cancellingUIContext = new CancellingUIContext();
         var coreDelegates = new TestCoreDelegates(
             new CallbackPluginDelegates(
@@ -97,7 +97,7 @@ public class InstallTests
                 data.Validate,
                 progressDelegate,
                 coreDelegates);
-            
+
             Assert.Fail("Should have thrown TaskCanceledException");
         }
         catch (TaskCanceledException) { }

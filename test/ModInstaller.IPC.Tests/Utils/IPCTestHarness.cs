@@ -83,8 +83,12 @@ internal class IPCTestHarness : IAsyncDisposable
         var port = ((IPEndPoint) _listener.LocalEndpoint).Port;
 
         // Spawn ModInstallerIPC.exe with the port
+#if DEBUG
         var exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\..\src\ModInstaller.IPC\bin\Debug\net9.0-windows\win-x64\ModInstallerIPC.exe");
-        //var exePath = @"D:\Git\NexusMods\Vortex\node_modules\fomod-installer-ipc\dist\ModInstallerIPC.exe";
+#else 
+        var exePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\..\src\ModInstaller.IPC\bin\Release\net9.0-windows\win-x64\ModInstallerIPC.exe");
+#endif
+//var exePath = @"D:\Git\NexusMods\Vortex\node_modules\fomod-installer-ipc\dist\ModInstallerIPC.exe";
         if (!File.Exists(exePath))
         {
             throw new FileNotFoundException($"ModInstallerIPC.exe not found at {exePath}. Run 'dotnet build' first.");

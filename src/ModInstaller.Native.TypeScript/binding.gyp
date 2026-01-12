@@ -25,9 +25,6 @@
                     ]
                 }]
             ],
-            "dependencies": [
-                "<!(node -p \"require('node-addon-api').gyp\")"
-            ],
             "defines": [
                 "NAPI_CPP_EXCEPTIONS",
                 "_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING"
