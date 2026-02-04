@@ -119,8 +119,16 @@ namespace FomodInstaller.Scripting.XmlScript
             if (m_Preset.HasValue)
             {
                 // Preselect options for every step according to the preset (or recommended/default rules).
+                // Skip invisible steps just like manual mode does - this ensures we don't select options
+                // from steps that shouldn't be shown based on current conditions.
                 foreach (var step in lstSteps)
                 {
+                    if (step.VisibilityCondition != null &&
+                        !step.VisibilityCondition.GetIsFulfilled(m_csmState, m_Delegates))
+                    {
+                        continue;
+                    }
+
                     preselectOptions(step);
                     // Ensure required/not-usable flags are applied after preselection.
                     fixSelected(step);

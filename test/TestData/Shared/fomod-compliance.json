@@ -33,6 +33,76 @@
         { "type": "copy", "source": "shared\\folder_zzz\\test_alphabetical.txt", "destination": "test_alphabetical.txt", "priority": 0 },
         { "type": "enableallplugins", "priority": 0 }
       ]
+    },
+    {
+      "name": "Invisible Step - Preset mode should skip invisible steps (Option A selected)",
+      "mod": "Invisible Step Test",
+      "archiveFile": "InvisibleStepTest.zip",
+      "pluginPath": "Data",
+      "appVersion": "1.0.0",
+      "gameVersion": "1.0.0",
+      "extenderVersion": "1.0.0",
+      "installedPlugins": [],
+      "preset": [
+        {
+          "name": "Step1",
+          "groups": [
+            {
+              "name": "Group1",
+              "choices": [
+                { "name": "Option A (hides Step 2)", "idx": 0 }
+              ]
+            }
+          ]
+        }
+      ],
+      "validate": true,
+      "expectedMessage": "Installation successful",
+      "expectedInstructions": [
+        { "type": "copy", "source": "visible_step\\visible_file.txt", "destination": "visible_file.txt", "priority": 0 },
+        { "type": "enableallplugins", "priority": 0 }
+      ]
+    },
+    {
+      "name": "Invisible Step - Preset mode should process visible steps (Option B selected)",
+      "mod": "Invisible Step Test",
+      "archiveFile": "InvisibleStepTest.zip",
+      "pluginPath": "Data",
+      "appVersion": "1.0.0",
+      "gameVersion": "1.0.0",
+      "extenderVersion": "1.0.0",
+      "installedPlugins": [],
+      "preset": [
+        {
+          "name": "Step1",
+          "groups": [
+            {
+              "name": "Group1",
+              "choices": [
+                { "name": "Option B (shows Step 2)", "idx": 1 }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Step2",
+          "groups": [
+            {
+              "name": "InvisibleGroup",
+              "choices": [
+                { "name": "Invisible Option", "idx": 0 }
+              ]
+            }
+          ]
+        }
+      ],
+      "validate": true,
+      "expectedMessage": "Installation successful",
+      "expectedInstructions": [
+        { "type": "copy", "source": "visible_step\\visible_file.txt", "destination": "visible_file.txt", "priority": 0 },
+        { "type": "copy", "source": "invisible_step\\should_not_install.txt", "destination": "should_not_install.txt", "priority": 0 },
+        { "type": "enableallplugins", "priority": 0 }
+      ]
     }
   ]
 }
