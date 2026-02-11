@@ -137,7 +137,7 @@ namespace FomodInstaller.ModInstaller
                             if (!string.IsNullOrEmpty(omodMatch))
                             {
                                 byte[] scriptData = FileSystem.ReadAllBytes(Path.Combine(extractedFilePath, omodMatch));
-                                scriptDataString = System.Text.Encoding.Default.GetString(scriptData);
+                                scriptDataString = TextUtil.ByteToStringWithoutBOM(scriptData);
                             }
 
                             if (!string.IsNullOrEmpty(omodMatch) && scriptType.ValidateScript(scriptType.LoadScript(scriptDataString, true)))

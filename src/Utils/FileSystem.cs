@@ -81,7 +81,7 @@ namespace Utils
 		{
 			var data = Instance.ReadFileContent(filePath, 0, -1) ??
 			           throw new FileNotFoundException($"File not found: {filePath}");;
-			return Encoding.UTF8.GetString(data ?? []).Split(["\r\n", "\n"], StringSplitOptions.None);
+			return TextUtil.ByteToStringWithoutBOM(data ?? []).Split(["\r\n", "\n"], StringSplitOptions.None);
 		}
 
         /// <summary>

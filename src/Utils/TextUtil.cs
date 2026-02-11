@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace Utils
 {
@@ -54,6 +56,18 @@ namespace Utils
                 msmFile.Close();
             }
             return lstLines.ToArray();
+        }
+
+        public static string ByteToStringWithoutBOM(byte[] data)
+        {
+            if (data.Length >= 3 && data[0] == 0xEF && data[1] == 0xBB && data[2] == 0xBF)
+                return Encoding.UTF8.GetString(data, 3, data.Length - 3);
+            if (data.Length >= 2 && data[0] == 0xFE && data[1] == 0xFF)
+                return Encoding.BigEndianUnicode.GetString(data, 2, data.Length - 2);
+            if (data.Length >= 2 && data[0] == 0xFF && data[1] == 0xFE)
+                return Encoding.Unicode.GetString(data, 2, data.Length - 2);
+
+            return Encoding.UTF8.GetString(data);
         }
 
         public static string NormalizePath(string path, bool dirTerminate = false, bool alternateSeparators = false, bool toLower = true)
