@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as os from 'os';
 import { ChildProcess } from 'child_process';
-import { log } from 'vortex-api';
+import { log, util } from 'vortex-api';
 import { SecurityLevel, IProcessLauncher, ProcessLaunchOptions, ChildProcessCompatible } from './launchers';
 import { ITransport } from './transport';
 
@@ -62,9 +62,12 @@ export interface TimeoutOptions {
 
   /**
    * Callback to show timeout dialog to user
-   * Should return true if user wants to continue, false to cancel
+   * Should return:
+   * - true if user wants to continue waiting
+   * - 'cancel' if user explicitly cancelled
+   * - false for genuine timeout (no dialog shown, dialog failed, etc.)
    */
-  onTimeoutDialog?: (messageId: string, command?: string) => Promise<boolean>;
+  onTimeoutDialog?: (messageId: string, command?: string) => Promise<boolean | 'cancel'>;
 
   /**
    * Callback to dismiss a currently showing timeout dialog
@@ -550,19 +553,28 @@ export abstract class BaseIPCConnection {
 
             // Check if we should show dialog and have a callback
             if (this.timeoutOptions.showDialog && this.timeoutOptions.onTimeoutDialog) {
-              const shouldContinue = await this.timeoutOptions.onTimeoutDialog(dialogId, message.payload?.command);
+              const result = await this.timeoutOptions.onTimeoutDialog(dialogId, message.payload?.command);
 
               // Clear dialog ID after dialog completes (user responded or dialog was dismissed)
               pending.dialogId = undefined;
 
-              if (shouldContinue) {
+              if (result === true) {
                 log('info', 'User chose to continue waiting for response');
                 // Reset timeout and continue waiting
                 scheduleTimeout(ms); // Use the same timeout duration
                 return; // Don't reject, keep waiting
               }
 
-              log('info', 'User chose to cancel operation or dialog was dismissed');
+              if (result === 'cancel') {
+                log('info', 'User explicitly cancelled operation');
+                // User explicitly cancelled - reject with UserCanceled error
+                this.pendingReplies.delete(id);
+                const cancelError = new util.UserCanceled();
+                reject(cancelError);
+                return;
+              }
+
+              log('info', 'Genuine timeout - dialog was dismissed or not shown');
             }
           } catch (err: any) {
             log('error', 'Error handling timeout', { error: err.message });
