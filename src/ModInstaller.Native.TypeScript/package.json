@@ -30,6 +30,7 @@
     "test-ava": "tsc -p tsconfig.test.json && node -e \"require('fs').mkdirSync('dist/build', {recursive:true}); require('fs').copyFileSync('build/Release/modinstaller.node', 'dist/build/modinstaller.node');\" && ava",
     "watch:build": "tsc -p tsconfig.json -w"
   },
+  "packageManager": "yarn@1.22.19",
   "engines": {
     "node": ">=22"
   },
