@@ -4,3 +4,7 @@ node_modules
 coverage
 *.log
 *.dll
+# ModInstaller.Native.dll is a runtime dependency of modinstaller.node
+# and must be included for pnpm file: dependencies (pnpm copies package
+# contents into its store rather than symlinking the source directory)
+!ModInstaller.Native.dll
