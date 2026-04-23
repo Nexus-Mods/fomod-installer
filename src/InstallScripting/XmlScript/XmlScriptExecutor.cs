@@ -499,7 +499,7 @@ namespace FomodInstaller.Scripting.XmlScript
                     return new List<OptionsPresetChoice>();
                 }
 
-                return choiceIn.Select(choice => new OptionsPresetChoice {name = Convert.ToString(choice["name"]), idx = Convert.ToInt32(choice["idx"])});
+                return choiceIn.Select(choice => new OptionsPresetChoice {name = Convert.ToString(choice.GetValueOrDefault("name")) ?? string.Empty, idx = Convert.ToInt32(choice.GetValueOrDefault("idx"))});
             }
 
             IEnumerable<OptionsPresetGroup> ConvertGroups(IEnumerable<Dictionary<string, object>> groupsIn)
@@ -511,8 +511,8 @@ namespace FomodInstaller.Scripting.XmlScript
 
                 return groupsIn.Select(group =>
                 {
-                    var choices = (group["choices"] as IEnumerable<object>)?.OfType<Dictionary<string, object>>();
-                    return new OptionsPresetGroup {name = Convert.ToString(group["name"]) ?? string.Empty, choices = ConvertChoices(choices ?? []).ToArray()};
+                    var choices = (group.GetValueOrDefault("choices") as IEnumerable<object>)?.OfType<Dictionary<string, object>>();
+                    return new OptionsPresetGroup {name = Convert.ToString(group.GetValueOrDefault("name")) ?? string.Empty, choices = ConvertChoices(choices ?? []).ToArray()};
                 });
             }
 
@@ -520,8 +520,8 @@ namespace FomodInstaller.Scripting.XmlScript
             {
                 return stepsIn.Select(step =>
                 {
-                    var groups = (step["groups"] as IEnumerable<object>)?.OfType<Dictionary<string, object>>();
-                    return new OptionsPresetStep {name = Convert.ToString(step["name"]) ?? string.Empty, groups = ConvertGroups(groups ?? []).ToArray(),};
+                    var groups = (step.GetValueOrDefault("groups") as IEnumerable<object>)?.OfType<Dictionary<string, object>>();
+                    return new OptionsPresetStep {name = Convert.ToString(step.GetValueOrDefault("name")) ?? string.Empty, groups = ConvertGroups(groups ?? []).ToArray(),};
                 });
             }
 

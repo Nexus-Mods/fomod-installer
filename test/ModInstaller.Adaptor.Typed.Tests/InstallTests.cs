@@ -105,9 +105,11 @@ public class InstallTests
         var presetSteps = data.Preset.RootElement.EnumerateArray().ToList();
         foreach (var snapshot in preselectUI.StepSnapshots)
         {
-            // Find preset entry for this step (by name)
+            // Find preset entry for this step (by name). Use TryGetProperty so
+            // malformed preset entries (missing keys) don't crash the test — the
+            // production code tolerates them and the test should too.
             var matchingPresetStep = presetSteps
-                .Where(ps => ps.GetProperty("name").GetString() == snapshot.StepName)
+                .Where(ps => ps.TryGetProperty("name", out var n) && n.GetString() == snapshot.StepName)
                 .ToList();
 
             if (matchingPresetStep.Count == 0)
@@ -115,10 +117,17 @@ public class InstallTests
 
             foreach (var presetStep in matchingPresetStep)
             {
-                foreach (var presetGroup in presetStep.GetProperty("groups").EnumerateArray())
+                if (!presetStep.TryGetProperty("groups", out var presetGroups))
+                    continue;
+                foreach (var presetGroup in presetGroups.EnumerateArray())
                 {
-                    var groupName = presetGroup.GetProperty("name").GetString();
-                    var presetChoiceNames = presetGroup.GetProperty("choices").EnumerateArray()
+                    if (!presetGroup.TryGetProperty("name", out var groupNameProp))
+                        continue;
+                    var groupName = groupNameProp.GetString();
+                    if (!presetGroup.TryGetProperty("choices", out var presetChoices))
+                        continue;
+                    var presetChoiceNames = presetChoices.EnumerateArray()
+                        .Where(c => c.TryGetProperty("name", out _))
                         .Select(c => c.GetProperty("name").GetString())
                         .ToHashSet();
 
