@@ -158,6 +158,55 @@
         { "type": "copy", "source": "02 Improved Map with Visible Roads - Darker\\Textures\\interface\\pip-boy\\worldmap_d.dds", "destination": "Textures\\interface\\pip-boy\\worldmap_d.dds" },
         { "type": "enableallplugins" }
       ]
+    },
+    {
+      "name": "Improved Map - Default (preset with malformed entries)",
+      "mod": "Improved Map with Visible Roads",
+      "archiveFile": "Improved Map with Visible Roads 2.0-1215-2-0.zip",
+      "pluginPath": "Data",
+      "appVersion": "1.0.0",
+      "gameVersion": "1.10.163.0",
+      "extenderVersion": "0.6.21",
+      "installedPlugins": [],
+      "preset": [
+        {"name":"Install Improved Map with Visible Roads","groups":[
+          {"name":"Improved Map with Visible Roads","choices":[
+            {"name":"Default","idx":0},
+            {}
+          ]},
+          {}
+        ]},
+        {}
+      ],
+      "validate": true,
+      "expectedMessage": "Installation successful",
+      "expectedInstructions": [
+        { "type": "copy", "source": "01 Improved Map with Visible Roads - Default\\Textures\\interface\\pip-boy\\worldmap_d.dds", "destination": "Textures\\interface\\pip-boy\\worldmap_d.dds" },
+        { "type": "enableallplugins" }
+      ]
+    },
+    {
+      "name": "Improved Map - Default (preset with mismatched names)",
+      "mod": "Improved Map with Visible Roads",
+      "archiveFile": "Improved Map with Visible Roads 2.0-1215-2-0.zip",
+      "pluginPath": "Data",
+      "appVersion": "1.0.0",
+      "gameVersion": "1.10.163.0",
+      "extenderVersion": "0.6.21",
+      "installedPlugins": [],
+      "preset": [
+        {"name":"Step that no longer exists","groups":[
+          {"name":"Group that no longer exists","choices":[
+            {"name":"Choice that no longer exists","idx":0}
+          ]}
+        ]}
+      ],
+      "validate": true,
+      "expectedMessage": "Installation successful",
+      "expectedInstructions": [
+        { "type": "copy", "source": "01 Improved Map with Visible Roads - Default\\Textures\\interface\\pip-boy\\worldmap_d.dds", "destination": "Textures\\interface\\pip-boy\\worldmap_d.dds" },
+        { "type": "enableallplugins" }
+      ]
     }
   ]
 }
