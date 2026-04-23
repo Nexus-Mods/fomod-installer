@@ -349,6 +349,8 @@ namespace FomodInstaller.Scripting.XmlScript
 					return new Parser40(p_xelScript, this);
 				case "5.0":
 					return new Parser50(p_xelScript, this);
+				case "6.0":
+					return new Parser60(p_xelScript, this);
 			}
 			throw new ParserException("Unrecognized XML Script version (" + strScriptVersion + "). Perhaps a newer version of the mod manager is required.");
 		}
@@ -372,6 +374,8 @@ namespace FomodInstaller.Scripting.XmlScript
 					return new Unparser40(p_xscScript);
 				case "5.0":
 					return new Unparser50(p_xscScript);
+				case "6.0":
+					return new Unparser60(p_xscScript);
 
 			}
 			throw new ParserException("Unrecognized XML Script version (" + p_xscScript.Version + "). Perhaps a newer version of the mod manager is required.");
