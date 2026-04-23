@@ -499,7 +499,7 @@ namespace FomodInstaller.Scripting.XmlScript
                     return new List<OptionsPresetChoice>();
                 }
 
-                return choiceIn.Select(choice => new OptionsPresetChoice {name = Convert.ToString(choice.GetValueOrDefault("name")), idx = Convert.ToInt32(choice.GetValueOrDefault("idx"))});
+                return choiceIn.Select(choice => new OptionsPresetChoice {name = Convert.ToString(choice.GetValueOrDefault("name")) ?? string.Empty, idx = Convert.ToInt32(choice.GetValueOrDefault("idx"))});
             }
 
             IEnumerable<OptionsPresetGroup> ConvertGroups(IEnumerable<Dictionary<string, object>> groupsIn)
