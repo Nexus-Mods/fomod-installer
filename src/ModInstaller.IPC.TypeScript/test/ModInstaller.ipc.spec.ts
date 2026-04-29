@@ -32,8 +32,10 @@ class TestIPCConnection extends BaseIPCConnection {
     // Look for the executable in the dist folder
     // Resolve relative to package root (1 level up from test/, 2 from dist/test/)
     const packageRoot = path.resolve(__dirname, fs.existsSync(path.resolve(__dirname, '../package.json')) ? '..' : '../..');
-    const distPath = path.join(packageRoot, 'dist', exeName);
-    return [distPath];
+    if (process.platform === 'win32') {
+      return [path.join(packageRoot, 'dist', exeName)];
+    }
+    return [path.join(packageRoot, 'dist', 'linux-x64', exeName)];
   }
 
   public setArchiveFiles(files: string[]): void {
@@ -156,7 +158,9 @@ const compareInstructions = (actual: any[], expected: Instruction[]): boolean =>
 
 // Check if the executable exists
 const packageRoot = path.resolve(__dirname, fs.existsSync(path.resolve(__dirname, '../package.json')) ? '..' : '../..');
-const executablePath = path.join(packageRoot, 'dist', 'ModInstallerIPC.exe');
+const executablePath = process.platform === 'win32'
+  ? path.join(packageRoot, 'dist', 'ModInstallerIPC.exe')
+  : path.join(packageRoot, 'dist', 'linux-x64', 'ModInstallerIPC');
 const executableExists = fs.existsSync(executablePath);
 
 // Run a single test case

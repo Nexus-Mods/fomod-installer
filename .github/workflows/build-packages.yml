@@ -15,7 +15,7 @@ jobs:
         include:
           - os: windows-latest
             platform: win32-x64
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             platform: linux-x64
 
     runs-on: ${{ matrix.os }}
@@ -123,7 +123,15 @@ jobs:
           path: src/ModInstaller.Native.TypeScript/*.tgz
 
   build-ipc:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win32-x64
+          - os: ubuntu-22.04
+            platform: linux-x64
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v6
@@ -138,10 +146,78 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
-      - name: Install and build IPC
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build C# IPC binary (Windows)
+        if: matrix.platform == 'win32-x64'
+        working-directory: src/ModInstaller.IPC.TypeScript
+        run: node build.js build-csharp
+
+      - name: Build C# IPC binary (Linux self-contained)
+        if: matrix.platform == 'linux-x64'
         run: |
-          pnpm install
-          pnpm --filter @nexusmods/fomod-installer-ipc build
+          dotnet publish src/ModInstaller.IPC \
+            -c Release \
+            -r linux-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:EnableCompressionInSingleFile=true \
+            -o src/ModInstaller.IPC.TypeScript/dist/linux-x64
+
+      - name: Set execute permissions (Linux only)
+        if: matrix.platform == 'linux-x64'
+        run: chmod +x src/ModInstaller.IPC.TypeScript/dist/linux-x64/ModInstallerIPC
+
+      - name: Upload IPC binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipc-${{ matrix.platform }}
+          path: ${{ matrix.platform == 'linux-x64' && 'src/ModInstaller.IPC.TypeScript/dist/linux-x64/' || 'src/ModInstaller.IPC.TypeScript/dist/ModInstallerIPC.exe' }}
+
+  package-ipc:
+    needs: build-ipc
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Node.js via Volta
+        uses: volta-cli/action@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build webpack bundle
+        working-directory: src/ModInstaller.IPC.TypeScript
+        run: node build.js build-webpack
+
+      - name: Download Windows IPC binary
+        uses: actions/download-artifact@v4
+        with:
+          name: ipc-win32-x64
+          path: src/ModInstaller.IPC.TypeScript/dist/
+
+      - name: Download Linux IPC binary
+        uses: actions/download-artifact@v4
+        with:
+          name: ipc-linux-x64
+          path: src/ModInstaller.IPC.TypeScript/dist/linux-x64/
+
+      - name: Verify dist contents
+        working-directory: src/ModInstaller.IPC.TypeScript
+        shell: bash
+        run: |
+          echo "=== dist contents ==="
+          find dist/ -type f | head -30
+          echo "=== verify Windows EXE ==="
+          test -f dist/ModInstallerIPC.exe && echo "OK: dist/ModInstallerIPC.exe exists"
+          echo "=== verify Linux ELF ==="
+          test -f dist/linux-x64/ModInstallerIPC && echo "OK: dist/linux-x64/ModInstallerIPC exists"
+          test -x dist/linux-x64/ModInstallerIPC && echo "OK: dist/linux-x64/ModInstallerIPC is executable"
 
       - name: Pack tarball
         working-directory: src/ModInstaller.IPC.TypeScript
