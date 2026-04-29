@@ -102,6 +102,19 @@ namespace FomodInstaller.ModInstaller
 
             progressDelegate(50);
 
+            // If no script type was resolved, check whether the archive contains a C# script
+            // file that we couldn't handle (e.g., CSharpScript not registered on non-Windows).
+            // Detected here but emitted after the install block, since the scripted/basic branches
+            // reassign Instructions and would discard a warning added before them.
+            // Normalize backslashes before path checks: on Linux '\' is not a separator,
+            // so paths like "/tmp/fomod\script.cs" would fool Path.GetFileName otherwise.
+            bool emitCSharpScriptWarning = ScriptType == null && modArchiveFileList.Any(f =>
+            {
+                var normalized = f.Replace('\\', '/');
+                return Path.GetFileName(normalized).Equals("script.cs", StringComparison.OrdinalIgnoreCase)
+                    && normalized.Contains("/fomod/", StringComparison.OrdinalIgnoreCase);
+            });
+
             if (modToInstall.HasInstallScript)
             {
                 if (ScriptType.TypeId == "ModScript")
@@ -123,6 +136,11 @@ namespace FomodInstaller.ModInstaller
             else
             {
                 Instructions = await BasicModInstall(modArchiveFileList, stopPatterns, progressDelegate, coreDelegate);
+            }
+
+            if (emitCSharpScriptWarning)
+            {
+                Instructions.Insert(0, Instruction.UnsupportedFunctionalityWarning("CSharpScript", "CSharpScript not supported on Linux", "linux"));
             }
  
             // f***ing ugly hack, but this is in NMM so...

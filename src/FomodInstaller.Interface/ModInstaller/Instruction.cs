@@ -17,7 +17,9 @@ namespace FomodInstaller.Interface
                    key == other.key &&
                    value == other.value &&
                    ByteArrayEquals(data, other.data) &&
-                   priority == other.priority;
+                   priority == other.priority &&
+                   reason == other.reason &&
+                   platform == other.platform;
         }
 
         public override int GetHashCode()
@@ -33,6 +35,8 @@ namespace FomodInstaller.Interface
                 hash = hash * 31 + (value?.GetHashCode() ?? 0);
                 hash = hash * 31 + (data?.Length ?? 0);
                 hash = hash * 31 + priority;
+                hash = hash * 31 + (reason?.GetHashCode() ?? 0);
+                hash = hash * 31 + (platform?.GetHashCode() ?? 0);
                 return hash;
             }
         }
@@ -117,6 +121,17 @@ namespace FomodInstaller.Interface
             };
         }
 
+        public static Instruction UnsupportedFunctionalityWarning(string function, string reason, string platform)
+        {
+            return new Instruction
+            {
+                type = "unsupported",
+                source = function,
+                reason = reason,
+                platform = platform,
+            };
+        }
+
         public static Instruction InstallError(string severity, string message)
         {
             return new Instruction
@@ -140,6 +155,8 @@ namespace FomodInstaller.Interface
         public string value { get; set; }
         public byte[] data { get; set; }
         public int priority { get; set; }
+        public string? reason { get; set; }
+        public string? platform { get; set; }
 
         private static int sepspn(string input)
         {
