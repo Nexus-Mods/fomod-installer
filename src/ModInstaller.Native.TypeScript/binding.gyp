@@ -13,6 +13,14 @@
                 ["OS=='win'", {
                     "libraries": [
                         "<(module_root_dir)/ModInstaller.Native.lib"
+                    ],
+                    "copies": [
+                        {
+                            "destination": "<(PRODUCT_DIR)",
+                            "files": [
+                                "<(module_root_dir)/ModInstaller.Native.dll"
+                            ]
+                        }
                     ]
                 }],
                 ["OS=='linux'", {
@@ -22,6 +30,14 @@
                     ],
                     "ldflags": [
                         "-Wl,-rpath,<(module_root_dir)"
+                    ],
+                    "copies": [
+                        {
+                            "destination": "<(PRODUCT_DIR)",
+                            "files": [
+                                "<(module_root_dir)/ModInstaller.Native.so"
+                            ]
+                        }
                     ]
                 }]
             ],
