@@ -30,6 +30,14 @@
                     ],
                     "ldflags": [
                         "-Wl,-rpath,<(module_root_dir)"
+                    ],
+                    "copies": [
+                        {
+                            "destination": "<(PRODUCT_DIR)",
+                            "files": [
+                                "<(module_root_dir)/ModInstaller.Native.so"
+                            ]
+                        }
                     ]
                 }]
             ],
