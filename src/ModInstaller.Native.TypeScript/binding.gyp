@@ -13,6 +13,14 @@
                 ["OS=='win'", {
                     "libraries": [
                         "<(module_root_dir)/ModInstaller.Native.lib"
+                    ],
+                    "copies": [
+                        {
+                            "destination": "<(PRODUCT_DIR)",
+                            "files": [
+                                "<(module_root_dir)/ModInstaller.Native.dll"
+                            ]
+                        }
                     ]
                 }],
                 ["OS=='linux'", {
