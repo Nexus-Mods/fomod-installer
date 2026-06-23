@@ -8,6 +8,7 @@
     <RootNamespace>ModInstallerIPC</RootNamespace>
     <AssemblyName>ModInstallerIPC</AssemblyName>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <CETCompat>false</CETCompat>
   </PropertyGroup>
 
     <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">

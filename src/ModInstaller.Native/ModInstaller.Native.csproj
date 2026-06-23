@@ -17,6 +17,7 @@
     <DebugType>none</DebugType>
     <NativeLib>Shared</NativeLib>
     <DefineConstants>$(DefineConstants);LOGGING;</DefineConstants>
+    <CETCompat>false</CETCompat>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(OS) == 'Windows_NT'">
