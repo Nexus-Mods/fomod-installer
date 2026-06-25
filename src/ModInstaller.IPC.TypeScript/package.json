@@ -1,6 +1,6 @@
 {
   "name": "@nexusmods/fomod-installer-ipc",
-  "version": "0.13.2",
+  "version": "0.13.3",
   "description": "Installer for xml and c# fomods",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
