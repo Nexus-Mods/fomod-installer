@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Xml.Schema;
 using System.Xml.XPath;
+using Utils;
 
 namespace FomodInstaller.Scripting.XmlScript.Parsers
 {
@@ -217,8 +218,10 @@ namespace FomodInstaller.Scripting.XmlScript.Parsers
 			List<InstallableFile> lstFiles = new List<InstallableFile>();
 			foreach (XElement xelFile in p_xeeFiles)
 			{
-				string strSource = xelFile.Attribute("source").Value;
-				string strDest = (xelFile.Attribute("destination") == null) ? strSource : xelFile.Attribute("destination").Value;
+				string strSource = TextUtil.NormalizePath(xelFile.Attribute("source").Value, false, true);
+				string strDest = (xelFile.Attribute("destination") == null)
+					? strSource
+					: TextUtil.NormalizePath(xelFile.Attribute("destination").Value, false, true);
 				bool booAlwaysInstall = Boolean.Parse(xelFile.Attribute("alwaysInstall").Value);
 				bool booInstallIfUsable = Boolean.Parse(xelFile.Attribute("installIfUsable").Value);
 
