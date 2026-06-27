@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using FomodInstaller.Scripting;
 using FomodInstaller.Scripting.XmlScript;
@@ -44,7 +45,10 @@ namespace FomodInstaller.ModInstaller
         {
             CurrentScriptTypeRegistry = new ScriptTypeRegistry();
 #if USE_CSHARP_SCRIPT
-            CurrentScriptTypeRegistry.RegisterType(new FomodInstaller.Scripting.CSharpScript.CSharpScriptType());
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                CurrentScriptTypeRegistry.RegisterType(new FomodInstaller.Scripting.CSharpScript.CSharpScriptType());
+            }
 #endif
             CurrentScriptTypeRegistry.RegisterType(new XmlScriptType());
             // CurrentScriptTypeRegistry = await ScriptTypeRegistry.DiscoverScriptTypes(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
@@ -116,7 +120,10 @@ namespace FomodInstaller.ModInstaller
         {
             CurrentScriptTypeRegistry = new ScriptTypeRegistry();
 #if USE_CSHARP_SCRIPT
-            CurrentScriptTypeRegistry.RegisterType(new FomodInstaller.Scripting.CSharpScript.CSharpScriptType());
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                CurrentScriptTypeRegistry.RegisterType(new FomodInstaller.Scripting.CSharpScript.CSharpScriptType());
+            }
 #endif
             CurrentScriptTypeRegistry.RegisterType(new XmlScriptType());
             // CurrentScriptTypeRegistry = await ScriptTypeRegistry.DiscoverScriptTypes(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
