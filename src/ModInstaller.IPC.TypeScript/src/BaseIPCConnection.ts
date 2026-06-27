@@ -153,13 +153,12 @@ export abstract class BaseIPCConnection {
    * @returns Array of absolute paths to check
    */
   protected getExecutablePaths(exeName: string): string[] {
-    const paths: string[] = [];
-
-    // The executable is distributed alongside the bundled JS in dist/
-    const distPath = path.join(__dirname, exeName);
-    paths.push(distPath);
-
-    return paths;
+    if (process.platform === 'win32') {
+      // Windows: dist/ModInstallerIPC.exe (flat layout, backward compatible)
+      return [path.join(__dirname, exeName)];
+    }
+    // Linux: dist/linux-x64/ModInstallerIPC (platform subdir)
+    return [path.join(__dirname, 'linux-x64', exeName)];
   }
 
   /**
@@ -450,7 +449,8 @@ export abstract class BaseIPCConnection {
    * Find the executable in various possible locations
    */
   private async findExecutable(): Promise<string> {
-    const possiblePaths = this.getExecutablePaths('ModInstallerIPC.exe');
+    const exeName = process.platform === 'win32' ? 'ModInstallerIPC.exe' : 'ModInstallerIPC';
+    const possiblePaths = this.getExecutablePaths(exeName);
 
     // Check each path
     for (const testPath of possiblePaths) {
