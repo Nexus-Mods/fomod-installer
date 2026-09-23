@@ -7,7 +7,7 @@
  * in the environment.
  */
 
-import { execSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -76,11 +76,17 @@ try {
     ` -credential_id="${credentialId}" -username="${username}"` +
     ` -password="${password}" -totp_secret="${totpSecret}"`
 
-  const output = execSync(command, { cwd: CODESIGNTOOL, encoding: 'utf8', stdio: 'pipe' })
+  // CodeSignTool reports some errors on stderr and still exits zero, so print
+  // both streams and check what it wrote rather than trusting the exit code.
+  const result = spawnSync(command, { cwd: CODESIGNTOOL, encoding: 'utf8', shell: true })
+  const output = [result.stdout, result.stderr].filter(Boolean).join('\n')
   console.log(redact(output, secrets).trim())
 
-  // CodeSignTool can exit zero without signing, so check what it wrote.
-  if (!existsSync(produced)) {
+  if (result.error !== undefined) {
+    failure = `could not run CodeSignTool: ${result.error.message}`
+  } else if (result.status !== 0) {
+    failure = `CodeSignTool exited with code ${result.status}`
+  } else if (!existsSync(produced)) {
     failure = `CodeSignTool wrote no file to ${outDir}`
   } else {
     const bytes = readFileSync(produced)
@@ -92,8 +98,7 @@ try {
     }
   }
 } catch (error) {
-  const detail = [error.stdout, error.stderr].filter(Boolean).join('\n').toString()
-  failure = `signing ${target} failed` + (detail ? `\n${redact(detail, secrets)}` : '')
+  failure = `signing ${target} failed: ${error.message}`
 }
 
 rmSync(TEMP, { recursive: true, force: true })
