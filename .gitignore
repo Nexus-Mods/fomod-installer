@@ -26,3 +26,8 @@ AnalysisReport.sarif
 
 # JetBrains
 .idea/
+
+# CodeSignTool, see scripts/download-codesigntool.ps1
+CodeSignTool.zip
+CodeSignTool/
+CodeSignTool-out/
