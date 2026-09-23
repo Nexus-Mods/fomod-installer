@@ -15,6 +15,10 @@ on:
         description: 'Dry run (do not actually publish)'
         type: boolean
         default: false
+      sign:
+        description: 'Sign the Windows binaries with SSL.com eSigner (required unless dry run)'
+        type: boolean
+        default: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -33,7 +37,33 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    permissions:
+      contents: read
+
     steps:
+      # A real publish must be signed. Unsigned is only allowed for dry runs.
+      - name: Decide whether to sign
+        id: signing
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          ES_USERNAME: ${{ secrets.ES_USERNAME }}
+        run: |
+          $wanted = '${{ inputs.sign }}' -eq 'true'
+          $dryRun = '${{ inputs.dry_run }}' -eq 'true'
+          $available = -not [string]::IsNullOrWhiteSpace($env:ES_USERNAME)
+
+          if (-not $wanted -and -not $dryRun) {
+            Write-Host '::error::Unsigned builds may only be dry runs. Dispatch with sign=true or dry_run=true.'
+            exit 1
+          }
+          if ($wanted -and -not $available) {
+            Write-Host '::error::Signing needs the ES_USERNAME, ES_PASSWORD, ES_CREDENTIAL_ID and ES_TOTP_SECRET secrets.'
+            exit 1
+          }
+
+          "enabled=$($wanted.ToString().ToLower())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
       - uses: actions/checkout@v6
 
       - uses: actions/setup-dotnet@v5
@@ -66,6 +96,34 @@ jobs:
           elif [ "${{ matrix.platform }}" = "linux-x64" ]; then
             cp ModInstaller.Native.so prebuilds/${{ matrix.platform }}/
           fi
+
+      - name: Cache CodeSignTool
+        if: steps.signing.outputs.enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: CodeSignTool.zip
+          # Keep in step with $Version in download-codesigntool.ps1.
+          key: codesigntool-v1.3.2
+
+      - name: Fetch CodeSignTool
+        if: steps.signing.outputs.enabled == 'true'
+        shell: pwsh
+        run: ./scripts/download-codesigntool.ps1
+
+      - name: Sign the Windows binaries
+        if: steps.signing.outputs.enabled == 'true'
+        shell: pwsh
+        run: ./scripts/sign-package.ps1 src/ModInstaller.Native.TypeScript/prebuilds/win32-x64
+        env:
+          ES_USERNAME: ${{ secrets.ES_USERNAME }}
+          ES_PASSWORD: ${{ secrets.ES_PASSWORD }}
+          ES_CREDENTIAL_ID: ${{ secrets.ES_CREDENTIAL_ID }}
+          ES_TOTP_SECRET: ${{ secrets.ES_TOTP_SECRET }}
+
+      - name: This build was not signed
+        if: runner.os == 'Windows' && steps.signing.outputs.enabled != 'true'
+        shell: pwsh
+        run: Write-Host '::warning::These binaries are unsigned and must not be published.'
 
       - name: Upload platform artifacts
         uses: actions/upload-artifact@v4
@@ -150,7 +208,32 @@ jobs:
     if: ${{ inputs.publish_ipc }}
     runs-on: windows-2022
 
+    permissions:
+      contents: read
+
     steps:
+      # A real publish must be signed. Unsigned is only allowed for dry runs.
+      - name: Decide whether to sign
+        id: signing
+        shell: pwsh
+        env:
+          ES_USERNAME: ${{ secrets.ES_USERNAME }}
+        run: |
+          $wanted = '${{ inputs.sign }}' -eq 'true'
+          $dryRun = '${{ inputs.dry_run }}' -eq 'true'
+          $available = -not [string]::IsNullOrWhiteSpace($env:ES_USERNAME)
+
+          if (-not $wanted -and -not $dryRun) {
+            Write-Host '::error::Unsigned builds may only be dry runs. Dispatch with sign=true or dry_run=true.'
+            exit 1
+          }
+          if ($wanted -and -not $available) {
+            Write-Host '::error::Signing needs the ES_USERNAME, ES_PASSWORD, ES_CREDENTIAL_ID and ES_TOTP_SECRET secrets.'
+            exit 1
+          }
+
+          "enabled=$($wanted.ToString().ToLower())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
       - uses: actions/checkout@v6
 
       - uses: actions/setup-dotnet@v5
@@ -167,6 +250,34 @@ jobs:
         run: |
           pnpm install
           pnpm --filter @nexusmods/fomod-installer-ipc build
+
+      - name: Cache CodeSignTool
+        if: steps.signing.outputs.enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: CodeSignTool.zip
+          # Keep in step with $Version in download-codesigntool.ps1.
+          key: codesigntool-v1.3.2
+
+      - name: Fetch CodeSignTool
+        if: steps.signing.outputs.enabled == 'true'
+        shell: pwsh
+        run: ./scripts/download-codesigntool.ps1
+
+      - name: Sign the Windows binaries
+        if: steps.signing.outputs.enabled == 'true'
+        shell: pwsh
+        run: ./scripts/sign-package.ps1 src/ModInstaller.IPC.TypeScript/dist
+        env:
+          ES_USERNAME: ${{ secrets.ES_USERNAME }}
+          ES_PASSWORD: ${{ secrets.ES_PASSWORD }}
+          ES_CREDENTIAL_ID: ${{ secrets.ES_CREDENTIAL_ID }}
+          ES_TOTP_SECRET: ${{ secrets.ES_TOTP_SECRET }}
+
+      - name: This build was not signed
+        if: steps.signing.outputs.enabled != 'true'
+        shell: pwsh
+        run: Write-Host '::warning::These binaries are unsigned and must not be published.'
 
       - name: Upload IPC dist
         uses: actions/upload-artifact@v4
