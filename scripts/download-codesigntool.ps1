@@ -48,6 +48,16 @@ if ($Sandbox) {
   Add-Content -Path $propertiesFile -Value 'TSA_URL=http://ts.ssl.com'
 }
 
+# The bundled JDK 11.0.2 doesn't trust SSL.com TLS RSA Root CA 2022, which
+# cs.ssl.com has chained to since 2026-09-22. Add it to that JDK's cacerts.
+$keytool = Join-Path $extractFolder 'jdk-11.0.2/bin/keytool.exe'
+$root = Join-Path $PSScriptRoot 'certs/SSLcomTLSRSARootCA2022.pem'
+& $keytool -importcert -noprompt -cacerts -storepass changeit -alias sslcom-tls-rsa-root-2022 -file $root
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "::error::Could not add $root to CodeSignTool's JDK."
+  exit 1
+}
+
 $bat = Join-Path $extractFolder 'CodeSignTool.bat'
 if (!(Test-Path $bat -PathType Leaf)) {
   Write-Host "::error::CodeSignTool.bat is not at $bat."
