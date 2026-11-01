@@ -7,7 +7,7 @@ catalog:
   '@types/node': ^22.0.0
   node-7z: ^3.0.0
   node-addon-api: 8.5.0
-  node-gyp: 10.0.0
+  node-gyp: ^13.0.1
   node-stream-zip: ^1.15.0
   ts-loader: ^9.5.1
   ts-node: ^10.9.1

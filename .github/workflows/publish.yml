@@ -30,9 +30,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: windows-2022
+          - os: windows-2025
             platform: win32-x64
-          - os: ubuntu-latest
+          - os: ubuntu-26.04
             platform: linux-x64
 
     runs-on: ${{ matrix.os }}
@@ -64,17 +64,17 @@ jobs:
 
           "enabled=$($wanted.ToString().ToLower())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '9.x'
 
       - name: Install Node.js via Volta
-        uses: volta-cli/action@v4
+        uses: volta-cli/action@v5
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Install dependencies
         run: pnpm install
@@ -99,7 +99,7 @@ jobs:
 
       - name: Cache CodeSignTool
         if: steps.signing.outputs.enabled == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: CodeSignTool.zip
           # Keep in step with $Version in download-codesigntool.ps1.
@@ -126,13 +126,13 @@ jobs:
         run: Write-Host '::warning::These binaries are unsigned and must not be published.'
 
       - name: Upload platform artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: native-${{ matrix.platform }}
           path: src/ModInstaller.Native.TypeScript/prebuilds/${{ matrix.platform }}/
 
       - name: Upload native header
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: native-header-${{ matrix.platform }}
           path: src/ModInstaller.Native.TypeScript/ModInstaller.Native.h
@@ -140,25 +140,25 @@ jobs:
   publish-native:
     if: ${{ inputs.publish_native }}
     needs: build-native
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       id-token: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install Node.js via Volta
-        uses: volta-cli/action@v4
+        uses: volta-cli/action@v5
 
       - name: Setup npm registry for provenance publishing
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Install dependencies
         run: pnpm install
@@ -167,7 +167,7 @@ jobs:
         run: pnpm --filter @nexusmods/fomod-installer-native build-webpack
 
       - name: Download all platform artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: src/ModInstaller.Native.TypeScript/prebuilds/
           pattern: native-*
@@ -206,7 +206,7 @@ jobs:
 
   build-ipc:
     if: ${{ inputs.publish_ipc }}
-    runs-on: windows-2022
+    runs-on: windows-2025
 
     permissions:
       contents: read
@@ -234,17 +234,17 @@ jobs:
 
           "enabled=$($wanted.ToString().ToLower())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '9.x'
 
       - name: Install Node.js via Volta
-        uses: volta-cli/action@v4
+        uses: volta-cli/action@v5
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Install and build IPC
         run: |
@@ -253,7 +253,7 @@ jobs:
 
       - name: Cache CodeSignTool
         if: steps.signing.outputs.enabled == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: CodeSignTool.zip
           # Keep in step with $Version in download-codesigntool.ps1.
@@ -280,7 +280,7 @@ jobs:
         run: Write-Host '::warning::These binaries are unsigned and must not be published.'
 
       - name: Upload IPC dist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ipc-dist
           path: src/ModInstaller.IPC.TypeScript/dist/
@@ -288,22 +288,22 @@ jobs:
   publish-ipc:
     if: ${{ inputs.publish_ipc }}
     needs: build-ipc
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       id-token: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js 24 for npm provenance publishing
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Download IPC dist
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ipc-dist
           path: src/ModInstaller.IPC.TypeScript/dist/
