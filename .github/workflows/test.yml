@@ -74,6 +74,8 @@ jobs:
       - name: Setup MSVC (Windows)
         if: runner.os == 'Windows'
         uses: TheMrMilchmann/setup-msvc-dev@v4
+        with:
+          arch: x64
 
       - name: Install build tools (Linux)
         if: runner.os == 'Linux'
