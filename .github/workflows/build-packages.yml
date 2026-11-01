@@ -86,7 +86,7 @@ jobs:
         run: pnpm --filter @nexusmods/fomod-installer-native build-webpack
 
       - name: Download all platform artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: src/ModInstaller.Native.TypeScript/prebuilds/
           pattern: native-*
