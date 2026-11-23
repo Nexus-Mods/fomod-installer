@@ -56,7 +56,11 @@ export interface ConditionSnapshot {
   /** For `Environment`: which environment condition this is. */
   environmentType?: EnvironmentType | null;
 
-  /** For `Environment`: the minimum version required, as declared. */
+  /**
+   * For `Environment`: the minimum version required, as declared. The version actually
+   * observed at install time is NOT recorded, so an Environment leaf is undecidable - see
+   * ResolverSnapshot.
+   */
   minimumVersion?: string | null;
 
   /** For `Environment`: the script extender identifier (fose, nvse, f4se, skse). */
@@ -80,6 +84,13 @@ export interface PatternSnapshot {
  * Evaluation order for `Conditional`, matching the installer: walk `patterns` in order and
  * return the `type` of the first pattern whose `condition` is fulfilled. If none is
  * fulfilled, return `defaultType`.
+ *
+ * A condition may be undecidable from the snapshot alone - an `Environment` leaf, because the
+ * version observed at install time is not recorded. Undecidability propagates through the tree,
+ * and a pattern whose condition is undecidable makes the rest of the walk undecidable too,
+ * because it may have been the first pattern to match. A consumer that reaches an undecidable
+ * pattern must return the recorded `OptionSnapshot.type` rather than continuing to the next
+ * pattern or falling through to `defaultType`.
  */
 export interface ResolverSnapshot {
   kind: ResolverKind;

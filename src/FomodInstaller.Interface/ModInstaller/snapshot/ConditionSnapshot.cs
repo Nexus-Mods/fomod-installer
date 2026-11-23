@@ -18,9 +18,25 @@ namespace FomodInstaller.Interface.snapshot
 
         /// <summary>
         /// A condition on the environment (game version, script extender version, mod manager
-        /// version). These cannot change as a result of what the user installs, so a consumer
-        /// should treat them as stable and skip them.
+        /// version).
         /// </summary>
+        /// <remarks>
+        /// These are <b>not</b> re-evaluable from the snapshot. The requirement is recorded
+        /// (<see cref="ConditionSnapshot.MinimumVersion"/>) but the version actually observed at
+        /// install time is not, so a consumer cannot tell whether the requirement was met.
+        /// <para>
+        /// Treat this kind as <i>undecidable</i>, not as unfulfilled. Undecidability propagates:
+        /// an enclosing <see cref="Composite"/> is undecidable unless a sibling already decides it,
+        /// and a pattern whose condition is undecidable makes the whole resolution undecidable
+        /// because it may have been the first pattern to match. A consumer that reaches that point
+        /// must fall back to the recorded <see cref="OptionSnapshot.Type"/> instead of guessing.
+        /// </para>
+        /// <para>
+        /// Assuming the condition failed is the one answer that is certainly wrong: it reports an
+        /// option the installer found usable as having become unusable, which is the false alarm
+        /// this snapshot exists to avoid.
+        /// </para>
+        /// </remarks>
         public const string Environment = "Environment";
 
         /// <summary>A condition kind this installer does not know. Treat as opaque.</summary>

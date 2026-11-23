@@ -35,6 +35,15 @@ namespace FomodInstaller.Interface.snapshot
     /// ConditionalOptionTypeResolver.ResolveOptionType actually implements: walk
     /// <see cref="Patterns"/> in order and return the Type of the first pattern whose Condition
     /// is fulfilled. If none is fulfilled, return <see cref="DefaultType"/>.
+    /// <para>
+    /// A condition may be <i>undecidable</i> from the snapshot alone - an
+    /// <see cref="ConditionKind.Environment"/> leaf, because the version observed at install time
+    /// is not recorded. Undecidability propagates through the tree, and a pattern whose condition
+    /// is undecidable makes the rest of the walk undecidable too, because it may have been the
+    /// first pattern to match. A consumer that reaches an undecidable pattern must therefore
+    /// return the recorded <see cref="OptionSnapshot.Type"/> rather than continuing to the next
+    /// pattern or falling through to <see cref="DefaultType"/>.
+    /// </para>
     /// </remarks>
     public class ResolverSnapshot
     {

@@ -26,7 +26,9 @@ public class OptionSnapshotTests
 {
     private const string ArchiveFile = "ConditionSnapshotTest.zip";
 
-    private static InstallData MakeData(string[] installedPlugins, JsonDocument? preset = null)
+    private static InstallData MakeData(string[] installedPlugins,
+                                        JsonDocument? preset = null,
+                                        string gameVersion = "1.0.0")
     {
         return new InstallData
         {
@@ -36,7 +38,7 @@ public class OptionSnapshotTests
             StopPatterns = new List<string> { "(^|/)fomod(/|$)" },
             PluginPath = "Data",
             AppVersion = "1.0.0",
-            GameVersion = "1.0.0",
+            GameVersion = gameVersion,
             ExtenderVersion = "1.0.0",
             InstalledPlugins = installedPlugins.ToList(),
             DialogChoices = null,
@@ -110,41 +112,85 @@ public class OptionSnapshotTests
         Walk(condition).Where(c => c.Kind == kind).ToList();
 
     /// <summary>
+    /// The three answers a condition can give when evaluated from the snapshot alone. Environment
+    /// conditions are <see cref="Truth.Undecidable"/> because the version observed at install time
+    /// is not recorded, so the snapshot cannot say whether the requirement was met.
+    /// </summary>
+    private enum Truth { False, True, Undecidable }
+
+    /// <summary>
     /// An evaluator that lives entirely outside the installer: it reads only the snapshot, a
     /// plugin list and a flag map. This is what a consumer such as Vortex would run.
     /// </summary>
-    private static bool IsFulfilled(ConditionSnapshot condition,
-                                   Func<string, bool> isActive,
-                                   Func<string, bool> isPresent,
-                                   IReadOnlyDictionary<string, string> flags)
+    private static Truth IsFulfilled(ConditionSnapshot condition,
+                                     Func<string, bool> isActive,
+                                     Func<string, bool> isPresent,
+                                     IReadOnlyDictionary<string, string> flags)
     {
         switch (condition.Kind)
         {
             case ConditionKind.Plugin:
                 return condition.PluginState switch
                 {
-                    "Active" => isActive(condition.PluginPath),
-                    "Inactive" => isPresent(condition.PluginPath) && !isActive(condition.PluginPath),
-                    "Missing" => !isPresent(condition.PluginPath),
-                    _ => false,
+                    "Active" => isActive(condition.PluginPath) ? Truth.True : Truth.False,
+                    "Inactive" => isPresent(condition.PluginPath) && !isActive(condition.PluginPath)
+                        ? Truth.True : Truth.False,
+                    "Missing" => !isPresent(condition.PluginPath) ? Truth.True : Truth.False,
+                    _ => Truth.Undecidable,
                 };
             case ConditionKind.Flag:
                 flags.TryGetValue(condition.FlagName, out var value);
-                return string.IsNullOrEmpty(condition.FlagValue)
+                bool fulfilled = string.IsNullOrEmpty(condition.FlagValue)
                     ? string.IsNullOrEmpty(value)
                     : condition.FlagValue == value;
+                return fulfilled ? Truth.True : Truth.False;
             case ConditionKind.Composite:
-                if (condition.Operator == "Or")
-                    return condition.Conditions.Any(c => IsFulfilled(c, isActive, isPresent, flags));
-                return condition.Conditions.All(c => IsFulfilled(c, isActive, isPresent, flags));
+                return IsFulfilledComposite(condition, isActive, isPresent, flags);
             default:
-                // Environment and Unknown kinds are stable / opaque; treat as not fulfilled
-                // rather than guessing.
-                return false;
+                // Environment and Unknown kinds: the snapshot records the requirement but not the
+                // observed state, so this is undecidable - NOT false. Answering false would report
+                // an option the installer found usable as having become unusable.
+                return Truth.Undecidable;
         }
     }
 
+    /// <summary>
+    /// Undecidability propagates through a composite, but a decided sibling can still settle it:
+    /// an Or with any true child is true, an And with any false child is false.
+    /// </summary>
+    private static Truth IsFulfilledComposite(ConditionSnapshot condition,
+                                              Func<string, bool> isActive,
+                                              Func<string, bool> isPresent,
+                                              IReadOnlyDictionary<string, string> flags)
+    {
+        bool isOr = condition.Operator == "Or";
+        bool sawUndecidable = false;
+
+        foreach (var sub in condition.Conditions)
+        {
+            switch (IsFulfilled(sub, isActive, isPresent, flags))
+            {
+                case Truth.True when isOr:
+                    return Truth.True;
+                case Truth.False when !isOr:
+                    return Truth.False;
+                case Truth.Undecidable:
+                    sawUndecidable = true;
+                    break;
+            }
+        }
+
+        return sawUndecidable ? Truth.Undecidable : (isOr ? Truth.False : Truth.True);
+    }
+
+    /// <summary>
+    /// Reproduces ConditionalOptionTypeResolver.ResolveOptionType: first matching pattern wins,
+    /// else the default type. When a pattern's condition is undecidable the walk cannot continue -
+    /// it may have been the first pattern to match - so the recorded install-time type is returned
+    /// instead of a guess.
+    /// </summary>
     private static string Evaluate(ResolverSnapshot resolver,
+                                   string recordedType,
                                    Func<string, bool> isActive,
                                    Func<string, bool> isPresent,
                                    IReadOnlyDictionary<string, string> flags)
@@ -154,8 +200,13 @@ public class OptionSnapshotTests
 
         foreach (var pattern in resolver.Patterns)
         {
-            if (IsFulfilled(pattern.Condition, isActive, isPresent, flags))
-                return pattern.Type;
+            switch (IsFulfilled(pattern.Condition, isActive, isPresent, flags))
+            {
+                case Truth.True:
+                    return pattern.Type;
+                case Truth.Undecidable:
+                    return recordedType;
+            }
         }
         return resolver.DefaultType;
     }
@@ -234,7 +285,7 @@ public class OptionSnapshotTests
         // A consumer must compute Required when only B.esl is active.
         var onlyEslActive = new Func<string, bool>(p => p == "b.esl");
         var nonePresent = new Func<string, bool>(p => p == "b.esl");
-        var computed = Evaluate(option.Resolver, onlyEslActive, nonePresent,
+        var computed = Evaluate(option.Resolver, option.Type, onlyEslActive, nonePresent,
                                 new Dictionary<string, string>());
         await Assert.That(computed).IsEqualTo("Required");
     }
@@ -266,6 +317,74 @@ public class OptionSnapshotTests
         await Assert.That(environment[0].Message).IsNotNull();
     }
 
+    /// <summary>
+    /// The environment counterpart of EvaluatingSnapshotReproducesInstallerOptionType. The
+    /// snapshot records the version requirement but not the version observed at install time, so
+    /// the leaf is undecidable - and a consumer must fall back to the recorded type rather than
+    /// assume the requirement failed. Assuming failure here would report an option the installer
+    /// found Required as having become unusable.
+    /// </summary>
+    [Test]
+    public async Task FulfilledEnvironmentConditionFallsBackToRecordedType()
+    {
+        // The fixture requires game version 99.0.0; install with 100.0.0 so it IS fulfilled.
+        var data = MakeData(Array.Empty<string>(), gameVersion: "100.0.0");
+        var result = await Install(data, new DeterministicUIContext(null));
+
+        var option = FindOption(result.OptionSnapshot, "Environment Gated Option");
+        await Assert.That(option.Type).IsEqualTo("Required");
+        await Assert.That(option.Resolver.DefaultType).IsEqualTo("NotUsable");
+
+        // The leaf is recorded as Environment, carrying the requirement but not the observation.
+        var environment = Leaves(option.Resolver.Patterns[0].Condition, ConditionKind.Environment);
+        await Assert.That(environment.Count).IsEqualTo(1);
+        await Assert.That(environment[0].MinimumVersion).IsEqualTo("99.0.0");
+
+        // Undecidable, so the consumer returns the recorded type - not the default type.
+        var computed = Evaluate(option.Resolver, option.Type,
+            _ => false, _ => false, new Dictionary<string, string>());
+        await Assert.That(computed).IsEqualTo("Required");
+        await Assert.That(computed).IsEqualTo(option.Type);
+
+        // The naive 'treat environment as not fulfilled' answer is the one that is wrong.
+        await Assert.That(computed).IsNotEqualTo(option.Resolver.DefaultType);
+    }
+
+    /// <summary>
+    /// Undecidability propagates through a composite, but a decided sibling still settles it:
+    /// an Or that a plugin leaf satisfies is True regardless of an undecidable environment leaf.
+    /// </summary>
+    [Test]
+    public async Task DecidedSiblingSettlesCompositeDespiteUndecidableLeaf()
+    {
+        var data = MakeData(Array.Empty<string>(), gameVersion: "100.0.0");
+        var result = await Install(data, new DeterministicUIContext(null));
+
+        var option = FindOption(result.OptionSnapshot, "Patch for Mod B or B.esl");
+        var condition = option.Resolver.Patterns[0].Condition;
+
+        // Synthesise the mixed tree the real parser can produce: Or(plugin, environment).
+        var mixed = new ConditionSnapshot
+        {
+            Kind = ConditionKind.Composite,
+            Operator = "Or",
+            Conditions = new List<ConditionSnapshot>
+            {
+                condition.Conditions[0],
+                Leaves(FindOption(result.OptionSnapshot, "Environment Gated Option")
+                       .Resolver.Patterns[0].Condition, ConditionKind.Environment)[0],
+            },
+        };
+
+        // Plugin leaf satisfied -> True, even though the environment leaf is undecidable.
+        await Assert.That(IsFulfilled(mixed, p => p == "b.esp", p => p == "b.esp",
+                                      new Dictionary<string, string>())).IsEqualTo(Truth.True);
+
+        // Plugin leaf unsatisfied -> still undecidable, because the environment leaf might pass.
+        await Assert.That(IsFulfilled(mixed, _ => false, _ => false,
+                                      new Dictionary<string, string>())).IsEqualTo(Truth.Undecidable);
+    }
+
     [Test]
     public async Task EvaluatingSnapshotReproducesInstallerOptionType()
     {
@@ -275,7 +394,7 @@ public class OptionSnapshotTests
         var absentOption = FindOption(absentResult.OptionSnapshot, "Patch for Mod B");
         await Assert.That(absentOption.Type).IsEqualTo("NotUsable");
 
-        var computedWhenAbsent = Evaluate(absentOption.Resolver,
+        var computedWhenAbsent = Evaluate(absentOption.Resolver, absentOption.Type,
             _ => false, _ => false, new Dictionary<string, string>());
         await Assert.That(computedWhenAbsent).IsEqualTo(absentOption.Type);
 
@@ -287,7 +406,7 @@ public class OptionSnapshotTests
 
         // 3. Re-evaluating the snapshot taken when B.esp was ABSENT, against the new plugin
         //    list, must now yield Required - the change Vortex wants to report.
-        var recomputed = Evaluate(absentOption.Resolver,
+        var recomputed = Evaluate(absentOption.Resolver, absentOption.Type,
             p => p == "b.esp", p => p == "b.esp", new Dictionary<string, string>());
         await Assert.That(recomputed).IsEqualTo("Required");
         await Assert.That(recomputed).IsEqualTo(presentOption.Type);
