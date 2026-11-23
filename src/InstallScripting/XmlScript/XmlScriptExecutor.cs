@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using FomodInstaller.Interface;
 using System.Linq;
+using FomodInstaller.Interface.snapshot;
 using FomodInstaller.Interface.ui;
 using System.IO;
 using System.Threading;
@@ -44,6 +45,12 @@ namespace FomodInstaller.Scripting.XmlScript
         private ISet<Option> m_SelectedOptions;
         private OptionsPreset? m_Preset;
         private bool m_Preselect;
+
+        /// <summary>
+        /// The option-condition snapshot for the install that just ran, or null if no install has
+        /// completed. Populated on both the attended and the headless preset path.
+        /// </summary>
+        public InstallSnapshot OptionSnapshot { get; private set; }
 
         #region Constructors
 
@@ -139,6 +146,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 }
 
                 var instructions = collectInstructions(lstSteps, xscScript, PluginsToActivate);
+                OptionSnapshot = InstallSnapshotBuilder.Build(lstSteps, m_csmState, m_Delegates, m_SelectedOptions);
                 Source.SetResult(instructions);
                 return await Source.Task;
             }
@@ -210,6 +218,7 @@ namespace FomodInstaller.Scripting.XmlScript
                 m_Delegates.ui.EndDialog();
 
                 var instructions = collectInstructions(lstSteps, xscScript, PluginsToActivate);
+                OptionSnapshot = InstallSnapshotBuilder.Build(lstSteps, m_csmState, m_Delegates, m_SelectedOptions);
                 Source.SetResult(instructions);
             }
             else

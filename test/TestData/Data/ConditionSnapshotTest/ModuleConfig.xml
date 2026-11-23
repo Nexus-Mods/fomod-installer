@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://qconsulting.ca/fo3/ModConfig5.0.xsd">
+  <moduleName>Condition Snapshot Test</moduleName>
+  <installSteps order="Explicit">
+    <installStep name="Step1">
+      <optionalFileGroups order="Explicit">
+        <group name="Compatibility" type="SelectAny">
+          <plugins order="Explicit">
+            <plugin name="Compatibility Patches">
+              <description>Sets the patches flag.</description>
+              <files>
+                <file source="compat\compat.txt" destination="compat.txt" priority="0" />
+              </files>
+              <conditionFlags>
+                <flag name="patches">enabled</flag>
+              </conditionFlags>
+              <typeDescriptor>
+                <type name="Optional" />
+              </typeDescriptor>
+            </plugin>
+          </plugins>
+        </group>
+        <group name="PatchForModB" type="SelectAny">
+          <plugins order="Explicit">
+            <plugin name="Patch for Mod B">
+              <description>Requires B.esp to be active.</description>
+              <files>
+                <file source="patchb\patchb.txt" destination="patchb.txt" priority="0" />
+              </files>
+              <typeDescriptor>
+                <dependencyType>
+                  <defaultType name="NotUsable" />
+                  <patterns>
+                    <pattern>
+                      <dependencies>
+                        <fileDependency file="B.esp" state="Active" />
+                      </dependencies>
+                      <type name="Required" />
+                    </pattern>
+                  </patterns>
+                </dependencyType>
+              </typeDescriptor>
+            </plugin>
+          </plugins>
+        </group>
+        <group name="PatchForModC" type="SelectAny">
+          <plugins order="Explicit">
+            <plugin name="Patch for Mod C">
+              <description>Requires the patches flag.</description>
+              <files>
+                <file source="patchc\patchc.txt" destination="patchc.txt" priority="0" />
+              </files>
+              <typeDescriptor>
+                <dependencyType>
+                  <defaultType name="NotUsable" />
+                  <patterns>
+                    <pattern>
+                      <dependencies>
+                        <flagDependency flag="patches" value="enabled" />
+                      </dependencies>
+                      <type name="Optional" />
+                    </pattern>
+                  </patterns>
+                </dependencyType>
+              </typeDescriptor>
+            </plugin>
+          </plugins>
+        </group>
+        <group name="CompositeOr" type="SelectAny">
+          <plugins order="Explicit">
+            <plugin name="Patch for Mod B or B.esl">
+              <description>Requires B.esp or B.esl active.</description>
+              <files>
+                <file source="or\or.txt" destination="or.txt" priority="0" />
+              </files>
+              <typeDescriptor>
+                <dependencyType>
+                  <defaultType name="NotUsable" />
+                  <patterns>
+                    <pattern>
+                      <dependencies operator="Or">
+                        <fileDependency file="B.esp" state="Active" />
+                        <fileDependency file="B.esl" state="Active" />
+                      </dependencies>
+                      <type name="Required" />
+                    </pattern>
+                  </patterns>
+                </dependencyType>
+              </typeDescriptor>
+            </plugin>
+          </plugins>
+        </group>
+        <group name="EnvironmentGated" type="SelectAny">
+          <plugins order="Explicit">
+            <plugin name="Environment Gated Option">
+              <description>Gated on game version only.</description>
+              <files>
+                <file source="env\env.txt" destination="env.txt" priority="0" />
+              </files>
+              <typeDescriptor>
+                <dependencyType>
+                  <defaultType name="NotUsable" />
+                  <patterns>
+                    <pattern>
+                      <dependencies>
+                        <gameDependency version="99.0.0" />
+                      </dependencies>
+                      <type name="Required" />
+                    </pattern>
+                  </patterns>
+                </dependencyType>
+              </typeDescriptor>
+            </plugin>
+          </plugins>
+        </group>
+      </optionalFileGroups>
+    </installStep>
+  </installSteps>
+</config>

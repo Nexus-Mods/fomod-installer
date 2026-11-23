@@ -3,7 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using FomodInstaller.Interface;
+using FomodInstaller.Interface.snapshot;
 using FomodInstaller.Scripting;
+using FomodInstaller.Scripting.XmlScript;
 using System.Globalization;
 using System;
 
@@ -87,6 +89,7 @@ namespace FomodInstaller.ModInstaller
             IList<Instruction> Instructions = new List<Instruction>();
             ModFormatManager FormatManager = new ModFormatManager();
             string ScriptFilePath = null;
+            InstallSnapshot OptionSnapshot = null;
 
             try
             {
@@ -112,7 +115,7 @@ namespace FomodInstaller.ModInstaller
                 }
                 else
                 {
-                    Instructions = await ScriptedModInstall(modToInstall, preset, preselect, progressDelegate, coreDelegate);
+                    (Instructions, OptionSnapshot) = await ScriptedModInstall(modToInstall, preset, preselect, progressDelegate, coreDelegate);
                 }
                 if (Instructions == null)
                 {
@@ -142,11 +145,19 @@ namespace FomodInstaller.ModInstaller
 
             progressDelegate(100);
 
-            return new Dictionary<string, object>
+            var Result = new Dictionary<string, object>
             {
                 { "message", "Installation successful" },
                 { "instructions", Instructions }
             };
+
+            // Additive: consumers that don't know this key ignore it.
+            if (OptionSnapshot != null)
+            {
+                Result["optionSnapshot"] = OptionSnapshot;
+            }
+
+            return Result;
         }
 
         #endregion
@@ -229,10 +240,14 @@ namespace FomodInstaller.ModInstaller
         /// <param name="prefixPath">base path for all relative paths</param>
         /// <param name="progressDelegate">A delegate to provide progress feedback.</param>
         /// <param name="coreDelegate">A delegate for all the interactions with the js core.</param>
-        protected async Task<IList<Instruction>> ScriptedModInstall(Mod modArchive, object? preset, bool preselect, ProgressDelegate progressDelegate, CoreDelegates coreDelegate)
+        protected async Task<(IList<Instruction> Instructions, InstallSnapshot OptionSnapshot)> ScriptedModInstall(Mod modArchive, object? preset, bool preselect, ProgressDelegate progressDelegate, CoreDelegates coreDelegate)
         {
             IScriptExecutor sexScript = modArchive.InstallScript.Type.CreateExecutor(modArchive, coreDelegate);
-            return await sexScript.Execute(modArchive.InstallScript, modArchive.TempPath, preset, preselect);
+            IList<Instruction> Instructions = await sexScript.Execute(modArchive.InstallScript, modArchive.TempPath, preset, preselect);
+
+            // Only the XML script executor builds an option tree; other script types leave this null.
+            InstallSnapshot OptionSnapshot = (sexScript as XmlScriptExecutor)?.OptionSnapshot;
+            return (Instructions, OptionSnapshot);
         }
 
         #endregion

@@ -18,6 +18,7 @@
     <EmbeddedResource Include="Data\FomodComplianceTests.zip" />
     <EmbeddedResource Include="Data\InvisibleStepTest.zip" />
     <EmbeddedResource Include="Data\CSharpTestCase.zip" />
+    <EmbeddedResource Include="Data\ConditionSnapshotTest.zip" />
   </ItemGroup>
 
   <!-- Copy shared JSON test data to output for runtime access -->
