@@ -32,3 +32,7 @@ export {
 } from './launchers';
 
 export * from './cleanup-processes';
+
+// Result types
+
+export * from './types';

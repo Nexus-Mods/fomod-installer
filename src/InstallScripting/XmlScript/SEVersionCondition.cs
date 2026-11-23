@@ -13,6 +13,18 @@ namespace FomodInstaller.Scripting.XmlScript
     private string m_strExtender;
 
     /// <summary>
+    /// Gets the identifier of the script extender this condition refers to, e.g. "fse", "nvse",
+    /// "f4se" or "skse".
+    /// </summary>
+    public string Extender
+    {
+      get
+      {
+        return m_strExtender;
+      }
+    }
+
+    /// <summary>
     /// A simple constructor that initializes the object with the given values.
     /// </summary>
     /// <param name="p_verVersion">The minimum required version the script extender.</param>

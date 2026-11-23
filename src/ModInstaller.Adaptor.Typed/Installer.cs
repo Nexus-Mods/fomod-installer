@@ -1,6 +1,8 @@
 ﻿using FomodInstaller.Interface;
+using FomodInstaller.Interface.snapshot;
 using FomodInstaller.ModInstaller;
 using FomodInstaller.Scripting;
+using FomodInstaller.Scripting.XmlScript;
 
 using System;
 using System.Collections.Generic;
@@ -83,6 +85,7 @@ public static class Installer
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
         var instructions = new List<Instruction>();
         string scriptFilePath = null;
+        InstallSnapshot optionSnapshot = null;
 
         try
         {
@@ -100,7 +103,8 @@ public static class Installer
 
         if (modToInstall.HasInstallScript)
         {
-            instructions = await ScriptedModInstall(modToInstall, preset, preselect, coreDelegate) ??
+            (instructions, optionSnapshot) = await ScriptedModInstall(modToInstall, preset, preselect, coreDelegate);
+            instructions = instructions ??
                            Instruction.InstallErrorList("warning", "Installer failed (it should have reported an error message)");
         }
         else
@@ -129,6 +133,7 @@ public static class Installer
         {
             Message = "Installation successful",
             Instructions = instructions,
+            OptionSnapshot = optionSnapshot,
         };
     }
 
@@ -190,7 +195,7 @@ public static class Installer
     /// </summary>
     /// <param name="modArchive">The list of files inside the mod archive.</param>
     /// <param name="coreDelegate">A delegate for all the interactions with the js core.</param>
-    private static async Task<List<Instruction>> ScriptedModInstall(
+    private static async Task<(List<Instruction> Instructions, InstallSnapshot OptionSnapshot)> ScriptedModInstall(
         Mod modArchive,
         JsonDocument? preset,
         bool preselect,
@@ -199,7 +204,11 @@ public static class Installer
         var presetExpando = preset is not null ? JsonUtils.ParseJsonArray(preset) : null;
 
         var sexScript = modArchive.InstallScript.Type.CreateExecutor(modArchive, coreDelegate);
-        return (await sexScript.Execute(modArchive.InstallScript, modArchive.TempPath, presetExpando, preselect)).ToList();
+        var instructions = (await sexScript.Execute(modArchive.InstallScript, modArchive.TempPath, presetExpando, preselect)).ToList();
+
+        // Only the XML script executor builds an option tree; other script types leave this null.
+        var optionSnapshot = (sexScript as XmlScriptExecutor)?.OptionSnapshot;
+        return (instructions, optionSnapshot);
     }
 }
 

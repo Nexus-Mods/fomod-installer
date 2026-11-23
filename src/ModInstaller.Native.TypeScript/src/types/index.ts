@@ -3,6 +3,7 @@ export * from './FileSystem';
 export * from './Logger';
 export * from './SupportedResult';
 export * from './InstallResult';
+export * from './InstallSnapshot';
 
 import { IFileSystemExtension } from './FileSystem';
 import { ILoggerExtension } from './Logger';

@@ -1,4 +1,5 @@
-﻿using FomodInstaller.Interface.ui;
+﻿using FomodInstaller.Interface.snapshot;
+using FomodInstaller.Interface.ui;
 
 using ModInstaller.Lite;
 
@@ -23,4 +24,12 @@ namespace ModInstaller.Native.Tests.Utils;
 [JsonSerializable(typeof(InstallResult))]
 [JsonSerializable(typeof(JsonDocument))]
 [JsonSerializable(typeof(InstallerStep[]))]
+[JsonSerializable(typeof(InstallSnapshot))]
+[JsonSerializable(typeof(StepSnapshot))]
+[JsonSerializable(typeof(GroupSnapshot))]
+[JsonSerializable(typeof(OptionSnapshot))]
+[JsonSerializable(typeof(ResolverSnapshot))]
+[JsonSerializable(typeof(PatternSnapshot))]
+[JsonSerializable(typeof(ConditionSnapshot))]
+[JsonSerializable(typeof(FlagSnapshot))]
 internal partial class SourceGenerationContext : JsonSerializerContext;
