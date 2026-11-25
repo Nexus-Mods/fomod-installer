@@ -16,6 +16,9 @@
     <TrimMode>full</TrimMode>
     <DebugType>none</DebugType>
     <NativeLib>Shared</NativeLib>
+    <!-- .NET 10+ prefixes shared libraries with "lib" outside Windows (libModInstaller.Native.so);
+         keep the ModInstaller.Native.so name the binding, prebuilds and tests load. -->
+    <UseNativeLibPrefix>false</UseNativeLibPrefix>
     <DefineConstants>$(DefineConstants);LOGGING;</DefineConstants>
     <CETCompat>false</CETCompat>
   </PropertyGroup>

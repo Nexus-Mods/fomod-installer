@@ -13,17 +13,23 @@ namespace ModInstaller.Native.Tests.Utils;
 internal static partial class Utils2
 {
     // Use platform-specific path for the native DLL
-    // The RuntimeIdentifier is set based on OS in ModInstaller.Native.csproj
+    // ModInstaller.Native.csproj sets the RuntimeIdentifier from the host's OS and architecture
 #if DEBUG
-    private const string BasePath = "../../../../../src/ModInstaller.Native/bin/Debug/net9.0";
+    private const string BasePath = "../../../../../src/ModInstaller.Native/bin/Debug/net11.0";
 #else
-    private const string BasePath = "../../../../../src/ModInstaller.Native/bin/Release/net9.0";
+    private const string BasePath = "../../../../../src/ModInstaller.Native/bin/Release/net11.0";
+#endif
+
+#if ARM64
+    private const string Arch = "arm64";
+#else
+    private const string Arch = "x64";
 #endif
 
 #if WINDOWS
-    public const string DllPath = BasePath + "/win-x64/native/ModInstaller.Native.dll";
+    public const string DllPath = BasePath + "/win-" + Arch + "/native/ModInstaller.Native.dll";
 #elif LINUX
-    public const string DllPath = BasePath + "/linux-x64/native/ModInstaller.Native.so";
+    public const string DllPath = BasePath + "/linux-" + Arch + "/native/ModInstaller.Native.so";
 #else
 #error Unsupported platform
 #endif
