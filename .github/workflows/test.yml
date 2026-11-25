@@ -23,7 +23,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: |
+            9.0.x
+            11.0.x
 
       - name: Build (Windows)
         if: runner.os == 'Windows'
@@ -63,7 +65,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: |
+            9.0.x
+            11.0.x
 
       - name: Install Node.js via Volta
         uses: volta-cli/action@v4
@@ -115,7 +119,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: |
+            9.0.x
+            11.0.x
 
       - name: Setup Mono
         if: matrix.runtime == 'mono'
