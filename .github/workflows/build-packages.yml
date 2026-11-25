@@ -29,6 +29,24 @@ jobs:
         with:
           dotnet-version: '11.x'
 
+      # .NET 11 NativeAOT for win-arm64 needs the Visual Studio 2026 linker: the VS 2022 ARM64
+      # linker fails on its output with LNK1322 (Cortex-A53 erratum 843419, dotnet/runtime#133835),
+      # and the windows-11-arm image ships only VS 2022. NativeAOT uses the newest Visual Studio
+      # that has the ARM64 tools, so installing 2026 next to 2022 is enough.
+      - name: Install Visual Studio 2026 Build Tools
+        if: matrix.platform == 'win32-arm64'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://aka.ms/vs/18/stable/vs_buildtools.exe -OutFile vs_buildtools.exe
+          $installer = Start-Process -FilePath .\vs_buildtools.exe -Wait -PassThru -ArgumentList @(
+            '--quiet', '--wait', '--norestart', '--nocache',
+            '--add', 'Microsoft.VisualStudio.Workload.VCTools',
+            '--add', 'Microsoft.VisualStudio.Component.VC.Tools.ARM64',
+            '--add', 'Microsoft.VisualStudio.Component.Windows11SDK.26100'
+          )
+          # 3010: installed, a restart is pending
+          if ($installer.ExitCode -notin 0, 3010) { throw "vs_buildtools.exe failed with exit code $($installer.ExitCode)" }
+
       - name: Install Node.js via Volta
         uses: volta-cli/action@v4
 
