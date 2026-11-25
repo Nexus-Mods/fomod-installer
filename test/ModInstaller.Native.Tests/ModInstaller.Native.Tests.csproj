@@ -6,6 +6,9 @@
     <TargetFramework>net9.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>ModInstaller.Native.Tests</RootNamespace>
+    <!-- Run NUnit on Microsoft.Testing.Platform, which global.json selects for dotnet test -->
+    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <!-- Define WINDOWS constant for Windows builds -->
@@ -15,6 +18,11 @@
   <!-- Define LINUX constant for Linux builds -->
   <PropertyGroup Condition="$([MSBuild]::IsOsPlatform('Linux'))">
     <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
+  </PropertyGroup>
+  <!-- Define ARM64 on arm64 hosts: ModInstaller.Native publishes for the host's architecture,
+       so the tests load the library from its win-arm64 / linux-arm64 output folder there -->
+  <PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'Arm64'">
+    <DefineConstants>$(DefineConstants);ARM64</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -16,15 +16,25 @@
     <TrimMode>full</TrimMode>
     <DebugType>none</DebugType>
     <NativeLib>Shared</NativeLib>
+    <!-- .NET 10+ prefixes shared libraries with "lib" outside Windows (libModInstaller.Native.so);
+         keep the ModInstaller.Native.so name the binding, prebuilds and tests load. -->
+    <UseNativeLibPrefix>false</UseNativeLibPrefix>
     <DefineConstants>$(DefineConstants);LOGGING;</DefineConstants>
     <CETCompat>false</CETCompat>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(OS) == 'Windows_NT'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  <!--
+    Default to the host's architecture (x64 or arm64) when no RID is given on the
+    command line; `dotnet publish -r <rid>` still overrides this.
+  -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
+    <_HostArch>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())</_HostArch>
   </PropertyGroup>
-  <PropertyGroup Condition="$(OS) != 'Windows_NT'">
-    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == '' And $(OS) == 'Windows_NT'">
+    <RuntimeIdentifier>win-$(_HostArch)</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == '' And $(OS) != 'Windows_NT'">
+    <RuntimeIdentifier>linux-$(_HostArch)</RuntimeIdentifier>
   </PropertyGroup>
   
   <PropertyGroup Condition="$(Configuration) == 'Release'">
