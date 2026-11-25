@@ -6,6 +6,9 @@
     <TargetFramework>net9.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>ModInstaller.Native.Tests</RootNamespace>
+    <!-- Run NUnit on Microsoft.Testing.Platform, which global.json selects for dotnet test -->
+    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <!-- Define WINDOWS constant for Windows builds -->
