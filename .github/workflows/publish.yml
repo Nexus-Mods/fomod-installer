@@ -32,6 +32,8 @@ jobs:
         include:
           - os: windows-2022
             platform: win32-x64
+          - os: windows-11-arm
+            platform: win32-arm64
           - os: ubuntu-latest
             platform: linux-x64
 
@@ -90,7 +92,7 @@ jobs:
         run: |
           mkdir -p prebuilds/${{ matrix.platform }}
           cp build/Release/modinstaller.node prebuilds/${{ matrix.platform }}/modinstaller.napi.node
-          if [ "${{ matrix.platform }}" = "win32-x64" ]; then
+          if [[ "${{ matrix.platform }}" == win32-* ]]; then
             cp ModInstaller.Native.dll prebuilds/${{ matrix.platform }}/
             cp ModInstaller.Native.lib prebuilds/${{ matrix.platform }}/
           elif [ "${{ matrix.platform }}" = "linux-x64" ]; then
@@ -113,7 +115,7 @@ jobs:
       - name: Sign the Windows binaries
         if: steps.signing.outputs.enabled == 'true'
         shell: pwsh
-        run: ./scripts/sign-package.ps1 src/ModInstaller.Native.TypeScript/prebuilds/win32-x64
+        run: ./scripts/sign-package.ps1 src/ModInstaller.Native.TypeScript/prebuilds/${{ matrix.platform }}
         env:
           ES_USERNAME: ${{ secrets.ES_USERNAME }}
           ES_PASSWORD: ${{ secrets.ES_PASSWORD }}
@@ -177,7 +179,7 @@ jobs:
         working-directory: src/ModInstaller.Native.TypeScript
         shell: bash
         run: |
-          # download-artifact creates native-win32-x64/, native-linux-x64/, and native-header-* dirs
+          # download-artifact creates native-win32-x64/, native-win32-arm64/, native-linux-x64/, and native-header-* dirs
           # Extract the header (platform-independent) to package root
           for dir in prebuilds/native-header-*/; do
             cp "$dir"ModInstaller.Native.h .

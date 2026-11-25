@@ -20,11 +20,18 @@
     <CETCompat>false</CETCompat>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(OS) == 'Windows_NT'">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  <!--
+    Default to the host's architecture (x64 or arm64) when no RID is given on the
+    command line; `dotnet publish -r <rid>` still overrides this.
+  -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == ''">
+    <_HostArch>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())</_HostArch>
   </PropertyGroup>
-  <PropertyGroup Condition="$(OS) != 'Windows_NT'">
-    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == '' And $(OS) == 'Windows_NT'">
+    <RuntimeIdentifier>win-$(_HostArch)</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == '' And $(OS) != 'Windows_NT'">
+    <RuntimeIdentifier>linux-$(_HostArch)</RuntimeIdentifier>
   </PropertyGroup>
   
   <PropertyGroup Condition="$(Configuration) == 'Release'">

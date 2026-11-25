@@ -15,6 +15,8 @@ jobs:
         include:
           - os: windows-2022
             platform: win32-x64
+          - os: windows-11-arm
+            platform: win32-arm64
           - os: ubuntu-latest
             platform: linux-x64
 
@@ -47,7 +49,7 @@ jobs:
         run: |
           mkdir -p prebuilds/${{ matrix.platform }}
           cp build/Release/modinstaller.node prebuilds/${{ matrix.platform }}/modinstaller.napi.node
-          if [ "${{ matrix.platform }}" = "win32-x64" ]; then
+          if [[ "${{ matrix.platform }}" == win32-* ]]; then
             cp ModInstaller.Native.dll prebuilds/${{ matrix.platform }}/
             cp ModInstaller.Native.lib prebuilds/${{ matrix.platform }}/
           elif [ "${{ matrix.platform }}" = "linux-x64" ]; then

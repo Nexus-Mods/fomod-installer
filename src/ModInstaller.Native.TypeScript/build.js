@@ -30,6 +30,12 @@ const args = process.argv.slice(2);
 const type = args[0] || "build";
 const configuration = args[1] || "Release";
 
+// Build for the architecture of the Node.js running this script, so the .NET
+// library, the N-API addon and the prebuilds folder all match (x64 or arm64).
+// process.arch values for these two match .NET RID architecture names.
+const targetArch = process.arch;
+const dotnetRid = `${process.platform === "win32" ? "win" : "linux"}-${targetArch}`;
+
 // Validate build type
 if (!VALID_TYPES.includes(type)) {
   console.error(`Error: Invalid build type '${type}'`);
@@ -310,18 +316,35 @@ async function main() {
         "--self-contained",
         "-c",
         configuration,
+        "-r",
+        dotnetRid,
         "-o",
         dotnetArtifacts,
         "../ModInstaller.Native",
       ];
 
+      // The NativeAOT link step locates MSVC by calling vswhere.exe by name, which
+      // is not on PATH by default. Add the Visual Studio Installer folder for it.
+      const publishOptions = {};
+      if (process.platform === "win32") {
+        const vsInstallerDir = path.join(
+          process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)",
+          "Microsoft Visual Studio",
+          "Installer",
+        );
+        publishOptions.env = {
+          ...process.env,
+          PATH: `${vsInstallerDir}${path.delimiter}${process.env.PATH || ""}`,
+        };
+      }
+
       try {
-        await spawnAsync("dotnet", buildArgs);
+        await spawnAsync("dotnet", buildArgs, publishOptions);
       } catch (err) {
         // The build may fail because of locked files (sigh) so just try again...
         console.log("  Build failed, retrying after 500ms...");
         await new Promise((resolve) => setTimeout(resolve, 500));
-        await spawnAsync("dotnet", buildArgs);
+        await spawnAsync("dotnet", buildArgs, publishOptions);
       }
 
       // Copy native artifacts
@@ -366,10 +389,10 @@ async function main() {
       if (process.platform === "win32" && !fs.existsSync("ModInstaller.Native.lib")) {
         // Try multiple possible paths (MSBuild uses different output structures locally vs CI)
         const possibleLibPaths = [
-          // Standard path: bin/Release/net9.0/win-x64/native/
-          path.resolve(nativeDir, `bin/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`),
-          // CI path with platform folder: bin/x64/Release/net9.0/win-x64/native/
-          path.resolve(nativeDir, `bin/x64/${configuration}/net9.0/win-x64/native/ModInstaller.Native.lib`),
+          // Standard path: bin/Release/net9.0/win-<arch>/native/
+          path.resolve(nativeDir, `bin/${configuration}/net9.0/${dotnetRid}/native/ModInstaller.Native.lib`),
+          // CI path with platform folder: bin/<arch>/Release/net9.0/win-<arch>/native/
+          path.resolve(nativeDir, `bin/${targetArch}/${configuration}/net9.0/${dotnetRid}/native/ModInstaller.Native.lib`),
         ];
 
         let foundLib = false;
@@ -433,7 +456,7 @@ async function main() {
       }
 
       // Run node-gyp rebuild
-      execCommand(`npx node-gyp rebuild --arch=x64 ${tag}`.trim());
+      execCommand(`npx node-gyp rebuild --arch=${targetArch} ${tag}`.trim());
       console.log("");
     }
 
